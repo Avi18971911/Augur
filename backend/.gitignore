@@ -1,0 +1,55 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of the go command
+/go/bin/
+/go/pkg/
+
+# Dependency directories (for vendoring)
+vendor/
+
+# Go workspace file (if using Go modules)
+go.work
+
+# Test coverage files
+*.cover
+*.cov
+
+# IDE/Editor configuration files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs and debugging files
+*.log
+*.trace
+*.prof
+
+# Build artifacts
+bin/
+dist/
+build/
+
+# Coverage reports
+coverage.out
+
+# Docker related files
+docker-compose.override.yml
+.env
+
+# Ignore compiled protobuf files (if applicable)
+*.pb.go
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# envrc
+.envrc
