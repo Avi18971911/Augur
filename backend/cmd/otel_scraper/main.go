@@ -5,6 +5,7 @@ import (
 	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	_ "google.golang.org/grpc/encoding/gzip"
 	"net"
 )
 

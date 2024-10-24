@@ -1,6 +1,6 @@
 module github.com/Avi18971911/Augur
 
-go 1.22.7
+go 1.22.2
 
 require (
 	go.opentelemetry.io/proto/otlp v1.3.1
