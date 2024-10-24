@@ -1,0 +1,670 @@
+{"level":"info","ts":1729780128.0778608,"caller":"otel_scraper/main.go:27","msg":"gRPC service started, listening for OpenTelemetry traces..."}
+{"level":"info","ts":1729780152.5122662,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"accountingservice"}
+{"level":"info","ts":1729780152.5126913,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"OpenTelemetry.AutoInstrumentation.Kafka\""}
+{"level":"info","ts":1729780152.5128198,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"orders receive","Span ID":"\ufffd\u0018\u0012\u001e\u0008\ufffd\u0012\u001c","Parent Span ID":"","Start Time":1729780148.2768078,"End Time":1729780148.5281436}
+{"level":"info","ts":1729780152.512845,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.operation","Value":"string_value:\"receive\""}
+{"level":"info","ts":1729780152.5128703,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.system","Value":"string_value:\"kafka\""}
+{"level":"info","ts":1729780152.5128746,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.destination.name","Value":"string_value:\"orders\""}
+{"level":"info","ts":1729780152.5128767,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.client_id","Value":"string_value:\"rdkafka#consumer-1\""}
+{"level":"info","ts":1729780152.512884,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.kafka.destination.partition","Value":"int_value:0"}
+{"level":"info","ts":1729780152.5128949,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.kafka.message.offset","Value":"int_value:-1001"}
+{"level":"info","ts":1729780152.5129242,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"messaging.kafka.consumer.group","Value":"string_value:\"accountingservice\""}
+{"level":"info","ts":1729780155.41701,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"paymentservice"}
+{"level":"info","ts":1729780155.4170787,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"@opentelemetry/instrumentation-dns\" version:\"0.36.1\""}
+{"level":"info","ts":1729780155.4171093,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"dns.lookup","Span ID":"K)\ufffd$.\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780150.267,"End Time":1729780150.267288}
+{"level":"info","ts":1729780155.4171228,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"peer.ipv4","Value":"string_value:\"0.0.0.0\""}
+{"level":"info","ts":1729780155.4171488,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"dns.lookup","Span ID":"\ufffd5ұ\ufffd\u0005\ufffd\ufffd","Parent Span ID":"5\u0012|\u00175\ufffdNr","Start Time":1729780150.257,"End Time":1729780150.334371}
+{"level":"info","ts":1729780155.4171536,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"dns.error_message","Value":"string_value:\"getaddrinfo ENOTFOUND metadata.google.internal.\""}
+{"level":"info","ts":1729780155.4171588,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"dns.error_name","Value":"string_value:\"Error\""}
+{"level":"info","ts":1729780155.4171636,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"@opentelemetry/instrumentation-net\" version:\"0.36.0\""}
+{"level":"info","ts":1729780155.4171698,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"tcp.connect","Span ID":"-g\ufffd1\ufffd\ufffd\u0010^","Parent Span ID":"5\u0012|\u00175\ufffdNr","Start Time":1729780150.256,"End Time":1729780150.3351905}
+{"level":"info","ts":1729780155.417181,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.transport","Value":"string_value:\"ip_tcp\""}
+{"level":"info","ts":1729780155.4171863,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"metadata.google.internal.\""}
+{"level":"info","ts":1729780155.41719,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:80"}
+{"level":"info","ts":1729780155.4172084,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"tcp.connect","Span ID":"\u0007\u001d\ufffdq9\ufffd\u001ay","Parent Span ID":"\u00057\ufffdʒK0K","Start Time":1729780150.2499998,"End Time":1729780153.2634192}
+{"level":"info","ts":1729780155.4172149,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.transport","Value":"string_value:\"ip_tcp\""}
+{"level":"info","ts":1729780155.4172218,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"169.254.169.254\""}
+{"level":"info","ts":1729780155.417226,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:80"}
+{"level":"info","ts":1729780155.4172294,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"@opentelemetry/instrumentation-http\" version:\"0.51.1\""}
+{"level":"info","ts":1729780155.41724,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"5\u0012|\u00175\ufffdNr","Parent Span ID":"","Start Time":1729780150.253,"End Time":1729780150.335495}
+{"level":"info","ts":1729780155.4172442,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://metadata.google.internal./computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.4172502,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.4172676,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.target","Value":"string_value:\"/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.4172723,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"metadata.google.internal.\""}
+{"level":"info","ts":1729780155.4172761,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.host","Value":"string_value:\"metadata.google.internal.:80\""}
+{"level":"info","ts":1729780155.4173095,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_name","Value":"string_value:\"Error\""}
+{"level":"info","ts":1729780155.4173136,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_message","Value":"string_value:\"getaddrinfo ENOTFOUND metadata.google.internal.\""}
+{"level":"info","ts":1729780155.4173174,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u00057\ufffdʒK0K","Parent Span ID":"","Start Time":1729780150.239,"End Time":1729780153.264847}
+{"level":"info","ts":1729780155.4173214,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://169.254.169.254/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.4173336,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.4173474,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.target","Value":"string_value:\"/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.4173512,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"169.254.169.254\""}
+{"level":"info","ts":1729780155.4173546,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.host","Value":"string_value:\"169.254.169.254:80\""}
+{"level":"info","ts":1729780155.4173584,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_name","Value":"string_value:\"Error\""}
+{"level":"info","ts":1729780155.4173617,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_message","Value":"string_value:\"socket hang up\""}
+{"level":"info","ts":1729780155.6166055,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"frontend"}
+{"level":"info","ts":1729780155.6166341,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"@opentelemetry/instrumentation-http\" version:\"0.52.1\""}
+{"level":"info","ts":1729780155.6167336,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0016ϼ>\ufffd\ufffd\ufffd\u0017","Parent Span ID":"","Start Time":1729780150.332,"End Time":1729780150.5007606}
+{"level":"info","ts":1729780155.6167421,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://metadata.google.internal./computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.6167526,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.6167574,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.target","Value":"string_value:\"/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.61676,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"metadata.google.internal.\""}
+{"level":"info","ts":1729780155.6167653,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.host","Value":"string_value:\"metadata.google.internal.:80\""}
+{"level":"info","ts":1729780155.6167672,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_name","Value":"string_value:\"Error\""}
+{"level":"info","ts":1729780155.6167693,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_message","Value":"string_value:\"getaddrinfo ENOTFOUND metadata.google.internal.\""}
+{"level":"info","ts":1729780155.6167712,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"%s\ufffd|\u001a\ufffd\ufffdd","Parent Span ID":"","Start Time":1729780150.328,"End Time":1729780153.3465102}
+{"level":"info","ts":1729780155.6167738,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://169.254.169.254/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.6167767,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.6167789,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.target","Value":"string_value:\"/computeMetadata/v1/instance\""}
+{"level":"info","ts":1729780155.6167805,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"169.254.169.254\""}
+{"level":"info","ts":1729780155.6167827,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.host","Value":"string_value:\"169.254.169.254:80\""}
+{"level":"info","ts":1729780155.6167843,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_name","Value":"string_value:\"Error\""}
+{"level":"info","ts":1729780155.6167862,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.error_message","Value":"string_value:\"socket hang up\""}
+{"level":"info","ts":1729780155.8213115,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780155.8213499,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780155.8213742,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"ը\ufffd:\ufffd!\ufffd\ufffd","Parent Span ID":"","Start Time":1729780152.7747808,"End Time":1729780152.9817798}
+{"level":"info","ts":1729780155.8213797,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.8213866,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780155.8213947,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u001a\ufffd\ufffdIS\ufffdO\u000e","Parent Span ID":"","Start Time":1729780152.9832954,"End Time":1729780152.9980192}
+{"level":"info","ts":1729780155.8213973,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.8214004,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780155.821407,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"o\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780154.668134,"End Time":1729780154.6860073}
+{"level":"info","ts":1729780155.821409,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.8214118,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780155.8214142,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"g=\ufffd?\ufffd\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780154.6877232,"End Time":1729780154.6956198}
+{"level":"info","ts":1729780155.8214192,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780155.8214238,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780155.8214269,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"t^m\ufffd^\ufffd@","Parent Span ID":"","Start Time":1729780154.7724767,"End Time":1729780154.7881854}
+{"level":"info","ts":1729780155.821429,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.8214364,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780155.821444,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\u0002\ufffdYolM","Parent Span ID":"","Start Time":1729780154.7893126,"End Time":1729780154.7979894}
+{"level":"info","ts":1729780155.821447,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780155.82145,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780160.8493338,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780160.8495805,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780160.8498638,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"J\ufffd\ufffd\ufffdm\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780156.7791045,"End Time":1729780156.7949514}
+{"level":"info","ts":1729780160.8499131,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780160.85006,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780160.850064,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"3C\u00084ռ9K","Parent Span ID":"","Start Time":1729780156.7959077,"End Time":1729780156.8035345}
+{"level":"info","ts":1729780160.850067,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780160.8500698,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=travel\""}
+{"level":"info","ts":1729780160.8500786,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"S⧫\ufffd1\u001b\u0001","Parent Span ID":"","Start Time":1729780158.7815652,"End Time":1729780158.7970893}
+{"level":"info","ts":1729780160.850081,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780160.8500836,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780160.850086,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdd\ufffd觉U\ufffd","Parent Span ID":"","Start Time":1729780158.7983873,"End Time":1729780158.805849}
+{"level":"info","ts":1729780160.8500881,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780160.8500905,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780160.8500931,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd#\u0011\ufffd}:\ufffd","Parent Span ID":"","Start Time":1729780159.9465199,"End Time":1729780160.0007622}
+{"level":"info","ts":1729780160.8500986,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780160.8501143,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780160.8501246,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"J\ufffd\ufffdAb\ufffdA\r","Parent Span ID":"","Start Time":1729780160.00128,"End Time":1729780160.006716}
+{"level":"info","ts":1729780160.8501267,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780160.850131,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780160.85014,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffdԞ\ufffd߈\u0004\u001a","Parent Span ID":"","Start Time":1729780160.0070899,"End Time":1729780160.0152638}
+{"level":"info","ts":1729780160.8501427,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780160.850156,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780165.8851705,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780165.885272,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780165.8853173,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdM\ufffdw*\u001d\ufffd","Parent Span ID":"","Start Time":1729780160.7900696,"End Time":1729780160.7955709}
+{"level":"info","ts":1729780165.8853345,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780165.885357,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780165.885376,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"}\u0016\ufffd\u0000\ufffdHtH","Parent Span ID":"","Start Time":1729780160.7959552,"End Time":1729780160.8019109}
+{"level":"info","ts":1729780165.885387,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780165.8854005,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780165.8854134,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdձ\ufffd_\ufffd6\ufffd","Parent Span ID":"","Start Time":1729780160.9715958,"End Time":1729780160.9778893}
+{"level":"info","ts":1729780165.8854246,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780165.8854437,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780165.8854733,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdt\ryc\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780163.3435674,"End Time":1729780163.3624094}
+{"level":"info","ts":1729780165.885495,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780165.8855107,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780165.885523,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdT\ufffd\\Ȱ't","Parent Span ID":"","Start Time":1729780164.6815724,"End Time":1729780164.6952565}
+{"level":"info","ts":1729780165.8855338,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780165.8855383,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780168.4984128,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780168.4986413,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780168.4988668,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"y\ufffdn4\ufffd\ufffd\ufffd\\","Parent Span ID":"N\ufffd\ufffd\ufffd\ufffd\u000b\n&","Start Time":1729780163.6248925,"End Time":1729780163.6249878}
+{"level":"info","ts":1729780168.4989066,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780168.4989138,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"N\ufffd\ufffd\ufffd\ufffd\u000b\n&","Parent Span ID":"*\ufffdU\ufffdq\u0008\ufffd\ufffd","Start Time":1729780163.624773,"End Time":1729780163.6250162}
+{"level":"info","ts":1729780168.498921,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780168.498989,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780168.4989967,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780168.499,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780168.49902,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"*\ufffdU\ufffdq\u0008\ufffd\ufffd","Parent Span ID":"","Start Time":1729780163.624695,"End Time":1729780163.625165}
+{"level":"info","ts":1729780168.499024,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780168.4990277,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780168.499074,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780168.499088,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780168.4990916,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780168.4990945,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780170.710971,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780170.7110453,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780170.711079,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd~\ufffd#}E","Parent Span ID":"","Start Time":1729780166.6438909,"End Time":1729780166.667834}
+{"level":"info","ts":1729780170.7110858,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780170.711096,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/66VCHSJNUP\""}
+{"level":"info","ts":1729780170.7111127,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdQ\ufffdI\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780169.374514,"End Time":1729780169.3992233}
+{"level":"info","ts":1729780170.711118,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780170.7111232,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780170.711127,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"t\u0001\ufffd\ufffd\ufffd\ufffd\ufffd7","Parent Span ID":"","Start Time":1729780169.3998818,"End Time":1729780169.4064617}
+{"level":"info","ts":1729780170.711131,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780170.7111347,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780170.7111378,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u000f|\ufffd\u00007\ufffd\u0004","Parent Span ID":"","Start Time":1729780169.4072196,"End Time":1729780169.4141412}
+{"level":"info","ts":1729780170.7111413,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780170.7111456,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780170.7111502,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\u001b\ufffdE\ufffdQ\u000e\ufffd","Parent Span ID":"","Start Time":1729780169.4147842,"End Time":1729780169.4204779}
+{"level":"info","ts":1729780170.7111533,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780170.7111576,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780170.7111614,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0016\ufffdZ\ufffd\u000f\ufffdb\ufffd","Parent Span ID":"","Start Time":1729780169.4210484,"End Time":1729780169.4263904}
+{"level":"info","ts":1729780170.7111647,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780170.7111683,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/66VCHSJNUP\""}
+{"level":"info","ts":1729780170.711172,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffdY\ufffd\u0004|\u0012\ufffd7","Parent Span ID":"","Start Time":1729780169.4271858,"End Time":1729780169.432659}
+{"level":"info","ts":1729780170.7111819,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780170.711188,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780170.7111924,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"nO\u000fL\ufffd$*\ufffd","Parent Span ID":"","Start Time":1729780169.4331524,"End Time":1729780169.4381225}
+{"level":"info","ts":1729780170.7111998,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780170.711205,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780170.711209,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0005LJ\ufffd~Azu","Parent Span ID":"","Start Time":1729780169.7851493,"End Time":1729780169.8145304}
+{"level":"info","ts":1729780170.7112117,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780170.7112148,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=books\""}
+{"level":"info","ts":1729780173.52234,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780173.5224478,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780173.522524,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"Q\ufffd\ufffd]'\ufffd<Z","Parent Span ID":"\ufffd\ufffd3AR\ufffd=\ufffd","Start Time":1729780170.9683557,"End Time":1729780170.968422}
+{"level":"info","ts":1729780173.5225518,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\u0014\ufffd\ufffd\u0001\ufffdXx","Parent Span ID":"\ufffd\ufffd\ufffdBͻ\ufffdv","Start Time":1729780172.121623,"End Time":1729780172.1216378}
+{"level":"info","ts":1729780173.52257,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd9\ufffd\ufffd\ufffd\u000b\ufffd","Parent Span ID":"\ufffdl\n?\ufffdh\ufffdD","Start Time":1729780173.3578334,"End Time":1729780173.3578541}
+{"level":"info","ts":1729780173.5225816,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780173.522608,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd3AR\ufffd=\ufffd","Parent Span ID":"\ufffd3X\ufffd\ufffd\ufffdZD","Start Time":1729780170.9683108,"End Time":1729780170.9686217}
+{"level":"info","ts":1729780173.5226293,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780173.5226717,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780173.5226972,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780173.522735,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd\ufffdBͻ\ufffdv","Parent Span ID":"\ufffd5\u000f\ufffdK\ufffd\u0011f","Start Time":1729780172.1216016,"End Time":1729780172.1216993}
+{"level":"info","ts":1729780173.5227494,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780173.5227833,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780173.522805,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780173.5228155,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffdl\n?\ufffdh\ufffdD","Parent Span ID":"6J&\u0002\u0016\ufffd\u001e3","Start Time":1729780173.3578281,"End Time":1729780173.3578951}
+{"level":"info","ts":1729780173.5228732,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780173.5229068,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780173.5229185,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780173.5229275,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780173.522944,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffd3X\ufffd\ufffd\ufffdZD","Parent Span ID":"","Start Time":1729780170.9682555,"End Time":1729780170.9686632}
+{"level":"info","ts":1729780173.5229776,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780173.5229902,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780173.5230093,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780173.523019,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780173.5230377,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780173.5230477,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780173.523056,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffd5\u000f\ufffdK\ufffd\u0011f","Parent Span ID":"","Start Time":1729780172.1215723,"End Time":1729780172.121731}
+{"level":"info","ts":1729780173.5230758,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780173.523088,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780173.5230963,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780173.5231044,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780173.523113,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780173.523122,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780173.5231302,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"6J&\u0002\u0016\ufffd\u001e3","Parent Span ID":"","Start Time":1729780173.3578153,"End Time":1729780173.3579056}
+{"level":"info","ts":1729780173.5231388,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780173.5231485,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780173.5231578,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780173.5231898,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780173.5231998,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780173.523208,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780175.7619865,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780175.7621396,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780175.762531,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"1\u0003J~\ufffdu\ufffdp","Parent Span ID":"","Start Time":1729780172.3772585,"End Time":1729780172.383627}
+{"level":"info","ts":1729780175.7625635,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780175.76259,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780175.7626061,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd\ufffd#ʞ\ufffd\n","Parent Span ID":"","Start Time":1729780172.384169,"End Time":1729780172.3890858}
+{"level":"info","ts":1729780175.7626119,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780175.7626173,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780175.7626219,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd\u001b\ufffd\ufffd\ufffdu","Parent Span ID":"","Start Time":1729780173.8174043,"End Time":1729780173.8287368}
+{"level":"info","ts":1729780175.762689,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780175.7627175,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780175.7627254,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"3:\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780174.4878519,"End Time":1729780174.4950168}
+{"level":"info","ts":1729780175.7627308,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780175.762736,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780175.7627404,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"I\u000b\ufffd\ufffd\ufffdT\ufffd\ufffd","Parent Span ID":"","Start Time":1729780175.052133,"End Time":1729780175.0586877}
+{"level":"info","ts":1729780175.7627451,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780175.7627497,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/0PUK6V6EV0\""}
+{"level":"info","ts":1729780175.762754,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"1ps\u000e4_ע","Parent Span ID":"","Start Time":1729780175.0593026,"End Time":1729780175.0650961}
+{"level":"info","ts":1729780175.7627633,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780175.762768,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780180.7918549,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780180.7921917,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780180.792477,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"M1\ufffd\u0017ej\ufffd\ufffd","Parent Span ID":"","Start Time":1729780177.3269045,"End Time":1729780177.3343968}
+{"level":"info","ts":1729780180.7925067,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780180.7925947,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=1YMWWN1N4O\""}
+{"level":"info","ts":1729780180.792604,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"`\u0017\u0004\ufffde\ufffd\ufffdo","Parent Span ID":"","Start Time":1729780179.114735,"End Time":1729780179.123942}
+{"level":"info","ts":1729780180.7926188,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780180.7926233,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=2ZYFJ3GM2N\""}
+{"level":"info","ts":1729780180.7926278,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdb\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780180.2642457,"End Time":1729780180.2721856}
+{"level":"info","ts":1729780180.7926319,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780180.7926357,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780185.8205526,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780185.8207047,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780185.8208146,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0019\ufffd\"\ufffdɗ","Parent Span ID":"","Start Time":1729780181.9512482,"End Time":1729780181.966051}
+{"level":"info","ts":1729780185.820838,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8208828,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780185.820924,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u0006-\ufffd\ufffdWUF","Parent Span ID":"","Start Time":1729780181.9975088,"End Time":1729780182.0244172}
+{"level":"info","ts":1729780185.8209887,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8210266,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780185.821083,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u001c\u0000:\ufffdV{\ufffd\ufffd","Parent Span ID":"","Start Time":1729780182.0252285,"End Time":1729780182.0307906}
+{"level":"info","ts":1729780185.82111,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8211408,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/\""}
+{"level":"info","ts":1729780185.821168,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffdO\ufffd\u001f09\ufffd","Parent Span ID":"","Start Time":1729780182.0248034,"End Time":1729780182.0324154}
+{"level":"info","ts":1729780185.8212056,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780185.8212302,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780185.821338,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u001fZ\ufffd\ufffd\ufffdj\ufffd","Parent Span ID":"","Start Time":1729780182.032754,"End Time":1729780182.0375137}
+{"level":"info","ts":1729780185.8213708,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8213985,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780185.8215208,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd\u0002V\u001d\ufffd\ufffdo","Parent Span ID":"","Start Time":1729780182.0379157,"End Time":1729780182.042737}
+{"level":"info","ts":1729780185.8215382,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780185.821567,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780185.82158,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0012bo\ufffd\u001f\ufffd~\ufffd","Parent Span ID":"","Start Time":1729780182.0432086,"End Time":1729780182.0482512}
+{"level":"info","ts":1729780185.8215928,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8216054,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780185.8216197,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"0QS{l\ufffd\u001d\ufffd","Parent Span ID":"","Start Time":1729780182.0485733,"End Time":1729780182.0531268}
+{"level":"info","ts":1729780185.821632,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780185.8216472,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780185.8216605,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"G\u0017#\ufffd\ufffd\u0011\ufffd_","Parent Span ID":"","Start Time":1729780182.0536215,"End Time":1729780182.0588238}
+{"level":"info","ts":1729780185.8216727,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780185.8216841,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780185.821698,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"{\ufffdQ\u0007FqV\ufffd","Parent Span ID":"","Start Time":1729780182.0595498,"End Time":1729780182.0643108}
+{"level":"info","ts":1729780185.8217094,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780185.8217213,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780185.8217335,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"zO\ufffd\u0002㞯P","Parent Span ID":"","Start Time":1729780182.0647318,"End Time":1729780182.0700178}
+{"level":"info","ts":1729780185.8217444,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780185.8217583,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780190.8557463,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780190.8557878,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780190.8558116,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdGm\ufffdxڅ","Parent Span ID":"","Start Time":1729780185.9320917,"End Time":1729780185.9459069}
+{"level":"info","ts":1729780190.8558173,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780190.8558261,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780190.8558364,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"Vp\ufffd\u001b\ufffd\u0007\ufffdk","Parent Span ID":"","Start Time":1729780186.6921146,"End Time":1729780186.7054}
+{"level":"info","ts":1729780190.8558393,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780190.8558424,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/66VCHSJNUP\""}
+{"level":"info","ts":1729780190.855845,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"6 fQ>ͣ\ufffd","Parent Span ID":"","Start Time":1729780186.817003,"End Time":1729780186.8254507}
+{"level":"info","ts":1729780190.8558474,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780190.85585,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/2ZYFJ3GM2N\""}
+{"level":"info","ts":1729780190.8558564,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdhV\ufffd\ufffd\ufffd\r","Parent Span ID":"","Start Time":1729780189.2945337,"End Time":1729780189.2997243}
+{"level":"info","ts":1729780190.855859,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780190.8558617,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780190.8558667,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"3\ufffd\ufffd\ufffd\u001e\ufffdEA","Parent Span ID":"","Start Time":1729780190.3758273,"End Time":1729780190.3804185}
+{"level":"info","ts":1729780190.8558693,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780190.8558714,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780190.8558767,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\u0014\ufffd}T\ufffd\ufffd\ufffd>","Parent Span ID":"","Start Time":1729780190.3808234,"End Time":1729780190.3855217}
+{"level":"info","ts":1729780190.8558788,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780190.8558815,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780193.6743712,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780193.6747067,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780193.6749187,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd&jF\ufffd\ufffdB","Parent Span ID":"v\u0017\ufffd\".\ufffdpQ","Start Time":1729780190.1209176,"End Time":1729780190.1210206}
+{"level":"info","ts":1729780193.6749868,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780193.675017,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"v\u0017\ufffd\".\ufffdpQ","Parent Span ID":"\ufffd\u0010{W4)\ufffd\u0018","Start Time":1729780190.1208355,"End Time":1729780190.121328}
+{"level":"info","ts":1729780193.6750298,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780193.675108,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780193.675123,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780193.6751328,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780193.6751566,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffd\u0010{W4)\ufffd\u0018","Parent Span ID":"","Start Time":1729780190.120715,"End Time":1729780190.121453}
+{"level":"info","ts":1729780193.6751695,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780193.6751826,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780193.6752515,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780193.6752653,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780193.6752753,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780193.6752832,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780195.8875103,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780195.8876352,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780195.8877177,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdm\ufffd\n\ufffd\u0002R","Parent Span ID":"","Start Time":1729780191.1104188,"End Time":1729780191.1255455}
+{"level":"info","ts":1729780195.8877382,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.887774,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780195.887843,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u001d\ufffd\u0013\ufffd(5\ufffdJ","Parent Span ID":"","Start Time":1729780191.257524,"End Time":1729780191.27559}
+{"level":"info","ts":1729780195.8879633,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.888008,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/2ZYFJ3GM2N\""}
+{"level":"info","ts":1729780195.8880265,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"I4\u001cf\ufffd\ufffd\ufffdX","Parent Span ID":"","Start Time":1729780191.27615,"End Time":1729780191.2836816}
+{"level":"info","ts":1729780195.8880448,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780195.8880763,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780195.888091,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdK\ufffd\nX\u0015ۀ","Parent Span ID":"","Start Time":1729780192.5227325,"End Time":1729780192.5301452}
+{"level":"info","ts":1729780195.8881037,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.8881285,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780195.8881543,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"_\ufffd_5\ufffd-\ufffd\ufffd","Parent Span ID":"","Start Time":1729780193.472612,"End Time":1729780193.4881341}
+{"level":"info","ts":1729780195.8881912,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.8882089,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780195.8882232,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd\ufffdfk\r\u0013","Parent Span ID":"","Start Time":1729780194.8657038,"End Time":1729780194.8722715}
+{"level":"info","ts":1729780195.888234,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.8882487,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=telescopes\""}
+{"level":"info","ts":1729780195.8882604,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd\ufffd\ufffdS\ufffd\ufffd","Parent Span ID":"","Start Time":1729780195.204462,"End Time":1729780195.2222505}
+{"level":"info","ts":1729780195.8882725,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780195.8882844,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/OLJCESPC7Z\""}
+{"level":"info","ts":1729780200.7061949,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780200.7062464,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780200.70627,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u001b\u001a*g\ufffd!\ufffd\ufffd","Parent Span ID":"","Start Time":1729780195.9946032,"End Time":1729780196.0056586}
+{"level":"info","ts":1729780200.706276,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780200.7062902,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780200.7062953,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"i\ufffd4\u0004-\ufffd\ufffd\u0003","Parent Span ID":"","Start Time":1729780197.4741552,"End Time":1729780197.4886239}
+{"level":"info","ts":1729780200.7063632,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780200.7063813,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780200.7063868,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0007\ufffd\ufffd*r\ufffd~","Parent Span ID":"","Start Time":1729780197.4729176,"End Time":1729780197.4909256}
+{"level":"info","ts":1729780200.7063906,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780200.7063947,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780200.7064147,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u000fKz\ufffd\ufffdY9","Parent Span ID":"","Start Time":1729780197.489156,"End Time":1729780197.4939117}
+{"level":"info","ts":1729780200.7064192,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780200.7064443,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780200.7064486,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"/o\ufffd\u0013\ufffd\u0012\ufffd\ufffd","Parent Span ID":"","Start Time":1729780199.2526028,"End Time":1729780199.2638867}
+{"level":"info","ts":1729780200.7064521,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780200.7064564,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=binoculars\""}
+{"level":"info","ts":1729780203.5231586,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780203.5233333,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780203.5235467,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\nu\u001f\ufffd\ufffd\ufffd\r","Parent Span ID":"#\u0005u\ufffd\u000b\ufffd\ufffd\"","Start Time":1729780199.3388886,"End Time":1729780199.3389232}
+{"level":"info","ts":1729780203.5235767,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780203.523594,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"#\u0005u\ufffd\u000b\ufffd\ufffd\"","Parent Span ID":")\ufffd*\ufffde\ufffdv9","Start Time":1729780199.3388765,"End Time":1729780199.338989}
+{"level":"info","ts":1729780203.5236092,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780203.5236616,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780203.5236714,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780203.523677,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780203.5236938,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":")\ufffd*\ufffde\ufffdv9","Parent Span ID":"","Start Time":1729780199.3388414,"End Time":1729780199.3390133}
+{"level":"info","ts":1729780203.5237024,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780203.52371,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780203.5237377,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780203.5237565,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780203.523788,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780203.5238385,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780205.7385266,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780205.7385929,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780205.7386303,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdW\ufffd\ufffd`\ufffd\ufffd","Parent Span ID":"","Start Time":1729780200.7483947,"End Time":1729780200.7590525}
+{"level":"info","ts":1729780205.7386472,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7386675,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780205.7386754,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd^\ufffd\u0011N7E\u0006","Parent Span ID":"","Start Time":1729780200.7595768,"End Time":1729780200.7655501}
+{"level":"info","ts":1729780205.7386816,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7386882,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7386944,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdP\ufffd\ufffd\u001fV\ufffd","Parent Span ID":"","Start Time":1729780200.7659438,"End Time":1729780200.7718577}
+{"level":"info","ts":1729780205.73871,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7387156,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780205.7387207,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"ͽ67\ufffd9\ufffd\ufffd","Parent Span ID":"","Start Time":1729780200.772152,"End Time":1729780200.7755113}
+{"level":"info","ts":1729780205.7387257,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7387376,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7387512,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd@\ufffd![0\ufffd","Parent Span ID":"","Start Time":1729780200.7757597,"End Time":1729780200.778529}
+{"level":"info","ts":1729780205.7387607,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7387838,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780205.7388713,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"v\ufffd|\ufffd\ufffd\u0016\ufffd\u0015","Parent Span ID":"","Start Time":1729780200.778779,"End Time":1729780200.7818015}
+{"level":"info","ts":1729780205.738883,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7388902,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7388952,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\t\u001dj\ufffd\u0015ֈ\n","Parent Span ID":"","Start Time":1729780200.7820506,"End Time":1729780200.784841}
+{"level":"info","ts":1729780205.7388992,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.738904,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780205.7389088,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\u0017W\"\ufffdMV\ufffd\ufffd","Parent Span ID":"","Start Time":1729780200.785073,"End Time":1729780200.7881503}
+{"level":"info","ts":1729780205.7389128,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7389174,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7389224,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"ˈ\ufffd\ufffd\ufffd\ufffd\u0003\ufffd","Parent Span ID":"","Start Time":1729780200.7883828,"End Time":1729780200.7916853}
+{"level":"info","ts":1729780205.7389264,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.73893,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780205.7389345,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"m\ufffd\ufffdF\ufffd\ufffd\ufffdY","Parent Span ID":"","Start Time":1729780203.670718,"End Time":1729780203.6927521}
+{"level":"info","ts":1729780205.7389388,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7389488,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=6E92ZMYYFZ\""}
+{"level":"info","ts":1729780205.7389538,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd%xY\\!","Parent Span ID":"","Start Time":1729780204.6556044,"End Time":1729780204.6623912}
+{"level":"info","ts":1729780205.7389572,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7389607,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/0PUK6V6EV0\""}
+{"level":"info","ts":1729780205.7389703,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u0004\ufffd\ufffdɼ\ufffdh","Parent Span ID":"","Start Time":1729780205.1258442,"End Time":1729780205.1343253}
+{"level":"info","ts":1729780205.7389739,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.738985,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/0PUK6V6EV0\""}
+{"level":"info","ts":1729780205.7389982,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"Gq\u000f\ufffd\ufffd\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780205.1351407,"End Time":1729780205.1443105}
+{"level":"info","ts":1729780205.7390025,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7390103,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7390206,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u000f\ufffds\ufffdQz\ufffd","Parent Span ID":"","Start Time":1729780205.1450465,"End Time":1729780205.150362}
+{"level":"info","ts":1729780205.7390249,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7390285,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780205.7390327,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffdR\ufffd\ufffd\ufffd*y","Parent Span ID":"","Start Time":1729780205.1510153,"End Time":1729780205.1566534}
+{"level":"info","ts":1729780205.739036,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7390409,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7390444,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0003\ufffd\ufffdk߿>\ufffd","Parent Span ID":"","Start Time":1729780205.157022,"End Time":1729780205.1621056}
+{"level":"info","ts":1729780205.7390485,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780205.7390528,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780205.7390566,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd\ufffdQ\tK=\ufffd","Parent Span ID":"","Start Time":1729780205.16249,"End Time":1729780205.1664762}
+{"level":"info","ts":1729780205.739067,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.7390718,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780205.7390766,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd\ufffd.\ufffd\ufffd\u0015h","Parent Span ID":"","Start Time":1729780205.1668642,"End Time":1729780205.1720183}
+{"level":"info","ts":1729780205.7390847,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780205.739089,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780210.7682962,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780210.7685666,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780210.7688155,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":".%\ufffd\ufffd\ufffd\ufffd\u0007}","Parent Span ID":"","Start Time":1729780205.8500693,"End Time":1729780205.862392}
+{"level":"info","ts":1729780210.768854,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780210.7689188,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=assembly\""}
+{"level":"info","ts":1729780210.7689455,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\u0019b\ufffd\ufffd1$","Parent Span ID":"","Start Time":1729780209.6813855,"End Time":1729780209.6954277}
+{"level":"info","ts":1729780210.768959,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780210.7689633,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=6E92ZMYYFZ\""}
+{"level":"info","ts":1729780210.7689683,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"د\ufffd\ufffd\ufffd$\ufffd\ufffd","Parent Span ID":"","Start Time":1729780209.6967716,"End Time":1729780209.7033474}
+{"level":"info","ts":1729780210.7689767,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780210.768983,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780213.586876,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780213.587023,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780213.587078,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd9\ufffd\ufffdS!\ufffd","Parent Span ID":"Y\u00199\ufffd\t\ufffd27","Start Time":1729780211.940167,"End Time":1729780211.9405153}
+{"level":"info","ts":1729780213.587092,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780213.5871077,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"Y\u00199\ufffd\t\ufffd27","Parent Span ID":"\ufffd\ufffd\ufffd\ufffd\ufffd+\ufffd\ufffd","Start Time":1729780211.9400363,"End Time":1729780211.9408667}
+{"level":"info","ts":1729780213.5871165,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780213.5871334,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780213.5871484,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780213.5871594,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780213.58717,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffd\ufffd\ufffd\ufffd\ufffd+\ufffd\ufffd","Parent Span ID":"","Start Time":1729780211.939918,"End Time":1729780211.9409344}
+{"level":"info","ts":1729780213.5871768,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780213.5871844,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780213.5872211,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780213.587239,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780213.5872517,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780213.5872593,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780215.8025336,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780215.8025959,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780215.8026438,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u001agY\ufffd\ufffd\ufffdE\u001d","Parent Span ID":"","Start Time":1729780212.1599665,"End Time":1729780212.171121}
+{"level":"info","ts":1729780215.8026557,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780215.8026705,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780215.8026795,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd)\ufffdb4\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780212.8820083,"End Time":1729780212.8897424}
+{"level":"info","ts":1729780215.8026862,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780215.8026934,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=66VCHSJNUP\""}
+{"level":"info","ts":1729780215.8027,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\u0003:\ufffd\ufffd\ufffd@\ufffd","Parent Span ID":"","Start Time":1729780213.1252031,"End Time":1729780213.1301074}
+{"level":"info","ts":1729780215.802706,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780215.802713,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780215.802719,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"9f\t\ufffd\ufffd)\ufffdk","Parent Span ID":"","Start Time":1729780214.3451781,"End Time":1729780214.349611}
+{"level":"info","ts":1729780215.802725,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780215.802731,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=HQTGWGPNH4\""}
+{"level":"info","ts":1729780215.8027499,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u000c\u000c\ufffdw\u0007\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780214.5899343,"End Time":1729780214.595867}
+{"level":"info","ts":1729780215.8027568,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780215.802772,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780220.8382866,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780220.8384786,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780220.838628,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdǻŀ,\ufffd\ufffd","Parent Span ID":"","Start Time":1729780216.818991,"End Time":1729780216.8326447}
+{"level":"info","ts":1729780220.8386493,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780220.8387082,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780220.8387268,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"ۭ\ufffd\ufffdB'\u001c\u001a","Parent Span ID":"","Start Time":1729780217.2084837,"End Time":1729780217.2167094}
+{"level":"info","ts":1729780220.838732,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780220.838737,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=0PUK6V6EV0\""}
+{"level":"info","ts":1729780225.8997047,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780225.8998802,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780225.9000416,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"~?m\ufffdՔy\u0012","Parent Span ID":"","Start Time":1729780221.5703506,"End Time":1729780221.5801997}
+{"level":"info","ts":1729780225.9000711,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9001195,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780225.9001584,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffdywT\ufffdz]","Parent Span ID":"","Start Time":1729780221.5815783,"End Time":1729780221.5923588}
+{"level":"info","ts":1729780225.9001749,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.9002028,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780225.9003246,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd͖\ufffdr\ufffd\ufffdJ","Parent Span ID":"","Start Time":1729780221.5932395,"End Time":1729780221.5987732}
+{"level":"info","ts":1729780225.90035,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.900372,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780225.9003873,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd!g\ufffd\ufffd\r\ufffdc","Parent Span ID":"","Start Time":1729780222.6599064,"End Time":1729780222.6726973}
+{"level":"info","ts":1729780225.900404,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9004292,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780225.9004488,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"1\ufffd\ufffd8ݡM\ufffd","Parent Span ID":"","Start Time":1729780222.7150981,"End Time":1729780222.7285092}
+{"level":"info","ts":1729780225.9004657,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9004848,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=accessories\""}
+{"level":"info","ts":1729780225.9004962,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdj\u001cyU{\u0008\ufffd","Parent Span ID":"","Start Time":1729780222.8133683,"End Time":1729780222.8173358}
+{"level":"info","ts":1729780225.9005094,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9005237,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780225.9005504,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffdDxl\u0003L2O","Parent Span ID":"","Start Time":1729780222.8176868,"End Time":1729780222.821592}
+{"level":"info","ts":1729780225.9005744,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.9006205,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780225.9006562,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":":,y\ufffd0f\ufffdX","Parent Span ID":"","Start Time":1729780222.8219435,"End Time":1729780222.8257084}
+{"level":"info","ts":1729780225.9007022,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9007235,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780225.9007726,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\u001a.;eFv\ufffd\ufffd","Parent Span ID":"","Start Time":1729780222.8259726,"End Time":1729780222.8297532}
+{"level":"info","ts":1729780225.9008,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.9008272,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780225.9008644,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"7zc\u0005\ufffd\ufffd3\ufffd","Parent Span ID":"","Start Time":1729780222.8303514,"End Time":1729780222.8356085}
+{"level":"info","ts":1729780225.9008827,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9009087,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780225.900984,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\u0010\ufffd\u0010\ufffd\"\ufffd\ufffd\ufffd","Parent Span ID":"","Start Time":1729780222.836111,"End Time":1729780222.841239}
+{"level":"info","ts":1729780225.9010048,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.9010243,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780225.9010363,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\u0014\ufffd\ufffdT\u000fk\ufffd\ufffd","Parent Span ID":"","Start Time":1729780222.8434994,"End Time":1729780222.8493764}
+{"level":"info","ts":1729780225.9010484,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.90106,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/1YMWWN1N4O\""}
+{"level":"info","ts":1729780225.9010916,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd;\ufffd\u000b\u00081l","Parent Span ID":"","Start Time":1729780222.8497992,"End Time":1729780222.8565278}
+{"level":"info","ts":1729780225.9011235,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.901141,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780225.9012046,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"\ufffd\ufffd\ufffd\ufffdG#\u000fd","Parent Span ID":"","Start Time":1729780222.8569996,"End Time":1729780222.8617558}
+{"level":"info","ts":1729780225.9012268,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780225.9012926,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/checkout\""}
+{"level":"info","ts":1729780225.9013233,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd)\ufffd\ufffd\u0001\\","Parent Span ID":"","Start Time":1729780224.5650716,"End Time":1729780224.5721881}
+{"level":"info","ts":1729780225.9013495,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.9013782,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/2ZYFJ3GM2N\""}
+{"level":"info","ts":1729780225.9013972,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd>\ufffdW\u0017\ufffdB]","Parent Span ID":"","Start Time":1729780224.6531465,"End Time":1729780224.6584673}
+{"level":"info","ts":1729780225.9014225,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780225.901438,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/recommendations?productIds=1YMWWN1N4O\""}
+{"level":"info","ts":1729780228.5063307,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780228.5064676,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780228.5065773,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\u00033\ufffdW\ufffdb\ufffd","Parent Span ID":"\ufffd\ufffdG\u000ct\ufffdlE","Start Time":1729780225.8452804,"End Time":1729780225.8453734}
+{"level":"info","ts":1729780228.5065935,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffdgG \ufffd\u0018\ufffd\ufffd","Parent Span ID":"\ufffd6\ufffdK\ufffd\u0005\u001fw","Start Time":1729780228.1651177,"End Time":1729780228.1651447}
+{"level":"info","ts":1729780228.506597,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780228.506607,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffdG\u000ct\ufffdlE","Parent Span ID":"\ufffdsB\ufffd>\ufffdo\ufffd","Start Time":1729780225.8451529,"End Time":1729780225.8457365}
+{"level":"info","ts":1729780228.5066104,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780228.5066466,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780228.506652,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780228.506655,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd6\ufffdK\ufffd\u0005\u001fw","Parent Span ID":"\u0001\ufffdO\ufffd98\ufffd&","Start Time":1729780228.1650915,"End Time":1729780228.165229}
+{"level":"info","ts":1729780228.506658,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780228.5066636,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780228.5066667,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780228.5066698,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780228.5066833,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffdsB\ufffd>\ufffdo\ufffd","Parent Span ID":"","Start Time":1729780225.8449554,"End Time":1729780225.84586}
+{"level":"info","ts":1729780228.5066874,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780228.5066917,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780228.5067072,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780228.5067258,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780228.5067291,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780228.5067317,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780228.5067387,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\u0001\ufffdO\ufffd98\ufffd&","Parent Span ID":"","Start Time":1729780228.1650767,"End Time":1729780228.1652732}
+{"level":"info","ts":1729780228.5067425,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780228.5067601,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780228.5067692,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780228.5067794,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780228.5067825,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780228.506785,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780230.9199383,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780230.9199946,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780230.9200115,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd|\ufffdG\ufffd\ufffd)","Parent Span ID":"","Start Time":1729780227.6678965,"End Time":1729780227.682862}
+{"level":"info","ts":1729780230.9200158,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780230.920028,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/OLJCESPC7Z\""}
+{"level":"info","ts":1729780230.9200807,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\n\ufffd\ufffd\ufffd;\ufffdj\ufffd","Parent Span ID":"","Start Time":1729780228.8499799,"End Time":1729780228.8681011}
+{"level":"info","ts":1729780230.9200852,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780230.9200895,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780230.920092,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffdp\u0006C\ufffd\ufffd","Parent Span ID":"","Start Time":1729780229.0947022,"End Time":1729780229.1022062}
+{"level":"info","ts":1729780230.9200945,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780230.9200969,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/0PUK6V6EV0\""}
+{"level":"info","ts":1729780230.9200993,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd\u000fd3\ufffd.","Parent Span ID":"","Start Time":1729780230.339093,"End Time":1729780230.3492007}
+{"level":"info","ts":1729780230.9201014,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780230.9201038,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780235.774864,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780235.775412,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780235.7759557,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd`\ufffdЦ\ufffd","Parent Span ID":"","Start Time":1729780233.0952897,"End Time":1729780233.1004186}
+{"level":"info","ts":1729780235.776012,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780235.7761774,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/9SIQT8TOJO\""}
+{"level":"info","ts":1729780235.7762065,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"R\ufffd0a\ufffd\r;\ufffd","Parent Span ID":"","Start Time":1729780233.1009283,"End Time":1729780233.104545}
+{"level":"info","ts":1729780235.7762146,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780235.7762227,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780235.7762816,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdt\u0000P\ufffd\ufffd)","Parent Span ID":"","Start Time":1729780233.5038767,"End Time":1729780233.5216641}
+{"level":"info","ts":1729780235.776294,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780235.7763608,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=binoculars\""}
+{"level":"info","ts":1729780240.806146,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780240.8064158,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780240.8066308,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffdȧ^2\"","Parent Span ID":"","Start Time":1729780235.83911,"End Time":1729780235.8644004}
+{"level":"info","ts":1729780240.8066542,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780240.8067253,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/66VCHSJNUP\""}
+{"level":"info","ts":1729780240.8067381,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"+\ufffd#\ufffd\ufffd\u001b\ufffd2","Parent Span ID":"","Start Time":1729780235.8663633,"End Time":1729780235.871284}
+{"level":"info","ts":1729780240.8067412,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780240.8067443,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780240.8067467,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd>\ufffd\ufffdq\r","Parent Span ID":"","Start Time":1729780236.6042686,"End Time":1729780236.6139035}
+{"level":"info","ts":1729780240.8067486,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780240.8067515,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/OLJCESPC7Z\""}
+{"level":"info","ts":1729780240.8067572,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd\ufffdP6\ufffd\ufffd","Parent Span ID":"","Start Time":1729780237.651947,"End Time":1729780237.6630356}
+{"level":"info","ts":1729780240.8067596,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780240.8067625,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/2ZYFJ3GM2N\""}
+{"level":"info","ts":1729780240.8067675,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffdr\ufffdX\ufffd\ufffd\u001f","Parent Span ID":"","Start Time":1729780239.5327551,"End Time":1729780239.5552042}
+{"level":"info","ts":1729780240.8067884,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780240.8067932,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/OLJCESPC7Z\""}
+{"level":"info","ts":1729780243.6276746,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780243.6281219,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780243.628404,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd\u0012\ufffd\ufffd\u0015\ufffd\u0010","Parent Span ID":"2g\ufffdZ<\ufffd{\ufffd","Start Time":1729780238.7355661,"End Time":1729780238.736099}
+{"level":"info","ts":1729780243.6284683,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780243.62853,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"2g\ufffdZ<\ufffd{\ufffd","Parent Span ID":"\u0018ں#\ufffd\ufffdϕ","Start Time":1729780238.735193,"End Time":1729780238.7372146}
+{"level":"info","ts":1729780243.628563,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780243.6286657,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780243.6286995,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780243.6287284,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780243.6287684,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\u0018ں#\ufffd\ufffdϕ","Parent Span ID":"","Start Time":1729780238.7348392,"End Time":1729780238.7375221}
+{"level":"info","ts":1729780243.6287951,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780243.62883,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780243.6288965,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780243.6289334,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780243.6289527,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780243.6289947,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
+{"level":"info","ts":1729780245.8454885,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780245.845678,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780245.8458838,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\\\u0008\u000e\ufffd[2\u0000[","Parent Span ID":"","Start Time":1729780241.1056118,"End Time":1729780241.1129525}
+{"level":"info","ts":1729780245.8463862,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780245.8464189,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/HQTGWGPNH4\""}
+{"level":"info","ts":1729780245.8464465,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"POST","Span ID":"Pa{ \ufffdL\ufffdL","Parent Span ID":"","Start Time":1729780241.1136076,"End Time":1729780241.1200714}
+{"level":"info","ts":1729780245.8464737,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"POST\""}
+{"level":"info","ts":1729780245.84649,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780245.8465037,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"=H\ufffd4\u000b\ufffd\ufffd_","Parent Span ID":"","Start Time":1729780242.2376518,"End Time":1729780242.258793}
+{"level":"info","ts":1729780245.846512,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780245.8465254,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/0PUK6V6EV0\""}
+{"level":"info","ts":1729780245.846539,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd)\ufffd\ufffd\u00132w\ufffd","Parent Span ID":"","Start Time":1729780244.7865312,"End Time":1729780244.8175604}
+{"level":"info","ts":1729780245.846546,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780245.8465528,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780245.8465595,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\u000bk\t?'v","Parent Span ID":"","Start Time":1729780245.6138215,"End Time":1729780245.6403291}
+{"level":"info","ts":1729780245.8465657,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780245.8465726,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780250.9284394,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780250.9289727,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780250.9294596,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"O\n\u0007TV\u0006\ufffd\ufffd","Parent Span ID":"","Start Time":1729780247.7311344,"End Time":1729780247.7528229}
+{"level":"info","ts":1729780250.9295313,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780250.9296286,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/L9ECAV7KIM\""}
+{"level":"info","ts":1729780250.9296494,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"7\ufffd\ufffdo\ufffd\ufffdd{","Parent Span ID":"","Start Time":1729780248.7465796,"End Time":1729780248.756171}
+{"level":"info","ts":1729780250.9296534,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780250.929658,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/cart\""}
+{"level":"info","ts":1729780250.9296606,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\t\ufffd4\ufffd齳","Parent Span ID":"","Start Time":1729780249.2104955,"End Time":1729780249.218502}
+{"level":"info","ts":1729780250.929663,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780250.9296656,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/data/?contextKeys=assembly\""}
+{"level":"info","ts":1729780250.9296684,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd\ufffd\ufffd4\n\ufffd;\ufffd","Parent Span ID":"","Start Time":1729780250.7311652,"End Time":1729780250.7436178}
+{"level":"info","ts":1729780250.9296708,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780250.9296734,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780255.9516401,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"loadgenerator"}
+{"level":"info","ts":1729780255.9519157,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"opentelemetry.instrumentation.requests\" version:\"0.46b0\""}
+{"level":"info","ts":1729780255.9520216,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffd4\ufffd\ufffd\ufffd\ufffd?\ufffd","Parent Span ID":"","Start Time":1729780251.112856,"End Time":1729780251.1189013}
+{"level":"info","ts":1729780255.9521208,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780255.9521644,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780255.9522595,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdr\ufffd\ufffd\ufffd]\ufffd\ufffd","Parent Span ID":"","Start Time":1729780251.5080545,"End Time":1729780251.517008}
+{"level":"info","ts":1729780255.9522796,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780255.9522972,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780255.9523103,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"hv\ufffd\\-oI\ufffd","Parent Span ID":"","Start Time":1729780253.4658778,"End Time":1729780253.4816062}
+{"level":"info","ts":1729780255.952321,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780255.9523535,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/LS4PSXUNUM\""}
+{"level":"info","ts":1729780255.9523757,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"GET","Span ID":"\ufffdy\u0002.\ufffd\ufffd\ufffdR","Parent Span ID":"","Start Time":1729780254.7423623,"End Time":1729780254.7491589}
+{"level":"info","ts":1729780255.9524,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.method","Value":"string_value:\"GET\""}
+{"level":"info","ts":1729780255.9524264,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"http.url","Value":"string_value:\"http://frontend-proxy:8080/api/products/6E92ZMYYFZ\""}
+{"level":"info","ts":1729780258.5656765,"caller":"otel/TraceServiceServerImpl.go:29","msg":"Service Name","service_name":"flagd"}
+{"level":"info","ts":1729780258.5658324,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"jsonEvaluator\""}
+{"level":"info","ts":1729780258.5659802,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd4O\u000e+\ufffdٙ","Parent Span ID":"\ufffd\ufffd-\ufffd[~\ufffd\ufffd","Start Time":1729780256.3827105,"End Time":1729780256.3827903}
+{"level":"info","ts":1729780258.566013,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"flagEvaluationService\""}
+{"level":"info","ts":1729780258.5660214,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"resolveInt","Span ID":"\ufffd\ufffd-\ufffd[~\ufffd\ufffd","Parent Span ID":"\ufffd\ufffd#u-\u0013\ufffdG","Start Time":1729780256.3826652,"End Time":1729780256.3829813}
+{"level":"info","ts":1729780258.566044,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.key","Value":"string_value:\"loadgeneratorFloodHomepage\""}
+{"level":"info","ts":1729780258.5661025,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.variant","Value":"string_value:\"off\""}
+{"level":"info","ts":1729780258.5661118,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"feature_flag.provider_name","Value":"string_value:\"flagd\""}
+{"level":"info","ts":1729780258.5661168,"caller":"otel/TraceServiceServerImpl.go:34","msg":"Instrumentation Library: %v","scope":"name:\"connectrpc.com/otelconnect\" version:\"semver:0.6.0-dev\""}
+{"level":"info","ts":1729780258.5661345,"caller":"otel/TraceServiceServerImpl.go:42","msg":"Processing Span","Span Name":"schema.v1.Service/ResolveInt","Span ID":"\ufffd\ufffd#u-\u0013\ufffdG","Parent Span ID":"","Start Time":1729780256.3825848,"End Time":1729780256.383082}
+{"level":"info","ts":1729780258.5661445,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.name","Value":"string_value:\"172.18.0.25\""}
+{"level":"info","ts":1729780258.5661516,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"net.peer.port","Value":"int_value:43742"}
+{"level":"info","ts":1729780258.566187,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.system","Value":"string_value:\"grpc\""}
+{"level":"info","ts":1729780258.5661998,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.service","Value":"string_value:\"schema.v1.Service\""}
+{"level":"info","ts":1729780258.5662105,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.method","Value":"string_value:\"ResolveInt\""}
+{"level":"info","ts":1729780258.5662153,"caller":"otel/TraceServiceServerImpl.go:51","msg":"Span Attribute","Key":"rpc.grpc.status_code","Value":"int_value:0"}
