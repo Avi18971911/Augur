@@ -47,13 +47,20 @@ func (wbc *WriteBehindCacheImpl) Put(key string, value []model.Span) error {
 			return errors.New("value not of type []model.Span returned from cache when putting")
 		}
 		totalValue := append(typedOldValue, value...)
-		wbc.cache.Set(key, totalValue, int64(len(totalValue)))
+		set := wbc.cache.Set(key, totalValue, int64(len(totalValue)))
+		if !set {
+			return ErrSetFailed
+		}
 	} else {
-		wbc.cache.Set(key, value, int64(len(value)))
+		set := wbc.cache.Set(key, value, int64(len(value)))
+		if !set {
+			return ErrSetFailed
+		}
 	}
 	return nil
 }
 
 var (
 	ErrKeyNotFound = errors.New("key not found within the cache")
+	ErrSetFailed   = errors.New("failed to set value in cache")
 )
