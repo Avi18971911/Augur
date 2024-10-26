@@ -31,25 +31,44 @@ func (tss TraceServiceServerImpl) Export(
 	req *otlp.ExportTraceServiceRequest,
 ) (*otlp.ExportTraceServiceResponse, error) {
 	for _, resourceSpan := range req.ResourceSpans {
-		var serviceName = "Never Assigned"
-		for _, attr := range resourceSpan.Resource.Attributes {
-			if attr.Key == "service.name" {
-				serviceName = attr.Value.GetStringValue()
-			}
+		serviceName := getServiceName(resourceSpan)
+		tss.logger.Info("Service Name", zap.String("service_name", serviceName))
+		if serviceName == "Never Assigned" {
+			tss.logger.Warn("Service name not found in resource span")
 		}
 
-		for _, libSpan := range resourceSpan.ScopeSpans {
-			for _, span := range libSpan.Spans {
-				typedSpan := getTypedSpan(span, serviceName)
-				err := tss.writeBehindCache.Put(typedSpan.SpanID, typedSpan)
-				if err != nil {
-					tss.logger.Error("Failed to put span in cache", zap.Error(err))
-				}
+		typedSpans := getTypedSpans(resourceSpan, serviceName)
+		// we need to group because the spans underneath the same resource span may not have the same trace id
+		groupedSpans := groupTypedSpansByTraceID(typedSpans)
+		for traceID, spans := range groupedSpans {
+			err := tss.writeBehindCache.Put(traceID, spans)
+			if err != nil {
+				tss.logger.Error("Failed to put span in cache", zap.Error(err))
 			}
 		}
 	}
 
 	return &otlp.ExportTraceServiceResponse{}, nil
+}
+
+func getServiceName(resourceSpan *v1.ResourceSpans) string {
+	var serviceName = "Never Assigned"
+	for _, attr := range resourceSpan.Resource.Attributes {
+		if attr.Key == "service.name" {
+			serviceName = attr.Value.GetStringValue()
+		}
+	}
+	return serviceName
+}
+
+func getTypedSpans(resourceSpan *v1.ResourceSpans, serviceName string) []model.Span {
+	var typedSpans []model.Span
+	for _, libSpan := range resourceSpan.ScopeSpans {
+		for _, span := range libSpan.Spans {
+			typedSpans = append(typedSpans, getTypedSpan(span, serviceName))
+		}
+	}
+	return typedSpans
 }
 
 func getTypedSpan(span *v1.Span, serviceName string) model.Span {
@@ -96,4 +115,12 @@ func getAttributes(span *v1.Span) map[string]string {
 		attributes[attribute.Key] = attribute.Value.GetStringValue()
 	}
 	return attributes
+}
+
+func groupTypedSpansByTraceID(spans []model.Span) map[string][]model.Span {
+	groupedSpans := make(map[string][]model.Span)
+	for _, span := range spans {
+		groupedSpans[span.TraceID] = append(groupedSpans[span.TraceID], span)
+	}
+	return groupedSpans
 }

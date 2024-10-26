@@ -18,9 +18,15 @@ func main() {
 		logger.Fatal("Failed to listen: %v", zap.Error(err))
 	}
 
+	writeBehindCache, err := otel.NewWriteBehindCacheImpl()
+	if err != nil {
+		logger.Fatal("Failed to create write-behind cache: %v", zap.Error(err))
+	}
+
 	srv := grpc.NewServer()
 	traceServiceServer := otel.NewTraceServiceServerImpl(
 		logger,
+		writeBehindCache,
 	)
 
 	v1.RegisterTraceServiceServer(srv, traceServiceServer)
