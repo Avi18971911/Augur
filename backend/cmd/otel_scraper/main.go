@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Avi18971911/Augur/pkg/otel"
+	"github.com/dgraph-io/ristretto"
 	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -18,10 +19,15 @@ func main() {
 		logger.Fatal("Failed to listen: %v", zap.Error(err))
 	}
 
-	writeBehindCache, err := otel.NewWriteBehindCacheImpl()
+	cache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 10,
+		MaxCost:     1 << 5,
+		BufferItems: 2,
+	})
 	if err != nil {
-		logger.Fatal("Failed to create write-behind cache: %v", zap.Error(err))
+		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
+	writeBehindCache := otel.NewWriteBehindCacheImpl(cache)
 
 	srv := grpc.NewServer()
 	traceServiceServer := otel.NewTraceServiceServerImpl(
