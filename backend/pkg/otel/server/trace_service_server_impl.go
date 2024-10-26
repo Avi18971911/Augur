@@ -1,8 +1,9 @@
-package otel
+package server
 
 import (
 	"context"
 	"encoding/hex"
+	"github.com/Avi18971911/Augur/pkg/otel"
 	"github.com/Avi18971911/Augur/pkg/otel/model"
 	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
@@ -13,12 +14,12 @@ import (
 type TraceServiceServerImpl struct {
 	otlp.UnimplementedTraceServiceServer
 	logger           *zap.Logger
-	writeBehindCache WriteBehindCache
+	writeBehindCache otel.WriteBehindCache
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache WriteBehindCache,
+	cache otel.WriteBehindCache,
 ) TraceServiceServerImpl {
 	return TraceServiceServerImpl{
 		logger:           logger,

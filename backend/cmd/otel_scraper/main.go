@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Avi18971911/Augur/pkg/otel"
+	"github.com/Avi18971911/Augur/pkg/otel/server"
 	"github.com/dgraph-io/ristretto"
 	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
@@ -30,7 +31,7 @@ func main() {
 	writeBehindCache := otel.NewWriteBehindCacheImpl(cache)
 
 	srv := grpc.NewServer()
-	traceServiceServer := otel.NewTraceServiceServerImpl(
+	traceServiceServer := server.NewTraceServiceServerImpl(
 		logger,
 		writeBehindCache,
 	)
