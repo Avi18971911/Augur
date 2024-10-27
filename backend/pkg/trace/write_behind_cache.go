@@ -2,49 +2,49 @@ package trace
 
 import (
 	"errors"
-	"github.com/Avi18971911/Augur/pkg/trace/model"
+	"fmt"
 	"github.com/dgraph-io/ristretto"
 )
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.
-type WriteBehindCache interface {
-	Get(key string) ([]model.Span, error)
-	Put(key string, value []model.Span) error
+type WriteBehindCache[ValueType interface{}] interface {
+	Get(key string) ([]ValueType, error)
+	Put(key string, value []ValueType) error
 }
 
-type WriteBehindCacheImpl struct {
+type WriteBehindCacheImpl[ValueType interface{}] struct {
 	cache      *ristretto.Cache
-	writeQueue map[string][]model.Span
+	writeQueue map[string][]ValueType
 }
 
-func NewWriteBehindCacheImpl(cache *ristretto.Cache) *WriteBehindCacheImpl {
-	return &WriteBehindCacheImpl{
+func NewWriteBehindCacheImpl[ValueType interface{}](cache *ristretto.Cache) *WriteBehindCacheImpl[ValueType] {
+	return &WriteBehindCacheImpl[ValueType]{
 		cache:      cache,
-		writeQueue: make(map[string][]model.Span),
+		writeQueue: make(map[string][]ValueType),
 	}
 }
 
-func (wbc *WriteBehindCacheImpl) Get(key string) ([]model.Span, error) {
+func (wbc *WriteBehindCacheImpl[ValueType]) Get(key string) ([]ValueType, error) {
 	value, found := wbc.cache.Get(key)
 	if !found {
 		return nil, ErrKeyNotFound
 	}
-	typedValue, ok := value.([]model.Span)
+	typedValue, ok := value.([]ValueType)
 	if !ok {
-		return nil, errors.New("value not of type []model.Span returned from cache when getting")
+		return nil, fmt.Errorf("value not of expected type %T returned from cache when getting", value)
 	}
 
 	return typedValue, nil
 }
 
-func (wbc *WriteBehindCacheImpl) Put(key string, value []model.Span) error {
+func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) error {
 	wbc.writeQueue[key] = append(wbc.writeQueue[key], value...)
 	oldValue, found := wbc.cache.Get(key)
 	if found {
-		typedOldValue, ok := oldValue.([]model.Span)
+		typedOldValue, ok := oldValue.([]ValueType)
 		if !ok {
-			return errors.New("value not of type []model.Span returned from cache when putting")
+			return fmt.Errorf("value not of expected type %T returned from cache when putting", value)
 		}
 		totalValue := append(typedOldValue, value...)
 		set := wbc.cache.Set(key, totalValue, int64(len(totalValue)))

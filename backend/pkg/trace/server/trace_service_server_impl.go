@@ -14,12 +14,12 @@ import (
 type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
 	logger           *zap.Logger
-	writeBehindCache trace.WriteBehindCache
+	writeBehindCache trace.WriteBehindCache[model.Span]
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache trace.WriteBehindCache,
+	cache trace.WriteBehindCache[model.Span],
 ) TraceServiceServerImpl {
 	logger.Info("Creating new TraceServiceServerImpl")
 	return TraceServiceServerImpl{
@@ -34,7 +34,6 @@ func (tss TraceServiceServerImpl) Export(
 ) (*protoTrace.ExportTraceServiceResponse, error) {
 	for _, resourceSpan := range req.ResourceSpans {
 		serviceName := getServiceName(resourceSpan)
-		tss.logger.Info("Service Name", zap.String("service_name", serviceName))
 		if serviceName == "Never Assigned" {
 			tss.logger.Warn("Service name not found in resource span")
 		}
