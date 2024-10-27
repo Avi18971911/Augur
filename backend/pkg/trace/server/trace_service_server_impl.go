@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"encoding/hex"
-	"github.com/Avi18971911/Augur/pkg/trace"
+	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
@@ -14,12 +14,12 @@ import (
 type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
 	logger           *zap.Logger
-	writeBehindCache trace.WriteBehindCache[model.Span]
+	writeBehindCache cache.WriteBehindCache[model.Span]
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache trace.WriteBehindCache[model.Span],
+	cache cache.WriteBehindCache[model.Span],
 ) TraceServiceServerImpl {
 	logger.Info("Creating new TraceServiceServerImpl")
 	return TraceServiceServerImpl{

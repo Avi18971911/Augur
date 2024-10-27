@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/Avi18971911/Augur/pkg/cache"
+	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
-	"github.com/Avi18971911/Augur/pkg/trace"
+	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
 	"github.com/dgraph-io/ristretto"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -22,7 +24,7 @@ func main() {
 		logger.Fatal("Failed to listen: %v", zap.Error(err))
 	}
 
-	cache, err := ristretto.NewCache(&ristretto.Config{
+	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
 		MaxCost:     1 << 5,
 		BufferItems: 2,
@@ -30,14 +32,28 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
-	writeBehindCache := trace.NewWriteBehindCacheImpl(cache)
+
+	ristrettoLogCache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 10,
+		MaxCost:     1 << 5,
+		BufferItems: 2,
+	})
+	if err != nil {
+		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
+	}
+
+	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](ristrettoTraceCache)
+	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](ristrettoLogCache)
 
 	srv := grpc.NewServer()
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
-		writeBehindCache,
+		writeBehindTraceCache,
 	)
-	logServiceServer := logsServer.NewLogServiceServerImpl(logger)
+	logServiceServer := logsServer.NewLogServiceServerImpl(
+		logger,
+		writeBehindLogCache,
+	)
 
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)

@@ -1,4 +1,4 @@
-package trace
+package cache
 
 import (
 	"errors"
@@ -8,6 +8,8 @@ import (
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.
+// TODO: Remove cache and replace with buffered writes to Elasticsearch DB
+// TOOD: If we want to use cache, use interface to allow for overwrites
 type WriteBehindCache[ValueType interface{}] interface {
 	Get(key string) ([]ValueType, error)
 	Put(key string, value []ValueType) error
