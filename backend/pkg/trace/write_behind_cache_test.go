@@ -1,7 +1,7 @@
-package otel
+package trace
 
 import (
-	"github.com/Avi18971911/Augur/pkg/otel/model"
+	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/dgraph-io/ristretto"
 	"github.com/stretchr/testify/assert"
 	"testing"

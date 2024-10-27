@@ -1,8 +1,8 @@
-package otel
+package trace
 
 import (
 	"errors"
-	"github.com/Avi18971911/Augur/pkg/otel/model"
+	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/dgraph-io/ristretto"
 )
 

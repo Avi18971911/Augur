@@ -3,24 +3,25 @@ package server
 import (
 	"context"
 	"encoding/hex"
-	"github.com/Avi18971911/Augur/pkg/otel"
-	"github.com/Avi18971911/Augur/pkg/otel/model"
-	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	"github.com/Avi18971911/Augur/pkg/trace"
+	"github.com/Avi18971911/Augur/pkg/trace/model"
+	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"go.uber.org/zap"
 	"time"
 )
 
 type TraceServiceServerImpl struct {
-	otlp.UnimplementedTraceServiceServer
+	protoTrace.UnimplementedTraceServiceServer
 	logger           *zap.Logger
-	writeBehindCache otel.WriteBehindCache
+	writeBehindCache trace.WriteBehindCache
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache otel.WriteBehindCache,
+	cache trace.WriteBehindCache,
 ) TraceServiceServerImpl {
+	logger.Info("Creating new TraceServiceServerImpl")
 	return TraceServiceServerImpl{
 		logger:           logger,
 		writeBehindCache: cache,
@@ -29,8 +30,8 @@ func NewTraceServiceServerImpl(
 
 func (tss TraceServiceServerImpl) Export(
 	ctx context.Context,
-	req *otlp.ExportTraceServiceRequest,
-) (*otlp.ExportTraceServiceResponse, error) {
+	req *protoTrace.ExportTraceServiceRequest,
+) (*protoTrace.ExportTraceServiceResponse, error) {
 	for _, resourceSpan := range req.ResourceSpans {
 		serviceName := getServiceName(resourceSpan)
 		tss.logger.Info("Service Name", zap.String("service_name", serviceName))
@@ -49,7 +50,7 @@ func (tss TraceServiceServerImpl) Export(
 		}
 	}
 
-	return &otlp.ExportTraceServiceResponse{}, nil
+	return &protoTrace.ExportTraceServiceResponse{}, nil
 }
 
 func getServiceName(resourceSpan *v1.ResourceSpans) string {

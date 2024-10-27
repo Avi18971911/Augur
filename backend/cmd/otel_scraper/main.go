@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/Avi18971911/Augur/pkg/otel"
-	"github.com/Avi18971911/Augur/pkg/otel/server"
+	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
+	"github.com/Avi18971911/Augur/pkg/trace"
+	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
 	"github.com/dgraph-io/ristretto"
-	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
+	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
@@ -28,15 +30,17 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
-	writeBehindCache := otel.NewWriteBehindCacheImpl(cache)
+	writeBehindCache := trace.NewWriteBehindCacheImpl(cache)
 
 	srv := grpc.NewServer()
-	traceServiceServer := server.NewTraceServiceServerImpl(
+	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
 		writeBehindCache,
 	)
+	logServiceServer := logsServer.NewLogServiceServerImpl(logger)
 
-	v1.RegisterTraceServiceServer(srv, traceServiceServer)
+	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
+	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
 
 	if err := srv.Serve(listener); err != nil {
