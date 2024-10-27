@@ -11,17 +11,18 @@ type LogServiceServerImpl struct {
 	logger *zap.Logger
 }
 
-func NewLogServiceServerImpl(logger *zap.Logger) LogServiceServerImpl {
+func NewLogServiceServerImpl(logger *zap.Logger) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
-	return LogServiceServerImpl{
+	return &LogServiceServerImpl{
 		logger: logger,
 	}
 }
 
-func (lss LogServiceServerImpl) Export(
+func (lss *LogServiceServerImpl) Export(
 	ctx context.Context,
 	req *protoLogs.ExportLogsServiceRequest,
 ) (*protoLogs.ExportLogsServiceResponse, error) {
+	lss.logger.Info("Exporting logs")
 	for _, resourceLogs := range req.ResourceLogs {
 		lss.logger.Info("Resource Logs", zap.Any("resource_logs", resourceLogs))
 		lss.logger.Info("Resource", zap.Any("resource", resourceLogs.Resource))
