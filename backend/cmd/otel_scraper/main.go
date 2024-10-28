@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Avi18971911/Augur/pkg/cache"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
@@ -21,6 +22,15 @@ func main() {
 	defer logger.Sync()
 
 	es, err := elasticsearch.NewDefaultClient()
+	if err != nil {
+		logger.Fatal("Failed to create elasticsearch client: %v", zap.Error(err))
+	}
+
+	bs := augurElasticsearch.NewBootstrapper(es, logger)
+	err = bs.BootstrapElasticsearch()
+	if err != nil {
+		logger.Fatal("Failed to bootstrap elasticsearch: %v", zap.Error(err))
+	}
 
 	listener, err := net.Listen("tcp", ":4317")
 	if err != nil {

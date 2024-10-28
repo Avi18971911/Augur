@@ -4,7 +4,7 @@ import "time"
 
 type LogEntry struct {
 	Timestamp time.Time `json:"timestamp"`
-	Severity  Level     `json:"level"`
+	Severity  Level     `json:"severity"`
 	Message   string    `json:"message"`
 	Service   string    `json:"service"`
 }
