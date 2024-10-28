@@ -7,6 +7,7 @@ import (
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
 	"github.com/dgraph-io/ristretto"
+	"github.com/elastic/go-elasticsearch/v8"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
@@ -18,6 +19,8 @@ import (
 func main() {
 	logger, err := zap.NewProduction()
 	defer logger.Sync()
+
+	es, err := elasticsearch.NewDefaultClient()
 
 	listener, err := net.Listen("tcp", ":4317")
 	if err != nil {
