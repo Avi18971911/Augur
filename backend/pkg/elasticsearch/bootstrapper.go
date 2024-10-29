@@ -21,11 +21,11 @@ func NewBootstrapper(esClient *elasticsearch.Client, logger *zap.Logger) *Bootst
 }
 
 func (bs *Bootstrapper) BootstrapElasticsearch() error {
-	if err := bs.createTemplate("log_index", logIndex); err != nil {
+	if err := bs.createIndex(LogIndexName, logIndex); err != nil {
 		return fmt.Errorf("error creating index log template: %w", err)
 	}
 
-	if err := bs.createTemplate("span_index", spanIndex); err != nil {
+	if err := bs.createIndex(SpanIndexName, spanIndex); err != nil {
 		return fmt.Errorf("error creating index trace template: %w", err)
 
 	}
@@ -33,28 +33,28 @@ func (bs *Bootstrapper) BootstrapElasticsearch() error {
 	return nil
 }
 
-func (bs *Bootstrapper) createTemplate(
-	templateName string,
-	template map[string]interface{},
+func (bs *Bootstrapper) createIndex(
+	indexName string,
+	index map[string]interface{},
 ) error {
-	body, err := json.Marshal(template)
+	body, err := json.Marshal(index)
 	if err != nil {
-		return fmt.Errorf("error marshaling index template during bootstrap: %w", err)
+		return fmt.Errorf("error marshaling index input during bootstrap: %w", err)
 	}
 
 	res, err := bs.esClient.Indices.Create(
-		templateName,
+		indexName,
 		bs.esClient.Indices.Create.WithBody(strings.NewReader(string(body))),
 	)
 	if err != nil {
-		return fmt.Errorf("error creating index template during bootstrap %s: %w", templateName, err)
+		return fmt.Errorf("error creating index during bootstrap %s: %w", indexName, err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("error response for index template %s: %s", templateName, res.String())
+		return fmt.Errorf("error response for index %s: %s", indexName, res.String())
 	}
 
-	bs.logger.Info("Successfully created index template", zap.String("template_name", templateName))
+	bs.logger.Info("Successfully created index", zap.String("template_name", indexName))
 	return nil
 }

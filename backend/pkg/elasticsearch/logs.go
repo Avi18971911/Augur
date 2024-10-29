@@ -1,5 +1,7 @@
 package elasticsearch
 
+const LogIndexName = "log_index"
+
 var logIndex = map[string]interface{}{
 	"settings": map[string]interface{}{
 		"number_of_shards":   1,

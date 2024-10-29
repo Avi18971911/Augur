@@ -1,5 +1,7 @@
 package elasticsearch
 
+const SpanIndexName = "span_index"
+
 var spanIndex = map[string]interface{}{
 	"settings": map[string]interface{}{
 		"number_of_shards":   1,

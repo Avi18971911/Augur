@@ -23,13 +23,13 @@ func main() {
 
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
-		logger.Fatal("Failed to create elasticsearch client: %v", zap.Error(err))
+		logger.Fatal("Failed to create elasticsearch client", zap.Error(err))
 	}
 
 	bs := augurElasticsearch.NewBootstrapper(es, logger)
 	err = bs.BootstrapElasticsearch()
 	if err != nil {
-		logger.Fatal("Failed to bootstrap elasticsearch: %v", zap.Error(err))
+		logger.Fatal("Failed to bootstrap elasticsearch", zap.Error(err))
 	}
 
 	listener, err := net.Listen("tcp", ":4317")
@@ -55,8 +55,18 @@ func main() {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
 
-	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](ristrettoTraceCache)
-	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](ristrettoLogCache)
+	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
+		ristrettoTraceCache,
+		es,
+		augurElasticsearch.SpanIndexName,
+		logger,
+	)
+	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](
+		ristrettoLogCache,
+		es,
+		augurElasticsearch.LogIndexName,
+		logger,
+	)
 
 	srv := grpc.NewServer()
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
