@@ -3,6 +3,7 @@ package model
 import "time"
 
 type LogEntry struct {
+	Id        string    `json:"_id,omitempty"`
 	Timestamp time.Time `json:"timestamp"`
 	Severity  Level     `json:"severity"`
 	Message   string    `json:"message"`

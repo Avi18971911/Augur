@@ -32,10 +32,10 @@ func (cs *CorrelationService) getConfidenceScore(countInfo countInfo, bucket buc
 	return ((cs.alpha * float64(countInfo.count)) + (cs.beta / float64(bucket))) / float64(countInfo.occurrences)
 }
 
-func (cs *CorrelationService) getConfidenceScores(serviceActionScores map[string]map[bucket]countInfo) {
-	for serviceAction, buckets := range serviceActionScores {
-		for bucket, countInfo := range buckets {
-			serviceActionScores[serviceAction][bucket] = cs.getConfidenceScore(countInfo, bucket)
-		}
-	}
-}
+//func (cs *CorrelationService) getConfidenceScores(serviceActionScores map[string]map[bucket]countInfo) {
+//	for serviceAction, buckets := range serviceActionScores {
+//		for bucket, countInfo := range buckets {
+//			serviceActionScores[serviceAction][bucket] = cs.getConfidenceScore(countInfo, bucket)
+//		}
+//	}
+//}

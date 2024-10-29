@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/log/model"
+	"github.com/Avi18971911/Augur/pkg/log/service"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	v1 "go.opentelemetry.io/proto/otlp/logs/v1"
 	"go.uber.org/zap"
@@ -12,18 +13,21 @@ import (
 
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
-	cache  cache.WriteBehindCache[model.LogEntry]
-	logger *zap.Logger
+	cache        cache.WriteBehindCache[model.LogEntry]
+	logger       *zap.Logger
+	logProcessor service.LogProcessorService
 }
 
 func NewLogServiceServerImpl(
 	logger *zap.Logger,
 	cache cache.WriteBehindCache[model.LogEntry],
+	logProcessor service.LogProcessorService,
 ) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
 	return &LogServiceServerImpl{
-		logger: logger,
-		cache:  cache,
+		logger:       logger,
+		cache:        cache,
+		logProcessor: logProcessor,
 	}
 }
 
@@ -37,7 +41,11 @@ func (lss *LogServiceServerImpl) Export(
 			serviceName := scopeLog.Scope.Name
 			for _, log := range scopeLog.LogRecords {
 				typedLog := typeLog(log, serviceName)
-				err := lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
+				_, err := lss.logProcessor.ParseLogWithMessage(serviceName, typedLog, ctx)
+				if err != nil {
+					lss.logger.Error("Failed to parse log message", zap.Error(err))
+				}
+				err = lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
 				if err != nil {
 					lss.logger.Error("Failed to put log in cache", zap.Error(err))
 				}

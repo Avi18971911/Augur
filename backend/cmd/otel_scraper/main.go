@@ -5,6 +5,7 @@ import (
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
+	"github.com/Avi18971911/Augur/pkg/log/service"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
 	"github.com/dgraph-io/ristretto"
@@ -36,6 +37,8 @@ func main() {
 	if err != nil {
 		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
+
+	logProcessorService := service.NewLogProcessorService(es, logger)
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
@@ -76,6 +79,7 @@ func main() {
 	logServiceServer := logsServer.NewLogServiceServerImpl(
 		logger,
 		writeBehindLogCache,
+		logProcessorService,
 	)
 
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
