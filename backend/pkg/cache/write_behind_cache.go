@@ -8,6 +8,7 @@ import (
 	"github.com/dgraph-io/ristretto"
 	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"
+	"sync"
 )
 
 const WriteQueueSize = 5
@@ -27,6 +28,7 @@ type WriteBehindCacheImpl[ValueType interface{}] struct {
 	es          *elasticsearch.Client
 	esIndexName string
 	logger      *zap.Logger
+	mu          sync.Mutex
 }
 
 func NewWriteBehindCacheImpl[ValueType interface{}](
@@ -58,7 +60,9 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Get(key string) ([]ValueType, error)
 }
 
 func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) error {
+	wbc.mu.Lock()
 	wbc.writeQueue = append(wbc.writeQueue, value...)
+	wbc.mu.Unlock()
 	if len(wbc.writeQueue) > WriteQueueSize {
 		err := wbc.flushToElasticsearch()
 		if err != nil {
@@ -86,6 +90,8 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 }
 
 func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
+	wbc.mu.Lock()
+	defer wbc.mu.Unlock()
 	wbc.logger.Info("Flushing to Elasticsearch")
 	var buf bytes.Buffer
 	for _, doc := range wbc.writeQueue {
