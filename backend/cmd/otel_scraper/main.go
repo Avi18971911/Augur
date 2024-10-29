@@ -23,18 +23,18 @@ func main() {
 
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
-		logger.Fatal("Failed to create elasticsearch client", zap.Error(err))
+		logger.Error("Failed to create elasticsearch client", zap.Error(err))
 	}
 
 	bs := augurElasticsearch.NewBootstrapper(es, logger)
 	err = bs.BootstrapElasticsearch()
 	if err != nil {
-		logger.Fatal("Failed to bootstrap elasticsearch", zap.Error(err))
+		logger.Error("Failed to bootstrap elasticsearch", zap.Error(err))
 	}
 
 	listener, err := net.Listen("tcp", ":4317")
 	if err != nil {
-		logger.Fatal("Failed to listen: %v", zap.Error(err))
+		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
