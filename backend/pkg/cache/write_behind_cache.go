@@ -85,25 +85,23 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 
 func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	wbc.logger.Info("Flushing to Elasticsearch")
-	var bulkData []interface{}
+	wbc.logger.Info("Number of items in write queue", zap.Int("count", len(wbc.writeQueue)))
 	for key, docs := range wbc.writeQueue {
+		wbc.logger.Info("Number of items in write queue", zap.Int("count", len(docs)))
 		for _, doc := range docs {
-			bulkData = append(bulkData, map[string]interface{}{"index": map[string]string{}})
-			bulkData = append(bulkData, doc)
+			wbc.logger.Info("Adding doc to elasticsearch", zap.Any("doc", doc))
+			JSON, err := json.Marshal(doc)
+			if err != nil {
+				return fmt.Errorf("error marshaling doc to flush to elastic search: %w", err)
+			}
+			res, err := wbc.es.Index(wbc.esIndexName, bytes.NewReader(JSON))
+			if err != nil {
+				return fmt.Errorf("error flushing to Elasticsearch: %w", err)
+			}
+			wbc.logger.Info("Successfully flushed to Elasticsearch", zap.Any("response", res))
+			res.Body.Close()
 		}
 		delete(wbc.writeQueue, key)
-	}
-
-	bulkJSON, err := json.Marshal(bulkData)
-	if err != nil {
-		return fmt.Errorf("error marshaling bulk data to flush to elastic search: %w", err)
-	}
-
-	res, err := wbc.es.Bulk(bytes.NewReader(bulkJSON), wbc.es.Bulk.WithIndex(wbc.esIndexName))
-	if err != nil {
-		return fmt.Errorf("error flushing to Elasticsearch: %s", err)
-	} else {
-		defer res.Body.Close()
 	}
 	wbc.logger.Info("Successfully flushed to Elasticsearch")
 	return nil
