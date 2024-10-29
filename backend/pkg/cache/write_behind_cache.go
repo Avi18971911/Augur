@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const WriteQueueSize = 5
+
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.
 // TODO: Remove cache and replace with buffered writes to Elasticsearch DB
@@ -21,7 +23,7 @@ type WriteBehindCache[ValueType interface{}] interface {
 
 type WriteBehindCacheImpl[ValueType interface{}] struct {
 	cache       *ristretto.Cache
-	writeQueue  map[string][]ValueType
+	writeQueue  []ValueType
 	es          *elasticsearch.Client
 	esIndexName string
 	logger      *zap.Logger
@@ -35,7 +37,7 @@ func NewWriteBehindCacheImpl[ValueType interface{}](
 ) *WriteBehindCacheImpl[ValueType] {
 	return &WriteBehindCacheImpl[ValueType]{
 		cache:       cache,
-		writeQueue:  make(map[string][]ValueType),
+		writeQueue:  []ValueType{},
 		es:          es,
 		esIndexName: esIndexName,
 		logger:      logger,
@@ -56,8 +58,8 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Get(key string) ([]ValueType, error)
 }
 
 func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) error {
-	wbc.writeQueue[key] = append(wbc.writeQueue[key], value...)
-	if len(wbc.writeQueue) > 100 {
+	wbc.writeQueue = append(wbc.writeQueue, value...)
+	if len(wbc.writeQueue) > WriteQueueSize {
 		err := wbc.flushToElasticsearch()
 		if err != nil {
 			return fmt.Errorf("error flushing to Elasticsearch: %w", err)
@@ -86,25 +88,23 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	wbc.logger.Info("Flushing to Elasticsearch")
 	var buf bytes.Buffer
-	for key, docs := range wbc.writeQueue {
-		for _, doc := range docs {
-			meta := map[string]interface{}{"index": map[string]interface{}{}}
-			metaJSON, err := json.Marshal(meta)
-			if err != nil {
-				return fmt.Errorf("error marshaling meta to flush to elastic search: %w", err)
-			}
-			buf.Write(metaJSON)
-			buf.WriteByte('\n')
-
-			docJSON, err := json.Marshal(doc)
-			if err != nil {
-				return fmt.Errorf("error marshaling doc to flush to elastic search: %w", err)
-			}
-			buf.Write(docJSON)
-			buf.WriteByte('\n')
+	for _, doc := range wbc.writeQueue {
+		meta := map[string]interface{}{"index": map[string]interface{}{}}
+		metaJSON, err := json.Marshal(meta)
+		if err != nil {
+			return fmt.Errorf("error marshaling meta to flush to elastic search: %w", err)
 		}
-		delete(wbc.writeQueue, key)
+		buf.Write(metaJSON)
+		buf.WriteByte('\n')
+
+		docJSON, err := json.Marshal(doc)
+		if err != nil {
+			return fmt.Errorf("error marshaling doc to flush to elastic search: %w", err)
+		}
+		buf.Write(docJSON)
+		buf.WriteByte('\n')
 	}
+	wbc.writeQueue = []ValueType{}
 
 	res, err := wbc.es.Bulk(bytes.NewReader(buf.Bytes()), wbc.es.Bulk.WithIndex(wbc.esIndexName))
 	if err != nil {
