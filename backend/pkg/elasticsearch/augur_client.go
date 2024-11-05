@@ -10,7 +10,7 @@ import (
 )
 
 type AugurClient interface {
-	BulkIndex(data []interface{}, indices []interface{}, index string) error
+	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
 	Index(data interface{}, index string) error
 	Search(query string, index string, ctx context.Context) ([]interface{}, error)
 }
@@ -31,7 +31,7 @@ func (a *AugurClientImpl) BulkIndex(
 	var buf bytes.Buffer
 	for i, d := range data {
 		var meta map[string]interface{}
-		if i < len(metaInfo) {
+		if metaInfo != nil && i < len(metaInfo) {
 			meta = metaInfo[i]
 		} else {
 			// empty meta for bulk index
@@ -66,4 +66,20 @@ func (a *AugurClientImpl) BulkIndex(
 		return fmt.Errorf("bulk index error: %s", res.String())
 	}
 	return nil
+}
+
+func (a *AugurClientImpl) Index(data interface{}, index string) error {
+	return nil
+}
+
+func (a *AugurClientImpl) Search(query string, index string, ctx context.Context) ([]interface{}, error) {
+	return nil, nil
+}
+
+func ToInterfaceSlice[T any](values []T) []interface{} {
+	interfaces := make([]interface{}, len(values))
+	for i, v := range values {
+		interfaces[i] = v
+	}
+	return interfaces
 }

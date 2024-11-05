@@ -58,15 +58,17 @@ func main() {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
 
+	ac := augurElasticsearch.NewAugurClientImpl(es)
+
 	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
 		ristrettoTraceCache,
-		es,
+		ac,
 		augurElasticsearch.SpanIndexName,
 		logger,
 	)
 	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](
 		ristrettoLogCache,
-		es,
+		ac,
 		augurElasticsearch.LogIndexName,
 		logger,
 	)

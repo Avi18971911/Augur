@@ -1,12 +1,10 @@
 package cache
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/dgraph-io/ristretto"
-	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"
 	"sync"
 )
@@ -25,7 +23,7 @@ type WriteBehindCache[ValueType interface{}] interface {
 type WriteBehindCacheImpl[ValueType interface{}] struct {
 	cache       *ristretto.Cache
 	writeQueue  []ValueType
-	es          *elasticsearch.Client
+	ac          augurElasticsearch.AugurClient
 	esIndexName string
 	logger      *zap.Logger
 	mu          sync.Mutex
@@ -33,14 +31,14 @@ type WriteBehindCacheImpl[ValueType interface{}] struct {
 
 func NewWriteBehindCacheImpl[ValueType interface{}](
 	cache *ristretto.Cache,
-	es *elasticsearch.Client,
+	ac augurElasticsearch.AugurClient,
 	esIndexName string,
 	logger *zap.Logger,
 ) *WriteBehindCacheImpl[ValueType] {
 	return &WriteBehindCacheImpl[ValueType]{
 		cache:       cache,
 		writeQueue:  []ValueType{},
-		es:          es,
+		ac:          ac,
 		esIndexName: esIndexName,
 		logger:      logger,
 	}
@@ -93,30 +91,9 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	wbc.mu.Lock()
 	defer wbc.mu.Unlock()
 	wbc.logger.Info("Flushing to Elasticsearch")
-	var buf bytes.Buffer
-	for _, doc := range wbc.writeQueue {
-		meta := map[string]interface{}{"index": map[string]interface{}{}}
-		metaJSON, err := json.Marshal(meta)
-		if err != nil {
-			return fmt.Errorf("error marshaling meta to flush to elastic search: %w", err)
-		}
-		buf.Write(metaJSON)
-		buf.WriteByte('\n')
-
-		docJSON, err := json.Marshal(doc)
-		if err != nil {
-			return fmt.Errorf("error marshaling doc to flush to elastic search: %w", err)
-		}
-		buf.Write(docJSON)
-		buf.WriteByte('\n')
-	}
-	wbc.writeQueue = []ValueType{}
-
-	res, err := wbc.es.Bulk(bytes.NewReader(buf.Bytes()), wbc.es.Bulk.WithIndex(wbc.esIndexName))
+	err := wbc.ac.BulkIndex(augurElasticsearch.ToInterfaceSlice(wbc.writeQueue), nil, wbc.esIndexName)
 	if err != nil {
-		return fmt.Errorf("error flushing to Elasticsearch: %s", err)
-	} else {
-		defer res.Body.Close()
+		return fmt.Errorf("error bulk indexing to Elasticsearch: %w", err)
 	}
 	wbc.logger.Info("Successfully flushed to Elasticsearch")
 	return nil
