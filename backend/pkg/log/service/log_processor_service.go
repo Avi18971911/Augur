@@ -106,6 +106,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
 	totalLogs := augurElasticsearch.ToTypedSlice[model.LogEntry](res)
+	totalLogs = append(totalLogs, log)
 
 	parsedLogs := convertLogMessagesToLCD(totalLogs)
 	lps.logger.Info("Parsed logs", zap.Any("parsedLogs", parsedLogs))
@@ -117,9 +118,11 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 			"message": log.Message,
 		})
 	}
-	err = lps.ac.Update(log.Id, fieldList)
-	if err != nil {
-		return model.LogEntry{}, fmt.Errorf("failed to update similar logs in Elasticsearch: %w", err)
+	if len(fieldList) != 0 {
+		err = lps.ac.Update(log.Id, fieldList)
+		if err != nil {
+			return model.LogEntry{}, fmt.Errorf("failed to update similar logs in Elasticsearch: %w", err)
+		}
 	}
 
 	newLogEntry := parsedLogs[len(parsedLogs)-1]

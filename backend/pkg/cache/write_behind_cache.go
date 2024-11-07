@@ -90,12 +90,10 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	wbc.mu.Lock()
 	defer wbc.mu.Unlock()
-	wbc.logger.Info("Flushing to Elasticsearch")
 	err := wbc.ac.BulkIndex(augurElasticsearch.ToInterfaceSlice(wbc.writeQueue), nil, wbc.esIndexName)
 	if err != nil {
 		return fmt.Errorf("error bulk indexing to Elasticsearch: %w", err)
 	}
-	wbc.logger.Info("Successfully flushed to Elasticsearch")
 	return nil
 }
 

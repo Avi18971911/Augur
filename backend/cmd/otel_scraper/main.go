@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
-	
+
 	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
 		ristrettoTraceCache,
 		ac,
