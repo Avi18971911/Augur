@@ -38,7 +38,8 @@ func main() {
 		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
 
-	logProcessorService := service.NewLogProcessorService(es, logger)
+	ac := augurElasticsearch.NewAugurClientImpl(es)
+	logProcessorService := service.NewLogProcessorService(ac, logger)
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
@@ -57,9 +58,7 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
 	}
-
-	ac := augurElasticsearch.NewAugurClientImpl(es)
-
+	
 	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
 		ristrettoTraceCache,
 		ac,

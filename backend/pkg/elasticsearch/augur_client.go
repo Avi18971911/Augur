@@ -5,14 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/model"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"strings"
+	"time"
 )
+
+const SearchResultSize = 10
 
 type AugurClient interface {
 	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
-	Index(data interface{}, index string) error
+	Index(data interface{}, metaInfo map[string]interface{}, index string) error
 	Search(query string, index string, ctx context.Context) ([]interface{}, error)
+	Update(id string, fieldList []map[string]interface{}) error
 }
 
 type AugurClientImpl struct {
@@ -21,6 +27,43 @@ type AugurClientImpl struct {
 
 func NewAugurClientImpl(es *elasticsearch.Client) *AugurClientImpl {
 	return &AugurClientImpl{es: es}
+}
+
+func (a *AugurClientImpl) Update(
+	id string,
+	fieldList []map[string]interface{},
+) error {
+	var buf bytes.Buffer
+	for _, fields := range fieldList {
+		update := map[string]interface{}{
+			"update": map[string]interface{}{
+				"_id": id,
+			},
+		}
+		metaJSON, err := json.Marshal(update)
+		if err != nil {
+			return fmt.Errorf("error marshaling update: %w", err)
+		}
+		buf.Write(metaJSON)
+		buf.WriteByte('\n')
+
+		fieldJSON, err := json.Marshal(map[string]interface{}{"doc": fields})
+		if err != nil {
+			return fmt.Errorf("error marshaling field to update: %w", err)
+		}
+		buf.Write(fieldJSON)
+		buf.WriteByte('\n')
+	}
+
+	res, err := a.es.Bulk(bytes.NewReader(buf.Bytes()), a.es.Bulk.WithIndex(LogIndexName))
+	if err != nil {
+		return fmt.Errorf("failed to update in Elasticsearch: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("bulk update error: %s", res.String())
+	}
+	return nil
 }
 
 func (a *AugurClientImpl) BulkIndex(
@@ -68,12 +111,43 @@ func (a *AugurClientImpl) BulkIndex(
 	return nil
 }
 
-func (a *AugurClientImpl) Index(data interface{}, index string) error {
-	return nil
+func (a *AugurClientImpl) Index(data interface{}, metaInfo map[string]interface{}, index string) error {
+	return a.BulkIndex([]interface{}{data}, []map[string]interface{}{metaInfo}, index)
 }
 
 func (a *AugurClientImpl) Search(query string, index string, ctx context.Context) ([]interface{}, error) {
-	return nil, nil
+	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	res, err := a.es.Search(
+		a.es.Search.WithContext(esContext),
+		a.es.Search.WithIndex(index),
+		a.es.Search.WithBody(strings.NewReader(query)),
+		a.es.Search.WithPretty(),
+		a.es.Search.WithSize(SearchResultSize),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("failed to execute query: %s", res.String())
+	}
+
+	var esResponse model.EsResponse
+	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	// convert esResponse to source
+	var results []interface{}
+	for _, hit := range esResponse.Hits.HitArray {
+		results = append(results, hit.Source)
+	}
+
+	return results, nil
 }
 
 func ToInterfaceSlice[T any](values []T) []interface{} {
@@ -82,4 +156,12 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 		interfaces[i] = v
 	}
 	return interfaces
+}
+
+func ToTypedSlice[T any](values []interface{}) []T {
+	typed := make([]T, len(values))
+	for i, v := range values {
+		typed[i] = v.(T)
+	}
+	return typed
 }
