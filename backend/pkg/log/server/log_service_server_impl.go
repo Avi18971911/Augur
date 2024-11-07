@@ -41,11 +41,7 @@ func (lss *LogServiceServerImpl) Export(
 			serviceName := scopeLog.Scope.Name
 			for _, log := range scopeLog.LogRecords {
 				typedLog := typeLog(log, serviceName)
-				_, err := lss.logProcessor.ParseLogWithMessage(serviceName, typedLog, ctx)
-				if err != nil {
-					lss.logger.Error("Failed to parse log message", zap.Error(err))
-				}
-				err = lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
+				err := lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
 				if err != nil {
 					lss.logger.Error("Failed to put log in cache", zap.Error(err))
 				}
