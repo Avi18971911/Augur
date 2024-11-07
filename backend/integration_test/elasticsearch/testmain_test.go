@@ -15,17 +15,20 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Failed to create logger: %v", err)
 	}
 	ctx := context.Background()
-	elasticSearchURI, cleanup, err := startElasticSearchContainer(ctx, logger)
+	_, cleanup, err := startElasticSearchContainer(ctx, logger)
 	defer cleanup()
 	if err != nil {
 		logger.Fatal("Failed to start container", zap.Error(err))
 	}
-	es, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{elasticSearchURI},
-	})
+	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
 		logger.Fatal("Failed to create elasticsearch client", zap.Error(err))
 	}
+	info, err := es.Info()
+	if err != nil {
+		logger.Fatal("Failed to get elasticsearch info", zap.Error(err))
+	}
+	log.Printf("Elasticsearch Info: %v", info)
 	code := m.Run()
 	os.Exit(code)
 }

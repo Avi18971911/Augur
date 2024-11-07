@@ -64,7 +64,7 @@ func startElasticSearchContainer(
 		return "", nil, fmt.Errorf("failed to get container port: %w", err)
 	}
 
-	elasticSearchURI = fmt.Sprintf("mongodb://%s:%s", host, p.Port())
+	elasticSearchURI = fmt.Sprintf("elasticsearch://%s:%s", host, p.Port())
 	logger.Info("Elasticsearch URI", zap.String("elasticSearchURI", elasticSearchURI))
 	return elasticSearchURI, stopContainer, nil
 }
