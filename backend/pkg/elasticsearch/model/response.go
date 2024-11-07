@@ -27,8 +27,8 @@ type Total struct {
 }
 
 type HitSource struct {
-	Index  string        `json:"_index"`
-	ID     string        `json:"_id"`
-	Score  float64       `json:"_score"`
-	Source []interface{} `json:"_source"`
+	Index  string                 `json:"_index"`
+	ID     string                 `json:"_id"`
+	Score  float64                `json:"_score"`
+	Source map[string]interface{} `json:"_source"`
 }

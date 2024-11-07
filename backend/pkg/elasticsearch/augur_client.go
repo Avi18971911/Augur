@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/model"
+	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"log"
 	"strings"
 	"time"
 )
@@ -17,8 +19,8 @@ const SearchResultSize = 10
 type AugurClient interface {
 	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
 	Index(data interface{}, metaInfo map[string]interface{}, index string) error
-	Search(query string, index string, ctx context.Context) ([]interface{}, error)
-	Update(id string, fieldList []map[string]interface{}) error
+	Search(query string, index string, ctx context.Context) ([]map[string]interface{}, error)
+	Update(ids []string, fieldList []map[string]interface{}) error
 }
 
 type AugurClientImpl struct {
@@ -30,14 +32,14 @@ func NewAugurClientImpl(es *elasticsearch.Client) *AugurClientImpl {
 }
 
 func (a *AugurClientImpl) Update(
-	id string,
+	ids []string,
 	fieldList []map[string]interface{},
 ) error {
 	var buf bytes.Buffer
-	for _, fields := range fieldList {
+	for i, fields := range fieldList {
 		update := map[string]interface{}{
 			"update": map[string]interface{}{
-				"_id": id,
+				"_id": ids[i],
 			},
 		}
 		metaJSON, err := json.Marshal(update)
@@ -112,10 +114,13 @@ func (a *AugurClientImpl) BulkIndex(
 }
 
 func (a *AugurClientImpl) Index(data interface{}, metaInfo map[string]interface{}, index string) error {
+	if metaInfo == nil {
+		return a.BulkIndex([]interface{}{data}, nil, index)
+	}
 	return a.BulkIndex([]interface{}{data}, []map[string]interface{}{metaInfo}, index)
 }
 
-func (a *AugurClientImpl) Search(query string, index string, ctx context.Context) ([]interface{}, error) {
+func (a *AugurClientImpl) Search(query string, index string, ctx context.Context) ([]map[string]interface{}, error) {
 	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -136,15 +141,28 @@ func (a *AugurClientImpl) Search(query string, index string, ctx context.Context
 		return nil, fmt.Errorf("failed to execute query: %s", res.String())
 	}
 
+	var jsonResponse map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&jsonResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	log.Printf("jsonResponse: %v", jsonResponse)
+
+	jsonData, err := json.Marshal(jsonResponse)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal to JSON: %w", err)
+	}
+
 	var esResponse model.EsResponse
-	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+	if err := json.Unmarshal(jsonData, &esResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response body: %w", err)
 	}
 
 	// convert esResponse to source
-	var results []interface{}
+	var results []map[string]interface{}
 	for _, hit := range esResponse.Hits.HitArray {
 		results = append(results, hit.Source)
+		results[len(results)-1]["_id"] = hit.ID
 	}
 
 	return results, nil
@@ -158,10 +176,43 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 	return interfaces
 }
 
-func ToTypedSlice[T any](values []interface{}) []T {
-	typed := make([]T, len(values))
-	for i, v := range values {
-		typed[i] = v.(T)
+func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, error) {
+	var docs []logModel.LogEntry
+	var err error
+
+	for _, item := range data {
+		doc := logModel.LogEntry{}
+
+		layout := "2006-01-02T15:04:05.000000000Z"
+		timestamp, ok := item["timestamp"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert timestamp to string %s", item["timestamp"])
+		}
+		doc.Timestamp, err = time.Parse(layout, timestamp)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert timestamp to time.Time")
+		}
+
+		severity, ok := item["severity"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert severity to string")
+		}
+		doc.Severity = logModel.Level(severity)
+
+		message, ok := item["message"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert message to string")
+		}
+		doc.Message = message
+
+		service, ok := item["service"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert service to string")
+		}
+		doc.Service = service
+
+		docs = append(docs, doc)
 	}
-	return typed
+
+	return docs, nil
 }
