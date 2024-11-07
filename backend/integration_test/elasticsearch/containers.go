@@ -35,6 +35,10 @@ func startElasticSearchContainer(
 		ExposedPorts: []string{fmt.Sprintf("%s:%s", Port, Port)},
 		WaitingFor:   wait.ForListeningPort(Port),
 		Networks:     []string{networkName},
+		Env: map[string]string{
+			"discovery.type":         "single-node",
+			"xpack.security.enabled": "false",
+		},
 	}
 
 	elasticSearchContainer, err := testcontainers.GenericContainer(childCtx, testcontainers.GenericContainerRequest{
@@ -64,7 +68,7 @@ func startElasticSearchContainer(
 		return "", nil, fmt.Errorf("failed to get container port: %w", err)
 	}
 
-	elasticSearchURI = fmt.Sprintf("elasticsearch://%s:%s", host, p.Port())
+	elasticSearchURI = fmt.Sprintf("http://%s:%s", host, p.Port())
 	logger.Info("Elasticsearch URI", zap.String("elasticSearchURI", elasticSearchURI))
 	return elasticSearchURI, stopContainer, nil
 }
