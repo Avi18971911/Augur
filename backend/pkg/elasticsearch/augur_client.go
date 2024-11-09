@@ -210,6 +210,7 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 			return nil, fmt.Errorf("failed to convert service to string")
 		}
 		doc.Service = service
+		doc.Id = item["_id"].(string)
 
 		docs = append(docs, doc)
 	}

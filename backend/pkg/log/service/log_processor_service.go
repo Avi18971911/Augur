@@ -59,7 +59,9 @@ func findLowestCommonDenominator(logs []model.LogEntry) (string, error) {
 		return "", fmt.Errorf("not enough logs to find lowest common denominator")
 	}
 	firstLog := logs[0]
-	var lcd = strings.Fields(firstLog.Message)
+	var lcd = strings.FieldsFunc(firstLog.Message, func(r rune) bool {
+		return r == ' ' || r == '-' || r == '='
+	})
 	for i := 1; i < len(logs); i++ {
 		currentLog := logs[i]
 		for j := 0; j < len(lcd); j++ {
@@ -91,6 +93,7 @@ func convertLogMessagesToLCD(logs []model.LogEntry) []model.LogEntry {
 	return newLogs
 }
 
+// TODO: Re-write this dumb function to only add a new field, perhaps LogSetId
 func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	service string,
 	log model.LogEntry,
@@ -117,11 +120,11 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	// last log is the new one so don't update it
 	ids := make([]string, len(parsedLogs)-1)
 	fieldList := make([]map[string]interface{}, len(parsedLogs)-1)
-	for _, log := range parsedLogs[:len(parsedLogs)-1] {
-		ids = append(ids, log.Id)
-		fieldList = append(fieldList, map[string]interface{}{
+	for idx, log := range parsedLogs[:len(parsedLogs)-1] {
+		ids[idx] = log.Id
+		fieldList[idx] = map[string]interface{}{
 			"message": log.Message,
-		})
+		}
 	}
 	if len(fieldList) != 0 {
 		err = lps.ac.Update(ids, fieldList)
