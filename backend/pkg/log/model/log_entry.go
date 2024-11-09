@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// TODO: Include TraceId and SpanId
 type LogEntry struct {
 	Id        string    `json:"_id,omitempty"`
 	Timestamp time.Time `json:"timestamp"`
