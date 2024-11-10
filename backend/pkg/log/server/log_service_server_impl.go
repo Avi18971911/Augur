@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/hex"
 	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -55,11 +56,15 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	timestamp := time.Unix(0, int64(log.TimeUnixNano))
 	message := log.Body.GetStringValue()
 	severity := getSeverity(log.SeverityNumber)
+	traceId := hex.EncodeToString(log.TraceId)
+	spanId := hex.EncodeToString(log.SpanId)
 	return model.LogEntry{
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,
 		Service:   serviceName,
+		TraceId:   traceId,
+		SpanId:    spanId,
 	}
 }
 
