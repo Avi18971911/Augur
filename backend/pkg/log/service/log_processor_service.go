@@ -6,8 +6,8 @@ import (
 	"fmt"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"strings"
 )
 
 type LogProcessorService interface {
@@ -54,46 +54,31 @@ func moreLikeThisQueryBuilder(service string, phrase string) map[string]interfac
 	}
 }
 
-func findLowestCommonDenominator(logs []model.LogEntry) (string, error) {
-	if len(logs) <= 1 {
-		return "", fmt.Errorf("not enough logs to find lowest common denominator")
-	}
-	firstLog := logs[0]
-	var lcd = strings.FieldsFunc(firstLog.Message, func(r rune) bool {
-		return r == ' ' || r == '-' || r == '='
-	})
-	for i := 1; i < len(logs); i++ {
-		currentLog := logs[i]
-		for j := 0; j < len(lcd); j++ {
-			lcdWord := lcd[j]
-			if !strings.Contains(currentLog.Message, lcdWord) {
-				lcd = append(lcd[:j], lcd[j+1:]...)
-				j--
-			}
+func getLogsWithClusterId(logs []model.LogEntry) []model.LogEntry {
+	newLogs := make([]model.LogEntry, len(logs))
+	var clusterId string
+	for _, log := range logs {
+		if log.ClusterId != "" {
+			clusterId = log.ClusterId
+			break
 		}
 	}
-	return strings.Join(lcd, " "), nil
-}
-
-func convertLogMessagesToLCD(logs []model.LogEntry) []model.LogEntry {
-	lcd, err := findLowestCommonDenominator(logs)
-	if err != nil {
-		return logs
+	if clusterId == "" {
+		clusterId = uuid.NewString()
 	}
-	newLogs := make([]model.LogEntry, len(logs))
 	for i, log := range logs {
 		newLogs[i] = model.LogEntry{
 			Id:        log.Id,
 			Timestamp: log.Timestamp,
 			Severity:  log.Severity,
-			Message:   lcd,
+			Message:   log.Message,
 			Service:   log.Service,
+			ClusterId: clusterId,
 		}
 	}
 	return newLogs
 }
 
-// TODO: Re-write this dumb function to only add a new field, perhaps LogSetId
 func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	service string,
 	log model.LogEntry,
@@ -114,7 +99,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	}
 	totalLogs = append(totalLogs, log)
 
-	parsedLogs := convertLogMessagesToLCD(totalLogs)
+	parsedLogs := getLogsWithClusterId(totalLogs)
 	lps.logger.Info("Parsed logs", zap.Any("parsedLogs", parsedLogs))
 
 	// last log is the new one so don't update it
@@ -123,7 +108,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	for idx, log := range parsedLogs[:len(parsedLogs)-1] {
 		ids[idx] = log.Id
 		fieldList[idx] = map[string]interface{}{
-			"message": log.Message,
+			"cluster_id": log.ClusterId,
 		}
 	}
 	if len(fieldList) != 0 {

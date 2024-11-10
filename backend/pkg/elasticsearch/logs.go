@@ -21,6 +21,15 @@ var logIndex = map[string]interface{}{
 			"message": map[string]interface{}{
 				"type": "text",
 			},
+			"trace_id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"span_id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"cluster_id": map[string]interface{}{
+				"type": "keyword",
+			},
 		},
 	},
 }

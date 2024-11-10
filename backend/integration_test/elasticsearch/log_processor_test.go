@@ -31,8 +31,7 @@ func TestUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}
-		assert.Equal(t, "[Partition __consumer_offsets broker Log loaded for partition "+
-			"__consumer_offsets with initial high watermark 0", newLog.Message)
+		assert.NotEqual(t, "", newLog.ClusterId)
 	})
 }
 
