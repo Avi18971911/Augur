@@ -31,6 +31,7 @@ func NewAugurClientImpl(es *elasticsearch.Client) *AugurClientImpl {
 	return &AugurClientImpl{es: es}
 }
 
+// TODO: Make functions blocking to avoid race conditions
 func (a *AugurClientImpl) Update(
 	ids []string,
 	fieldList []map[string]interface{},

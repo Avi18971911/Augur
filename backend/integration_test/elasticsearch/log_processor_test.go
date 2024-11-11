@@ -51,13 +51,17 @@ func TestUpdates(t *testing.T) {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}
 		assert.NotEqual(t, "", newLog.ClusterId)
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
 		docs, err := ac.Search(logsQuery, "log_index", 100, ctx)
 		logDocs, err := elasticsearch.ConvertToLogDocuments(docs)
 		assert.Equal(t, 11, len(logDocs))
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
+		}
+		err = deleteAllDocuments(es, "log_index")
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
 		}
 	})
 }

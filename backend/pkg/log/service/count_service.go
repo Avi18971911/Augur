@@ -66,15 +66,15 @@ func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime
 	}
 }
 
-func getTimeRange(logTimeStamp time.Time, bucket bucket) (time.Time, time.Time) {
-	fromTime := logTimeStamp.Add(-time.Duration(bucket / 2))
-	toTime := logTimeStamp.Add(time.Duration(bucket / 2))
+func getTimeRange(logTimeStamp time.Time, bucket Bucket) (time.Time, time.Time) {
+	fromTime := logTimeStamp.Add(-time.Millisecond * time.Duration(bucket/2))
+	toTime := logTimeStamp.Add(time.Millisecond * time.Duration(bucket/2))
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountOccurrences(clusterId string, buckets []bucket) (map[string]CountInfo, error) {
+func (cs *CountService) CountOccurrences(clusterId string, buckets []Bucket) (map[string]CountInfo, error) {
 	ctx := context.Background()
-	matchingLogs, err := cs.getOccurrencesOfClusterId(clusterId, ctx)
+	matchingLogs, err := cs.getInstancesOfClusterId(clusterId, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting matching logs: %w", err)
 	}
@@ -88,15 +88,19 @@ func (cs *CountService) CountOccurrences(clusterId string, buckets []bucket) (ma
 			}
 			coOccurringLogsByClusterId := groupCoOccurringLogsByClusterId(coOccurringLogs)
 			for coOccurringClusterId, groupedCoOccurringLogs := range coOccurringLogsByClusterId {
+				occurrences, err := cs.getOccurrencesOfClusterId(coOccurringClusterId, ctx)
+				if err != nil {
+					return nil, err
+				}
 				if _, ok := countMap[coOccurringClusterId]; !ok {
 					countMap[coOccurringClusterId] = CountInfo{
-						coOccurrences: int64(len(groupedCoOccurringLogs)),
-						occurrences:   int64(len(matchingLogs)),
+						CoOccurrences: occurrences,
+						Occurrences:   int64(len(matchingLogs)),
 					}
 				} else {
 					countMap[coOccurringClusterId] = CountInfo{
-						coOccurrences: int64(len(groupedCoOccurringLogs)) + countMap[coOccurringClusterId].coOccurrences,
-						occurrences:   int64(len(matchingLogs)) + countMap[coOccurringClusterId].occurrences,
+						CoOccurrences: int64(len(groupedCoOccurringLogs)) + countMap[coOccurringClusterId].CoOccurrences,
+						Occurrences:   occurrences + countMap[coOccurringClusterId].Occurrences,
 					}
 				}
 			}
@@ -129,7 +133,7 @@ func (cs *CountService) getCoOccurringLogs(
 			zap.String("clusterId", clusterId),
 			zap.Error(err),
 		)
-		return nil, fmt.Errorf("error searching for count co-occurrences: %w", err)
+		return nil, fmt.Errorf("error searching for count co-Occurrences: %w", err)
 	}
 	coOccurringLogs, err := elasticsearch.ConvertToLogDocuments(res)
 	if err != nil {
@@ -143,7 +147,7 @@ func (cs *CountService) getCoOccurringLogs(
 	return coOccurringLogs, nil
 }
 
-func (cs *CountService) getOccurrencesOfClusterId(
+func (cs *CountService) getInstancesOfClusterId(
 	clusterId string,
 	ctx context.Context,
 ) ([]model.LogEntry, error) {
@@ -165,7 +169,7 @@ func (cs *CountService) getOccurrencesOfClusterId(
 			zap.String("clusterId", clusterId),
 			zap.Error(err),
 		)
-		return nil, fmt.Errorf("error searching for count occurrences: %w", err)
+		return nil, fmt.Errorf("error searching for count Occurrences: %w", err)
 	}
 	searchLogs, err := elasticsearch.ConvertToLogDocuments(res)
 	if err != nil {
@@ -177,6 +181,22 @@ func (cs *CountService) getOccurrencesOfClusterId(
 		return nil, fmt.Errorf("error converting search results to log documents: %w", err)
 	}
 	return searchLogs, nil
+}
+
+func (cs *CountService) getOccurrencesOfClusterId(clusterId string, ctx context.Context) (int64, error) {
+	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	query := countOccurrencesQueryBuilder(clusterId)
+	queryBody, err := json.Marshal(query)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to marshal occurrences query for clusterId",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return 0, fmt.Errorf("error marshaling query: %w", err)
+	}
+	return cs.ac.Count(string(queryBody), elasticsearch.LogIndexName, queryCtx)
 }
 
 func groupCoOccurringLogsByClusterId(logs []model.LogEntry) map[string][]model.LogEntry {
