@@ -9,13 +9,13 @@ const (
 	within1m    bucket = 60000
 )
 
-type countInfo struct {
-	count       int64
-	occurrences int64
+type CountInfo struct {
+	coOccurrences int64
+	occurrences   int64
 }
 
 type CorrelationService struct {
-	// coefficient for count of co-occurrences
+	// coefficient for coOccurrences of co-occurrences
 	alpha float64
 	// coefficient for bucket size
 	beta float64
@@ -28,8 +28,8 @@ func NewCorrelationService() *CorrelationService {
 	}
 }
 
-func (cs *CorrelationService) getConfidenceScore(countInfo countInfo, bucket bucket) float64 {
-	return ((cs.alpha * float64(countInfo.count)) + (cs.beta / float64(bucket))) / float64(countInfo.occurrences)
+func (cs *CorrelationService) getConfidenceScore(countInfo CountInfo, bucket bucket) float64 {
+	return cs.alpha*float64(countInfo.coOccurrences)/float64(countInfo.occurrences) + (cs.beta / float64(bucket))
 }
 
 //func (cs *CorrelationService) getConfidenceScores(serviceActionScores map[string]map[bucket]countInfo) {

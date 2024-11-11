@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const WriteQueueSize = 5
+const WriteQueueSize = 1000
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.

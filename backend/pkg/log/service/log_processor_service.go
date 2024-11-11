@@ -89,7 +89,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 		return model.LogEntry{}, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
 
-	res, err := lps.ac.Search(string(queryBody), augurElasticsearch.LogIndexName, ctx)
+	res, err := lps.ac.Search(string(queryBody), augurElasticsearch.LogIndexName, -1, ctx)
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}

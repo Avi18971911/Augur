@@ -9,7 +9,6 @@ import (
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
-	"log"
 	"strings"
 	"time"
 )
@@ -19,8 +18,9 @@ const SearchResultSize = 10
 type AugurClient interface {
 	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
 	Index(data interface{}, metaInfo map[string]interface{}, index string) error
-	Search(query string, index string, ctx context.Context) ([]map[string]interface{}, error)
+	Search(query string, index string, querySize int, ctx context.Context) ([]map[string]interface{}, error)
 	Update(ids []string, fieldList []map[string]interface{}) error
+	Count(query string, index string, ctx context.Context) (int64, error)
 }
 
 type AugurClientImpl struct {
@@ -120,16 +120,27 @@ func (a *AugurClientImpl) Index(data interface{}, metaInfo map[string]interface{
 	return a.BulkIndex([]interface{}{data}, []map[string]interface{}{metaInfo}, index)
 }
 
-func (a *AugurClientImpl) Search(query string, index string, ctx context.Context) ([]map[string]interface{}, error) {
+func (a *AugurClientImpl) Search(
+	query string,
+	index string,
+	querySize int,
+	ctx context.Context,
+) ([]map[string]interface{}, error) {
 	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	var trueQuerySize int
+	if querySize == -1 {
+		trueQuerySize = SearchResultSize
+	} else {
+		trueQuerySize = querySize
+	}
 
 	res, err := a.es.Search(
 		a.es.Search.WithContext(esContext),
 		a.es.Search.WithIndex(index),
 		a.es.Search.WithBody(strings.NewReader(query)),
 		a.es.Search.WithPretty(),
-		a.es.Search.WithSize(SearchResultSize),
+		a.es.Search.WithSize(trueQuerySize),
 	)
 
 	if err != nil {
@@ -141,24 +152,11 @@ func (a *AugurClientImpl) Search(query string, index string, ctx context.Context
 		return nil, fmt.Errorf("failed to execute query: %s", res.String())
 	}
 
-	var jsonResponse map[string]interface{}
-	if err := json.NewDecoder(res.Body).Decode(&jsonResponse); err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
-	}
-
-	log.Printf("jsonResponse: %v", jsonResponse)
-
-	jsonData, err := json.Marshal(jsonResponse)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal to JSON: %w", err)
-	}
-
 	var esResponse model.EsResponse
-	if err := json.Unmarshal(jsonData, &esResponse); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response body: %w", err)
 	}
 
-	// convert esResponse to source
 	var results []map[string]interface{}
 	for _, hit := range esResponse.Hits.HitArray {
 		results = append(results, hit.Source)
@@ -166,6 +164,34 @@ func (a *AugurClientImpl) Search(query string, index string, ctx context.Context
 	}
 
 	return results, nil
+}
+
+func (a *AugurClientImpl) Count(query string, index string, ctx context.Context) (int64, error) {
+	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	res, err := a.es.Count(
+		a.es.Count.WithContext(esContext),
+		a.es.Count.WithIndex(index),
+		a.es.Count.WithBody(strings.NewReader(query)),
+		a.es.Count.WithPretty(),
+	)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return 0, fmt.Errorf("failed to execute query: %s", res.String())
+	}
+
+	var countResponse model.CountResponse
+	if err := json.NewDecoder(res.Body).Decode(&countResponse); err != nil {
+		return 0, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	return int64(countResponse.Count), nil
 }
 
 func ToInterfaceSlice[T any](values []T) []interface{} {
@@ -176,6 +202,7 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 	return interfaces
 }
 
+// TODO: avoid this cumbersome function by using an elasticsearch client closer to logs
 func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, error) {
 	var docs []logModel.LogEntry
 	var err error
