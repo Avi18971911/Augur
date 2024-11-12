@@ -10,6 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
+const Retries = 30
+const WaitTime = 5
+
 type Bootstrapper struct {
 	esClient *elasticsearch.Client
 	logger   *zap.Logger
@@ -24,7 +27,7 @@ func NewBootstrapper(esClient *elasticsearch.Client, logger *zap.Logger) *Bootst
 
 func (bs *Bootstrapper) BootstrapElasticsearch() error {
 
-	if err := bs.waitForElasticsearch(30, 5*time.Second); err != nil {
+	if err := bs.waitForElasticsearch(Retries, WaitTime*time.Second); err != nil {
 		return fmt.Errorf("failed to connect to Elasticsearch: %w", err)
 	}
 
