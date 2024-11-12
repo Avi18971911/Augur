@@ -119,10 +119,14 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	}
 
 	newLogEntry := parsedLogs[len(parsedLogs)-1]
-	err = lps.ac.Index(newLogEntry, nil, augurElasticsearch.LogIndexName)
-	if err != nil {
-		return model.LogEntry{}, fmt.Errorf("failed to index new log in Elasticsearch: %w", err)
-	}
+
+	/*
+		DISABLE THIS FOR NOW: We want to bulk index logs instead of indexing one by one
+		err = lps.ac.Index(newLogEntry, nil, augurElasticsearch.LogIndexName)
+		if err != nil {
+			return model.LogEntry{}, fmt.Errorf("failed to index new log in Elasticsearch: %w", err)
+		}
+	*/
 
 	return newLogEntry, nil
 }
