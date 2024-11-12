@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net"
+
 	"github.com/Avi18971911/Augur/pkg/cache"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
@@ -15,7 +17,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
-	"net"
 )
 
 func main() {
