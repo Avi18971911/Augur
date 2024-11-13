@@ -16,5 +16,8 @@ elasticdump \
   --output="${DUMP_FILE}" \
   --type=data
 
-echo "Data dump for index '${INDEX_NAME}' saved to ${DUMP_FILE}"
-
+if [ $? -eq 0 ]; then
+  echo "Data dump for index '${INDEX_NAME}' saved to ${DUMP_FILE}"
+else
+  echo "ERROR: Failed to dump data for index '${INDEX_NAME}'."
+fi
