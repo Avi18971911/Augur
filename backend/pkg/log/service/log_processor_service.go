@@ -118,7 +118,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	updateCtx, updateCancel := context.WithTimeout(ctx, lpTimeOut)
 	defer updateCancel()
 	if len(fieldList) != 0 {
-		err = lps.ac.BulkUpdate(updateCtx, ids, fieldList, augurElasticsearch.LogIndexName, nil)
+		err = lps.ac.BulkUpdate(updateCtx, ids, fieldList, augurElasticsearch.LogIndexName)
 		if err != nil {
 			return model.LogEntry{}, fmt.Errorf("failed to update similar logs in Elasticsearch: %w", err)
 		}

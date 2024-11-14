@@ -51,7 +51,7 @@ func deleteAllDocuments(es *elasticsearch.Client, indexName string) error {
 		},
 	}
 	queryJSON, _ := json.Marshal(query)
-	res, err := es.DeleteByQuery([]string{indexName}, bytes.NewReader(queryJSON))
+	res, err := es.DeleteByQuery([]string{indexName}, bytes.NewReader(queryJSON), es.DeleteByQuery.WithRefresh(true))
 	if err != nil {
 		return fmt.Errorf("failed to delete documents by query: %w", err)
 	}

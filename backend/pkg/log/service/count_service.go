@@ -126,7 +126,6 @@ func (cs *CountService) updateOccurrences(
 		string(updateBody),
 		elasticsearch.LogIndexName,
 		clusterId,
-		nil,
 	)
 	if err != nil {
 		cs.logger.Error(

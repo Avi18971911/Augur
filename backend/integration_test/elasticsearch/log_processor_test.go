@@ -35,7 +35,7 @@ func TestUpdates(t *testing.T) {
 		t.Errorf("Failed to load test data: %v", err)
 	}
 
-	ac := elasticsearch.NewAugurClientImpl(es)
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
 	logProcessor := service.NewLogProcessorService(ac, logger)
 	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
 		logService := "kafka.cluster.Partition"
@@ -51,11 +51,10 @@ func TestUpdates(t *testing.T) {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}
 		assert.NotEqual(t, "", newLog.ClusterId)
-		time.Sleep(2 * time.Second)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
 		docs, err := ac.Search(ctx, logsQuery, "log_index", 100)
 		logDocs, err := elasticsearch.ConvertToLogDocuments(docs)
-		assert.Equal(t, 11, len(logDocs))
+		assert.Equal(t, 10, len(logDocs))
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
 		}

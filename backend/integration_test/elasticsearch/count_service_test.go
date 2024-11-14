@@ -15,7 +15,7 @@ func TestCount(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 
-	ac := elasticsearch.NewAugurClientImpl(es)
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
 	countService := service.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
 		numWithinBucket := 4
@@ -41,7 +41,6 @@ func TestCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		time.Sleep(1 * time.Second)
 		buckets := []service.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -82,7 +81,7 @@ func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEnt
 	for i, log := range logs {
 		genericInput[i] = log
 	}
-	err := ac.BulkIndex(ctx, genericInput, nil, elasticsearch.LogIndexName, nil)
+	err := ac.BulkIndex(ctx, genericInput, nil, elasticsearch.LogIndexName)
 	if err != nil {
 		return err
 	}

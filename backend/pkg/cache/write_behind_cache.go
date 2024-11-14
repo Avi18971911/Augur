@@ -100,7 +100,6 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 		augurElasticsearch.ToInterfaceSlice(wbc.writeQueue),
 		nil,
 		wbc.esIndexName,
-		nil,
 	)
 	wbc.writeQueue = []ValueType{}
 	if err != nil {

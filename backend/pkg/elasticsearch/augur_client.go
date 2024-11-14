@@ -26,31 +26,32 @@ const (
 type AugurClient interface {
 	// BulkIndex indexes (inserts) multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkIndex(ctx context.Context, data []interface{}, metaInfo []map[string]interface{}, index string, refreshRate *RefreshRate) error
+	BulkIndex(ctx context.Context, data []interface{}, metaInfo []map[string]interface{}, index string) error
 	// Index indexes (inserts) a single document in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
-	Index(ctx context.Context, data interface{}, metaInfo map[string]interface{}, index string, refreshRate *RefreshRate) error
+	Index(ctx context.Context, data interface{}, metaInfo map[string]interface{}, index string) error
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
 	Search(ctx context.Context, query string, index string, queryResultSize int) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string, refreshRate *RefreshRate) error
+	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
 	// Upsert updates or inserts a document in the index using a script or upsert annotation
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html#upserts
-	Upsert(ctx context.Context, upsertScript string, index string, id string, refreshRate *RefreshRate) error
+	Upsert(ctx context.Context, upsertScript string, index string, id string) error
 	// Count counts the number of documents in the index matching the query
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
 	Count(ctx context.Context, query string, index string) (int64, error)
 }
 
 type AugurClientImpl struct {
-	es *elasticsearch.Client
+	es          *elasticsearch.Client
+	refreshRate string
 }
 
-func NewAugurClientImpl(es *elasticsearch.Client) *AugurClientImpl {
-	return &AugurClientImpl{es: es}
+func NewAugurClientImpl(es *elasticsearch.Client, refreshRate RefreshRate) *AugurClientImpl {
+	return &AugurClientImpl{es: es, refreshRate: string(refreshRate)}
 }
 
 // TODO: Make functions blocking to avoid race conditions
@@ -59,7 +60,6 @@ func (a *AugurClientImpl) BulkUpdate(
 	ids []string,
 	fieldList []map[string]interface{},
 	index string,
-	refreshRate *RefreshRate,
 ) error {
 	var buf bytes.Buffer
 	for i, fields := range fieldList {
@@ -83,12 +83,11 @@ func (a *AugurClientImpl) BulkUpdate(
 		buf.WriteByte('\n')
 	}
 
-	coalescedRefreshRate := getCoalescedRefreshRate(refreshRate)
 	res, err := a.es.Bulk(
 		bytes.NewReader(buf.Bytes()),
 		a.es.Bulk.WithIndex(index),
 		a.es.Bulk.WithContext(ctx),
-		a.es.Bulk.WithRefresh(coalescedRefreshRate),
+		a.es.Bulk.WithRefresh(a.refreshRate),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update in Elasticsearch: %w", err)
@@ -105,7 +104,6 @@ func (a *AugurClientImpl) Upsert(
 	upsertScript string,
 	index string,
 	id string,
-	refreshRate *RefreshRate,
 ) error {
 	var buf bytes.Buffer
 	upsertJSON, err := json.Marshal(upsertScript)
@@ -114,12 +112,11 @@ func (a *AugurClientImpl) Upsert(
 	}
 	buf.Write(upsertJSON)
 
-	coalescedRefreshRate := getCoalescedRefreshRate(refreshRate)
 	res, err := a.es.Update(
 		index, id,
 		bytes.NewReader(buf.Bytes()),
 		a.es.Update.WithContext(ctx),
-		a.es.Update.WithRefresh(coalescedRefreshRate),
+		a.es.Update.WithRefresh(a.refreshRate),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to upsert in Elasticsearch: %w", err)
@@ -136,7 +133,6 @@ func (a *AugurClientImpl) BulkIndex(
 	data []interface{},
 	metaInfo []map[string]interface{},
 	index string,
-	refreshRate *RefreshRate,
 ) error {
 	var buf bytes.Buffer
 	for i, d := range data {
@@ -163,19 +159,18 @@ func (a *AugurClientImpl) BulkIndex(
 	}
 	var res *esapi.Response
 	var err error
-	coalescedRefreshRate := getCoalescedRefreshRate(refreshRate)
 	if len(index) > 0 {
 		res, err = a.es.Bulk(
 			bytes.NewReader(buf.Bytes()),
 			a.es.Bulk.WithIndex(index),
 			a.es.Bulk.WithContext(ctx),
-			a.es.Bulk.WithRefresh(coalescedRefreshRate),
+			a.es.Bulk.WithRefresh(a.refreshRate),
 		)
 	} else {
 		res, err = a.es.Bulk(
 			bytes.NewReader(buf.Bytes()),
 			a.es.Bulk.WithContext(ctx),
-			a.es.Bulk.WithRefresh(coalescedRefreshRate),
+			a.es.Bulk.WithRefresh(a.refreshRate),
 		)
 	}
 	if err != nil {
@@ -193,12 +188,11 @@ func (a *AugurClientImpl) Index(
 	data interface{},
 	metaInfo map[string]interface{},
 	index string,
-	refreshRate *RefreshRate,
 ) error {
 	if metaInfo == nil {
-		return a.BulkIndex(ctx, []interface{}{data}, nil, index, refreshRate)
+		return a.BulkIndex(ctx, []interface{}{data}, nil, index)
 	}
-	return a.BulkIndex(ctx, []interface{}{data}, []map[string]interface{}{metaInfo}, index, refreshRate)
+	return a.BulkIndex(ctx, []interface{}{data}, []map[string]interface{}{metaInfo}, index)
 }
 
 func (a *AugurClientImpl) Search(
@@ -328,12 +322,4 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	}
 
 	return docs, nil
-}
-
-func getCoalescedRefreshRate(refreshRate *RefreshRate) string {
-	if refreshRate == nil {
-		return string(Async)
-	} else {
-		return string(*refreshRate)
-	}
 }
