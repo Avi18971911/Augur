@@ -4,8 +4,6 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.go
     pkgs.git
-    pkgs.nodejs
-    pkgs.nodePackages.npm
   ];
 
   GO_VERSION = "1.22.2";
