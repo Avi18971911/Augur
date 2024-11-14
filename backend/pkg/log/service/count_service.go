@@ -122,10 +122,11 @@ func (cs *CountService) updateOccurrences(
 	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	err = cs.ac.Upsert(
+		upsertCtx,
 		string(updateBody),
 		elasticsearch.LogIndexName,
 		clusterId,
-		upsertCtx,
+		nil,
 	)
 	if err != nil {
 		cs.logger.Error(
@@ -190,7 +191,7 @@ func (cs *CountService) getCoOccurringLogs(
 		)
 		return nil, fmt.Errorf("error marshaling query: %w", err)
 	}
-	res, err := cs.ac.Search(string(queryBody), elasticsearch.LogIndexName, querySize, queryCtx)
+	res, err := cs.ac.Search(queryCtx, string(queryBody), elasticsearch.LogIndexName, querySize)
 	if err != nil {
 		cs.logger.Error(
 			"Failed to search for count co-occurrences",
@@ -226,7 +227,7 @@ func (cs *CountService) getInstancesOfClusterId(
 		)
 		return nil, fmt.Errorf("error marshaling query: %w", err)
 	}
-	res, err := cs.ac.Search(string(queryBody), elasticsearch.LogIndexName, querySize, queryCtx)
+	res, err := cs.ac.Search(queryCtx, string(queryBody), elasticsearch.LogIndexName, querySize)
 	if err != nil {
 		cs.logger.Error(
 			"Failed to search for occurrences",
@@ -260,7 +261,7 @@ func (cs *CountService) getOccurrencesOfClusterId(clusterId string, ctx context.
 		)
 		return 0, fmt.Errorf("error marshaling query: %w", err)
 	}
-	return cs.ac.Count(string(queryBody), elasticsearch.LogIndexName, queryCtx)
+	return cs.ac.Count(queryCtx, string(queryBody), elasticsearch.LogIndexName)
 }
 
 func groupCoOccurringLogsByClusterId(logs []model.LogEntry) map[string][]model.LogEntry {

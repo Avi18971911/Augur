@@ -43,18 +43,25 @@ func TestCount(t *testing.T) {
 		}
 		time.Sleep(1 * time.Second)
 		buckets := []service.Bucket{2500}
-		countInfo, err := countService.CountOccurrences(newLog, buckets, context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		countInfo, err := countService.CountOccurrences(newLog, buckets, ctx)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		relevantCountInfo := countInfo["differentTime"]
 		assert.Equal(t, int64(len(logsOfDifferentTime)), relevantCountInfo.Occurrences)
 		assert.Equal(t, int64(numWithinBucket), relevantCountInfo.CoOccurrences)
-		err = deleteAllDocuments(es, "log_index")
+		err = deleteAllDocuments(es, elasticsearch.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
 	})
+
+	t.Run("should store new entries into the database if nothing else is there", func(t *testing.T) {
+
+	})
+
 }
 
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
@@ -70,10 +77,12 @@ func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs
 
 func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEntry) error {
 	genericInput := make([]interface{}, len(logs))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	for i, log := range logs {
 		genericInput[i] = log
 	}
-	err := ac.BulkIndex(genericInput, nil, "log_index")
+	err := ac.BulkIndex(ctx, genericInput, nil, elasticsearch.LogIndexName, nil)
 	if err != nil {
 		return err
 	}

@@ -96,10 +96,11 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 	err := wbc.ac.BulkIndex(
+		ctx,
 		augurElasticsearch.ToInterfaceSlice(wbc.writeQueue),
 		nil,
 		wbc.esIndexName,
-		ctx,
+		nil,
 	)
 	wbc.writeQueue = []ValueType{}
 	if err != nil {

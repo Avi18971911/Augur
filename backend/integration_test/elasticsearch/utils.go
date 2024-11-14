@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
 	"os"
-	"strings"
 )
 
 func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) error {
@@ -46,13 +45,13 @@ func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) 
 }
 
 func deleteAllDocuments(es *elasticsearch.Client, indexName string) error {
-	query := `{
-		"query": {
-			"match_all": {}
-		}
-	}`
-
-	res, err := es.DeleteByQuery([]string{indexName}, strings.NewReader(query))
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all": map[string]interface{}{},
+		},
+	}
+	queryJSON, _ := json.Marshal(query)
+	res, err := es.DeleteByQuery([]string{indexName}, bytes.NewReader(queryJSON))
 	if err != nil {
 		return fmt.Errorf("failed to delete documents by query: %w", err)
 	}

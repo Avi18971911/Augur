@@ -53,13 +53,13 @@ func TestUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newLog.ClusterId)
 		time.Sleep(2 * time.Second)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
-		docs, err := ac.Search(logsQuery, "log_index", 100, ctx)
+		docs, err := ac.Search(ctx, logsQuery, "log_index", 100)
 		logDocs, err := elasticsearch.ConvertToLogDocuments(docs)
 		assert.Equal(t, 11, len(logDocs))
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
 		}
-		err = deleteAllDocuments(es, "log_index")
+		err = deleteAllDocuments(es, elasticsearch.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
