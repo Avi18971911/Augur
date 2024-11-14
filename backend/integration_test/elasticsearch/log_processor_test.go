@@ -30,14 +30,17 @@ func TestUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
-	err := loadTestDataFromFile(es, "log_index", "data_dump/log_index_array.json")
-	if err != nil {
-		t.Errorf("Failed to load test data: %v", err)
-	}
-
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
 	logProcessor := service.NewLogProcessorService(ac, logger)
 	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
+		err := deleteAllDocuments(es, elasticsearch.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		err = loadTestDataFromFile(es, "log_index", "data_dump/log_index_array.json")
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
 		logService := "kafka.cluster.Partition"
 		ctx := context.Background()
 		logEntry := model.LogEntry{

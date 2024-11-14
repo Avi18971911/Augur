@@ -18,6 +18,10 @@ func TestCount(t *testing.T) {
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
 	countService := service.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
+		err := deleteAllDocuments(es, elasticsearch.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
 		numWithinBucket := 4
 		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
 		newLog := model.LogEntry{
@@ -33,7 +37,7 @@ func TestCount(t *testing.T) {
 				numWithinBucket,
 			)...,
 		)
-		err := loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
