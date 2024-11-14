@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"context"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -42,7 +43,7 @@ func TestCount(t *testing.T) {
 		}
 		time.Sleep(1 * time.Second)
 		buckets := []service.Bucket{2500}
-		countInfo, err := countService.CountOccurrences(newLog, buckets)
+		countInfo, err := countService.CountOccurrences(newLog, buckets, context.Background())
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}

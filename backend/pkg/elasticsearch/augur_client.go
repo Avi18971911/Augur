@@ -18,17 +18,20 @@ const SearchResultSize = 10
 type AugurClient interface {
 	// BulkIndex indexes (inserts) multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
+	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string, ctx context.Context) error
 	// Index indexes (inserts) a single document in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
-	Index(data interface{}, metaInfo map[string]interface{}, index string) error
+	Index(data interface{}, metaInfo map[string]interface{}, index string, ctx context.Context) error
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
 	Search(query string, index string, queryResultSize int, ctx context.Context) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkUpdate(ids []string, fieldList []map[string]interface{}, index string) error
+	BulkUpdate(ids []string, fieldList []map[string]interface{}, index string, ctx context.Context) error
+	// Upsert updates or inserts a document in the index using a script or upsert annotation
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html#upserts
+	Upsert(upsertScript string, index string, id string, ctx context.Context) error
 	// Count counts the number of documents in the index matching the query
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
 	Count(query string, index string, ctx context.Context) (int64, error)
@@ -47,6 +50,7 @@ func (a *AugurClientImpl) BulkUpdate(
 	ids []string,
 	fieldList []map[string]interface{},
 	index string,
+	ctx context.Context,
 ) error {
 	var buf bytes.Buffer
 	for i, fields := range fieldList {
@@ -70,7 +74,11 @@ func (a *AugurClientImpl) BulkUpdate(
 		buf.WriteByte('\n')
 	}
 
-	res, err := a.es.Bulk(bytes.NewReader(buf.Bytes()), a.es.Bulk.WithIndex(index))
+	res, err := a.es.Bulk(
+		bytes.NewReader(buf.Bytes()),
+		a.es.Bulk.WithIndex(index),
+		a.es.Bulk.WithContext(ctx),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to update in Elasticsearch: %w", err)
 	}
@@ -81,10 +89,30 @@ func (a *AugurClientImpl) BulkUpdate(
 	return nil
 }
 
+func (a *AugurClientImpl) Upsert(upsertScript string, index string, id string, ctx context.Context) error {
+	var buf bytes.Buffer
+	upsertJSON, err := json.Marshal(upsertScript)
+	if err != nil {
+		return fmt.Errorf("error marshaling upsert: %w", err)
+	}
+	buf.Write(upsertJSON)
+
+	res, err := a.es.Update(index, id, bytes.NewReader(buf.Bytes()), a.es.Update.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to upsert in Elasticsearch: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("upsert error: %s", res.String())
+	}
+	return nil
+}
+
 func (a *AugurClientImpl) BulkIndex(
 	data []interface{},
 	metaInfo []map[string]interface{},
 	index string,
+	ctx context.Context,
 ) error {
 	var buf bytes.Buffer
 	for i, d := range data {
@@ -112,9 +140,16 @@ func (a *AugurClientImpl) BulkIndex(
 	var res *esapi.Response
 	var err error
 	if len(index) > 0 {
-		res, err = a.es.Bulk(bytes.NewReader(buf.Bytes()), a.es.Bulk.WithIndex(index))
+		res, err = a.es.Bulk(
+			bytes.NewReader(buf.Bytes()),
+			a.es.Bulk.WithIndex(index),
+			a.es.Bulk.WithContext(ctx),
+		)
 	} else {
-		res, err = a.es.Bulk(bytes.NewReader(buf.Bytes()))
+		res, err = a.es.Bulk(
+			bytes.NewReader(buf.Bytes()),
+			a.es.Bulk.WithContext(ctx),
+		)
 	}
 	if err != nil {
 		return fmt.Errorf("error bulk indexing: %w", err)
@@ -126,11 +161,16 @@ func (a *AugurClientImpl) BulkIndex(
 	return nil
 }
 
-func (a *AugurClientImpl) Index(data interface{}, metaInfo map[string]interface{}, index string) error {
+func (a *AugurClientImpl) Index(
+	data interface{},
+	metaInfo map[string]interface{},
+	index string,
+	ctx context.Context,
+) error {
 	if metaInfo == nil {
-		return a.BulkIndex([]interface{}{data}, nil, index)
+		return a.BulkIndex([]interface{}{data}, nil, index, ctx)
 	}
-	return a.BulkIndex([]interface{}{data}, []map[string]interface{}{metaInfo}, index)
+	return a.BulkIndex([]interface{}{data}, []map[string]interface{}{metaInfo}, index, ctx)
 }
 
 func (a *AugurClientImpl) Search(
@@ -139,8 +179,6 @@ func (a *AugurClientImpl) Search(
 	queryResultSize int,
 	ctx context.Context,
 ) ([]map[string]interface{}, error) {
-	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
 	var trueQueryResultSize int
 	if queryResultSize == -1 {
 		trueQueryResultSize = SearchResultSize
@@ -149,7 +187,7 @@ func (a *AugurClientImpl) Search(
 	}
 
 	res, err := a.es.Search(
-		a.es.Search.WithContext(esContext),
+		a.es.Search.WithContext(ctx),
 		a.es.Search.WithIndex(index),
 		a.es.Search.WithBody(strings.NewReader(query)),
 		a.es.Search.WithPretty(),
@@ -180,11 +218,8 @@ func (a *AugurClientImpl) Search(
 }
 
 func (a *AugurClientImpl) Count(query string, index string, ctx context.Context) (int64, error) {
-	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
 	res, err := a.es.Count(
-		a.es.Count.WithContext(esContext),
+		a.es.Count.WithContext(ctx),
 		a.es.Count.WithIndex(index),
 		a.es.Count.WithBody(strings.NewReader(query)),
 		a.es.Count.WithPretty(),

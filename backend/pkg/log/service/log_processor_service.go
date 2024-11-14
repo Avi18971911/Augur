@@ -8,7 +8,10 @@ import (
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"time"
 )
+
+const lpTimeOut = 500 * time.Millisecond
 
 type LogProcessorService interface {
 	ParseLogWithMessage(service string, log model.LogEntry, ctx context.Context) (model.LogEntry, error)
@@ -88,8 +91,9 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
-
-	res, err := lps.ac.Search(string(queryBody), augurElasticsearch.LogIndexName, -1, ctx)
+	queryCtx, queryCancel := context.WithTimeout(ctx, lpTimeOut)
+	defer queryCancel()
+	res, err := lps.ac.Search(string(queryBody), augurElasticsearch.LogIndexName, -1, queryCtx)
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
@@ -111,8 +115,10 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 			"cluster_id": log.ClusterId,
 		}
 	}
+	updateCtx, updateCancel := context.WithTimeout(ctx, lpTimeOut)
+	defer updateCancel()
 	if len(fieldList) != 0 {
-		err = lps.ac.BulkUpdate(ids, fieldList, augurElasticsearch.LogIndexName)
+		err = lps.ac.BulkUpdate(ids, fieldList, augurElasticsearch.LogIndexName, updateCtx)
 		if err != nil {
 			return model.LogEntry{}, fmt.Errorf("failed to update similar logs in Elasticsearch: %w", err)
 		}
