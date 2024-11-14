@@ -72,36 +72,30 @@ func getTimeRange(logTimeStamp time.Time, bucket Bucket) (time.Time, time.Time) 
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountOccurrences(clusterId string, buckets []Bucket) (map[string]CountInfo, error) {
+func (cs *CountService) CountOccurrences(newLog model.LogEntry, buckets []Bucket) (map[string]CountInfo, error) {
 	ctx := context.Background()
-	matchingLogs, err := cs.getInstancesOfClusterId(clusterId, ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error getting matching logs: %w", err)
-	}
 	var countMap = make(map[string]CountInfo)
-	for _, log := range matchingLogs {
-		for _, bucket := range buckets {
-			fromTime, toTime := getTimeRange(log.Timestamp, bucket)
-			coOccurringLogs, err := cs.getCoOccurringLogs(clusterId, fromTime, toTime, ctx)
+	for _, bucket := range buckets {
+		fromTime, toTime := getTimeRange(newLog.Timestamp, bucket)
+		coOccurringLogs, err := cs.getCoOccurringLogs(newLog.ClusterId, fromTime, toTime, ctx)
+		if err != nil {
+			return nil, err
+		}
+		coOccurringLogsByClusterId := groupCoOccurringLogsByClusterId(coOccurringLogs)
+		for coOccurringClusterId, groupedCoOccurringLogs := range coOccurringLogsByClusterId {
+			occurrences, err := cs.getOccurrencesOfClusterId(coOccurringClusterId, ctx)
 			if err != nil {
 				return nil, err
 			}
-			coOccurringLogsByClusterId := groupCoOccurringLogsByClusterId(coOccurringLogs)
-			for coOccurringClusterId, groupedCoOccurringLogs := range coOccurringLogsByClusterId {
-				occurrences, err := cs.getOccurrencesOfClusterId(coOccurringClusterId, ctx)
-				if err != nil {
-					return nil, err
+			if _, ok := countMap[coOccurringClusterId]; !ok {
+				countMap[coOccurringClusterId] = CountInfo{
+					CoOccurrences: int64(len(groupedCoOccurringLogs)),
+					Occurrences:   occurrences,
 				}
-				if _, ok := countMap[coOccurringClusterId]; !ok {
-					countMap[coOccurringClusterId] = CountInfo{
-						CoOccurrences: occurrences,
-						Occurrences:   int64(len(matchingLogs)),
-					}
-				} else {
-					countMap[coOccurringClusterId] = CountInfo{
-						CoOccurrences: int64(len(groupedCoOccurringLogs)) + countMap[coOccurringClusterId].CoOccurrences,
-						Occurrences:   occurrences + countMap[coOccurringClusterId].Occurrences,
-					}
+			} else {
+				countMap[coOccurringClusterId] = CountInfo{
+					CoOccurrences: int64(len(groupedCoOccurringLogs)) + countMap[coOccurringClusterId].CoOccurrences,
+					Occurrences:   occurrences + countMap[coOccurringClusterId].Occurrences,
 				}
 			}
 		}

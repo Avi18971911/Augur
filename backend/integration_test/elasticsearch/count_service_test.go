@@ -17,10 +17,12 @@ func TestCount(t *testing.T) {
 	ac := elasticsearch.NewAugurClientImpl(es)
 	countService := service.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
-		numInitialLogs := 1
 		numWithinBucket := 4
 		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
-		logsOfInitialClusterId := makeLogsOfSameClusterId("initialClusterId", initialTime, numInitialLogs)
+		newLog := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: initialTime,
+		}
 		logsOfDifferentTime := makeLogsOfSameClusterId("differentTime", initialTime.Add(time.Second), numWithinBucket)
 		logsOfDifferentTime = append(
 			logsOfDifferentTime,
@@ -30,7 +32,7 @@ func TestCount(t *testing.T) {
 				numWithinBucket,
 			)...,
 		)
-		err := loadLogsIntoElasticsearch(ac, logsOfInitialClusterId)
+		err := loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
@@ -40,13 +42,13 @@ func TestCount(t *testing.T) {
 		}
 		time.Sleep(1 * time.Second)
 		buckets := []service.Bucket{2500}
-		countInfo, err := countService.CountOccurrences("initialClusterId", buckets)
+		countInfo, err := countService.CountOccurrences(newLog, buckets)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		relevantCountInfo := countInfo["differentTime"]
-		assert.Equal(t, int64(numInitialLogs), relevantCountInfo.Occurrences)
-		assert.Equal(t, int64(numWithinBucket*2), relevantCountInfo.CoOccurrences)
+		assert.Equal(t, int64(len(logsOfDifferentTime)), relevantCountInfo.Occurrences)
+		assert.Equal(t, int64(numWithinBucket), relevantCountInfo.CoOccurrences)
 		err = deleteAllDocuments(es, "log_index")
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
