@@ -30,7 +30,7 @@ func TestUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
 	logProcessor := service.NewLogProcessorService(ac, logger)
 	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
 		err := deleteAllDocuments(es, elasticsearch.LogIndexName)

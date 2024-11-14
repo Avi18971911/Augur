@@ -15,7 +15,7 @@ func TestCount(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
 	countService := service.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
 		err := deleteAllDocuments(es, elasticsearch.LogIndexName)

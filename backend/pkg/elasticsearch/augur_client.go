@@ -18,9 +18,12 @@ const SearchResultSize = 10
 type RefreshRate string
 
 const (
-	Wait      RefreshRate = "wait_for"
+	// Wait for the changes made by the request to be made visible by a refresh before replying.
+	Wait RefreshRate = "wait_for"
+	// Immediate Refresh the relevant primary and replica shards (not the whole index) immediately after the operation occurs.
 	Immediate RefreshRate = "true"
-	Async     RefreshRate = "false"
+	// Async Take no refresh related actions. The changes made by this request will be made visible at some point after the request returns.
+	Async RefreshRate = "false"
 )
 
 type AugurClient interface {
