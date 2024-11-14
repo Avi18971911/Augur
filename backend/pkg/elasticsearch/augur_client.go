@@ -284,12 +284,11 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
-		layout := "2006-01-02T15:04:05.000000000Z"
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert timestamp to string %s", item["timestamp"])
 		}
-		doc.Timestamp, err = time.Parse(layout, timestamp)
+		doc.Timestamp, err = parseTimestamp(timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert timestamp to time.Time")
 		}
@@ -322,4 +321,18 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	}
 
 	return docs, nil
+}
+
+func parseTimestamp(timestamp string) (time.Time, error) {
+	layout := "2006-01-02T15:04:05.000000000Z"
+
+	parts := strings.Split(timestamp, ".")
+	if len(parts) == 2 && len(parts[1]) > 10 {
+		parts[1] = parts[1][:10]
+	} else if len(parts[1]) < 10 {
+		parts[1] = strings.Repeat("0", 10-len(parts[1])) + parts[1]
+	}
+	adjustedTimestamp := strings.Join(parts, ".")
+
+	return time.Parse(layout, adjustedTimestamp)
 }
