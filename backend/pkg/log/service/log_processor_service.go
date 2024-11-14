@@ -112,7 +112,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 		}
 	}
 	if len(fieldList) != 0 {
-		err = lps.ac.Update(ids, fieldList)
+		err = lps.ac.BulkUpdate(ids, fieldList, augurElasticsearch.LogIndexName)
 		if err != nil {
 			return model.LogEntry{}, fmt.Errorf("failed to update similar logs in Elasticsearch: %w", err)
 		}

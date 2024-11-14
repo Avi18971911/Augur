@@ -72,8 +72,65 @@ func getTimeRange(logTimeStamp time.Time, bucket Bucket) (time.Time, time.Time) 
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountOccurrences(newLog model.LogEntry, buckets []Bucket) (map[string]CountInfo, error) {
-	ctx := context.Background()
+func (cs *CountService) CountAndUpdateOccurrences(newLog model.LogEntry, buckets []Bucket, ctx context.Context) error {
+	countMap, err := cs.CountOccurrences(newLog, buckets, ctx)
+	if err != nil {
+		return err
+	}
+	for otherClusterId, countInfo := range countMap {
+		err = cs.updateOccurrences(newLog.ClusterId, otherClusterId, countInfo, ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (cs *CountService) updateOccurrences(
+	clusterId string,
+	otherClusterId string,
+	countInfo CountInfo,
+	ctx context.Context,
+) error {
+	updateStatement := map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
+			"params": map[string]interface{}{
+				"occurrences":    countInfo.Occurrences,
+				"co_occurrences": countInfo.CoOccurrences,
+			},
+		},
+		"upsert": map[string]interface{}{
+			"cluster_id":     clusterId,
+			"co_cluster_id":  otherClusterId,
+			"occurrences":    countInfo.Occurrences,
+			"co_occurrences": countInfo.CoOccurrences,
+		},
+	}
+
+	updateBody, err := json.Marshal(updateStatement)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to marshal update statement",
+			zap.String("clusterId", clusterId),
+			zap.String("otherClusterId", otherClusterId),
+			zap.Error(err),
+		)
+		return fmt.Errorf("error marshaling update statement: %w", err)
+	}
+	err = cs.ac.BulkUpdate(
+		[]string{clusterId + otherClusterId},
+		[]map[string]interface{}{updateStatement},
+		elasticsearch.LogIndexName,
+	)
+	return nil
+}
+
+func (cs *CountService) CountOccurrences(
+	newLog model.LogEntry,
+	buckets []Bucket,
+	ctx context.Context,
+) (map[string]CountInfo, error) {
 	var countMap = make(map[string]CountInfo)
 	for _, bucket := range buckets {
 		fromTime, toTime := getTimeRange(newLog.Timestamp, bucket)

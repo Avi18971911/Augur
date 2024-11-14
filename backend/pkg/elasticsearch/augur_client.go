@@ -16,10 +16,21 @@ import (
 const SearchResultSize = 10
 
 type AugurClient interface {
+	// BulkIndex indexes (inserts) multiple documents in the same index
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkIndex(data []interface{}, metaInfo []map[string]interface{}, index string) error
+	// Index indexes (inserts) a single document in the index
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
 	Index(data interface{}, metaInfo map[string]interface{}, index string) error
-	Search(query string, index string, querySize int, ctx context.Context) ([]map[string]interface{}, error)
-	Update(ids []string, fieldList []map[string]interface{}) error
+	// Search searches for documents in the index
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
+	// queryResultSize is the number of results to return, -1 for default
+	Search(query string, index string, queryResultSize int, ctx context.Context) ([]map[string]interface{}, error)
+	// BulkUpdate updates multiple documents in the same index
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
+	BulkUpdate(ids []string, fieldList []map[string]interface{}, index string) error
+	// Count counts the number of documents in the index matching the query
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
 	Count(query string, index string, ctx context.Context) (int64, error)
 }
 
@@ -32,9 +43,10 @@ func NewAugurClientImpl(es *elasticsearch.Client) *AugurClientImpl {
 }
 
 // TODO: Make functions blocking to avoid race conditions
-func (a *AugurClientImpl) Update(
+func (a *AugurClientImpl) BulkUpdate(
 	ids []string,
 	fieldList []map[string]interface{},
+	index string,
 ) error {
 	var buf bytes.Buffer
 	for i, fields := range fieldList {
@@ -58,7 +70,7 @@ func (a *AugurClientImpl) Update(
 		buf.WriteByte('\n')
 	}
 
-	res, err := a.es.Bulk(bytes.NewReader(buf.Bytes()), a.es.Bulk.WithIndex(LogIndexName))
+	res, err := a.es.Bulk(bytes.NewReader(buf.Bytes()), a.es.Bulk.WithIndex(index))
 	if err != nil {
 		return fmt.Errorf("failed to update in Elasticsearch: %w", err)
 	}
@@ -124,16 +136,16 @@ func (a *AugurClientImpl) Index(data interface{}, metaInfo map[string]interface{
 func (a *AugurClientImpl) Search(
 	query string,
 	index string,
-	querySize int,
+	queryResultSize int,
 	ctx context.Context,
 ) ([]map[string]interface{}, error) {
 	esContext, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	var trueQuerySize int
-	if querySize == -1 {
-		trueQuerySize = SearchResultSize
+	var trueQueryResultSize int
+	if queryResultSize == -1 {
+		trueQueryResultSize = SearchResultSize
 	} else {
-		trueQuerySize = querySize
+		trueQueryResultSize = queryResultSize
 	}
 
 	res, err := a.es.Search(
@@ -141,7 +153,7 @@ func (a *AugurClientImpl) Search(
 		a.es.Search.WithIndex(index),
 		a.es.Search.WithBody(strings.NewReader(query)),
 		a.es.Search.WithPretty(),
-		a.es.Search.WithSize(trueQuerySize),
+		a.es.Search.WithSize(trueQueryResultSize),
 	)
 
 	if err != nil {
