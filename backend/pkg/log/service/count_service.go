@@ -127,6 +127,15 @@ func (cs *CountService) updateOccurrences(
 		clusterId,
 		upsertCtx,
 	)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to upsert occurrences",
+			zap.String("clusterId", clusterId),
+			zap.String("otherClusterId", otherClusterId),
+			zap.Error(err),
+		)
+		return fmt.Errorf("error upserting occurrences: %w", err)
+	}
 	return nil
 }
 
