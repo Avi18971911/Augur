@@ -11,7 +11,7 @@ import (
 )
 
 const querySize = 10000
-const csTimeOut = 1000 * time.Millisecond
+const csTimeOut = 2000 * time.Millisecond
 
 type CountService struct {
 	ac     elasticsearch.AugurClient

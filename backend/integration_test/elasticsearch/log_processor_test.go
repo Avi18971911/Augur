@@ -18,7 +18,7 @@ func TestUpdates(t *testing.T) {
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
 	logProcessor := service.NewLogProcessorService(ac, logger)
 	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
-		err := deleteAllDocuments(es, elasticsearch.LogIndexName)
+		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
@@ -47,7 +47,7 @@ func TestUpdates(t *testing.T) {
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
 		}
-		err = deleteAllDocuments(es, elasticsearch.LogIndexName)
+		err = deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
