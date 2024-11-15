@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const lpTimeOut = 500 * time.Millisecond
+const lpTimeOut = 1000 * time.Millisecond
 
 type LogProcessorService interface {
 	ParseLogWithMessage(service string, log model.LogEntry, ctx context.Context) (model.LogEntry, error)

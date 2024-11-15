@@ -27,7 +27,8 @@ func TestUpdates(t *testing.T) {
 			t.Errorf("Failed to load test data: %v", err)
 		}
 		logService := "kafka.cluster.Partition"
-		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 		logEntry := model.LogEntry{
 			Service: "kafka.cluster.Partition",
 			Message: "[Partition __consumer_offsets-99 broker=2] Log loaded for partition " +
