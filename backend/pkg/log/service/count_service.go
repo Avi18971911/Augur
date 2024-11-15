@@ -11,7 +11,7 @@ import (
 )
 
 const querySize = 10000
-const csTimeOut = 500 * time.Millisecond
+const csTimeOut = 1000 * time.Millisecond
 
 type CountService struct {
 	ac     elasticsearch.AugurClient
@@ -81,8 +81,12 @@ func getTimeRange(logTimeStamp time.Time, bucket Bucket) (time.Time, time.Time) 
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountAndUpdateOccurrences(newLog model.LogEntry, buckets []Bucket, ctx context.Context) error {
-	countMap, err := cs.CountOccurrences(ctx, newLog, buckets)
+func (cs *CountService) CountAndUpdateOccurrences(
+	ctx context.Context,
+	newLog model.LogEntry,
+	buckets []Bucket,
+) error {
+	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, newLog, buckets)
 	if err != nil {
 		return err
 	}
@@ -117,22 +121,12 @@ func (cs *CountService) updateOccurrences(
 		},
 	}
 
-	updateBody, err := json.Marshal(updateStatement)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to marshal update statement",
-			zap.String("clusterId", clusterId),
-			zap.String("otherClusterId", otherClusterId),
-			zap.Error(err),
-		)
-		return fmt.Errorf("error marshaling update statement: %w", err)
-	}
 	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	err = cs.ac.Upsert(
+	err := cs.ac.Upsert(
 		upsertCtx,
-		string(updateBody),
-		elasticsearch.LogIndexName,
+		updateStatement,
+		elasticsearch.CountIndexName,
 		clusterId,
 	)
 	if err != nil {
@@ -147,7 +141,7 @@ func (cs *CountService) updateOccurrences(
 	return nil
 }
 
-func (cs *CountService) CountOccurrences(
+func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	ctx context.Context,
 	newLog model.LogEntry,
 	buckets []Bucket,

@@ -42,7 +42,7 @@ type AugurClient interface {
 	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
 	// Upsert updates or inserts a document in the index using a script or upsert annotation
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html#upserts
-	Upsert(ctx context.Context, upsertScript string, index string, id string) error
+	Upsert(ctx context.Context, upsertScript map[string]interface{}, index string, id string) error
 	// Count counts the number of documents in the index matching the query
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
 	Count(ctx context.Context, query string, index string) (int64, error)
@@ -104,7 +104,7 @@ func (a *AugurClientImpl) BulkUpdate(
 
 func (a *AugurClientImpl) Upsert(
 	ctx context.Context,
-	upsertScript string,
+	upsertScript map[string]interface{},
 	index string,
 	id string,
 ) error {

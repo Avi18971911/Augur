@@ -11,21 +11,6 @@ import (
 	"time"
 )
 
-func getLogsWithClusterIdQuery(clusterId string) string {
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"term": map[string]interface{}{
-				"cluster_id": clusterId,
-			},
-		},
-	}
-	queryBody, err := json.Marshal(query)
-	if err != nil {
-		panic(err)
-	}
-	return string(queryBody)
-}
-
 func TestUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
@@ -66,4 +51,19 @@ func TestUpdates(t *testing.T) {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
 	})
+}
+
+func getLogsWithClusterIdQuery(clusterId string) string {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"term": map[string]interface{}{
+				"cluster_id": clusterId,
+			},
+		},
+	}
+	queryBody, err := json.Marshal(query)
+	if err != nil {
+		panic(err)
+	}
+	return string(queryBody)
 }

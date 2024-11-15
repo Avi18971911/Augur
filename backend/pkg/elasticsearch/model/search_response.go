@@ -1,6 +1,5 @@
 package model
 
-// Structs for parsing the Elasticsearch response
 type EsResponse struct {
 	Took     int       `json:"took"`
 	TimedOut bool      `json:"timed_out"`
