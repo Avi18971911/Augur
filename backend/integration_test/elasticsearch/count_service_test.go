@@ -58,10 +58,6 @@ func TestCount(t *testing.T) {
 		relevantCountInfo := countInfo["differentTime"]
 		assert.Equal(t, int64(len(logsOfDifferentTime)), relevantCountInfo.Occurrences)
 		assert.Equal(t, int64(numWithinBucket), relevantCountInfo.CoOccurrences)
-		err = deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
 	})
 
 	t.Run("should store new entries into the database if nothing else is there", func(t *testing.T) {

@@ -47,10 +47,6 @@ func TestUpdates(t *testing.T) {
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
 		}
-		err = deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
 	})
 }
 
