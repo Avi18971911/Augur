@@ -48,7 +48,7 @@ func TestCount(t *testing.T) {
 		buckets := []service.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		countInfo, err := countService.CountOccurrences(newLog, buckets, ctx)
+		countInfo, err := countService.CountOccurrences(ctx, newLog, buckets)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
