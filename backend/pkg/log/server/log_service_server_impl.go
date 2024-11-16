@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -74,6 +76,7 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	traceId := hex.EncodeToString(log.TraceId)
 	spanId := hex.EncodeToString(log.SpanId)
 	return model.LogEntry{
+		Id:        generateLogId(timestamp, message),
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,
@@ -102,4 +105,10 @@ func getSeverity(severityNumber v1.SeverityNumber) model.Level {
 	default:
 		return model.InfoLevel
 	}
+}
+
+func generateLogId(timeStamp time.Time, message string) string {
+	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), message)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }

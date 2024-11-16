@@ -2,8 +2,6 @@ package cache
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
@@ -97,10 +95,14 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	defer wbc.mu.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
-	err := wbc.ac.BulkIndex(
+	metaMap, dataMap, err := augurElasticsearch.ToMetaAndDataMap(wbc.writeQueue)
+	if err != nil {
+		return fmt.Errorf("error converting write queue to meta and data map: %w", err)
+	}
+	err = wbc.ac.BulkIndex(
 		ctx,
-		augurElasticsearch.ToInterfaceSlice(wbc.writeQueue),
-		nil,
+		dataMap,
+		metaMap,
 		wbc.esIndexName,
 	)
 	wbc.writeQueue = []ValueType{}
@@ -108,12 +110,6 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 		return fmt.Errorf("error bulk indexing to Elasticsearch: %w", err)
 	}
 	return nil
-}
-
-func generateLogId(timeStamp time.Time, message string) string {
-	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), message)
-	hash := sha256.Sum256([]byte(data))
-	return hex.EncodeToString(hash[:])
 }
 
 var (
