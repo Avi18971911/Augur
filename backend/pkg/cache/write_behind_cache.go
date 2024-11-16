@@ -1,15 +1,18 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/zap"
 	"sync"
+	"time"
 )
 
 const WriteQueueSize = 100
+const timeOut = 500 * time.Millisecond
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.
@@ -90,7 +93,14 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 	wbc.mu.Lock()
 	defer wbc.mu.Unlock()
-	err := wbc.ac.BulkIndex(augurElasticsearch.ToInterfaceSlice(wbc.writeQueue), nil, wbc.esIndexName)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+	err := wbc.ac.BulkIndex(
+		ctx,
+		augurElasticsearch.ToInterfaceSlice(wbc.writeQueue),
+		nil,
+		wbc.esIndexName,
+	)
 	wbc.writeQueue = []ValueType{}
 	if err != nil {
 		return fmt.Errorf("error bulk indexing to Elasticsearch: %w", err)

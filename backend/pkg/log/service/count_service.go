@@ -11,6 +11,7 @@ import (
 )
 
 const querySize = 10000
+const csTimeOut = 2000 * time.Millisecond
 
 type CountService struct {
 	ac     elasticsearch.AugurClient
@@ -24,7 +25,7 @@ func NewCountService(ac elasticsearch.AugurClient, logger *zap.Logger) *CountSer
 	}
 }
 
-func countOccurrencesQueryBuilder(clusterId string) map[string]interface{} {
+func countOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime time.Time) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -32,6 +33,14 @@ func countOccurrencesQueryBuilder(clusterId string) map[string]interface{} {
 					{
 						"term": map[string]interface{}{
 							"cluster_id": clusterId,
+						},
+					},
+					{
+						"range": map[string]interface{}{
+							"timestamp": map[string]interface{}{
+								"gte": fromTime,
+								"lte": toTime,
+							},
 						},
 					},
 				},
@@ -72,18 +81,81 @@ func getTimeRange(logTimeStamp time.Time, bucket Bucket) (time.Time, time.Time) 
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountOccurrences(newLog model.LogEntry, buckets []Bucket) (map[string]CountInfo, error) {
-	ctx := context.Background()
+func (cs *CountService) CountAndUpdateOccurrences(
+	ctx context.Context,
+	newLog model.LogEntry,
+	buckets []Bucket,
+) error {
+	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, newLog, buckets)
+	if err != nil {
+		return err
+	}
+	for otherClusterId, countInfo := range countMap {
+		err = cs.updateOccurrences(ctx, newLog.ClusterId, otherClusterId, countInfo)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (cs *CountService) updateOccurrences(
+	ctx context.Context,
+	clusterId string,
+	otherClusterId string,
+	countInfo CountInfo,
+) error {
+	updateStatement := map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
+			"params": map[string]interface{}{
+				"occurrences":    countInfo.Occurrences,
+				"co_occurrences": countInfo.CoOccurrences,
+			},
+		},
+		"upsert": map[string]interface{}{
+			"cluster_id":     clusterId,
+			"co_cluster_id":  otherClusterId,
+			"occurrences":    countInfo.Occurrences,
+			"co_occurrences": countInfo.CoOccurrences,
+		},
+	}
+
+	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
+	defer cancel()
+	err := cs.ac.Upsert(
+		upsertCtx,
+		updateStatement,
+		elasticsearch.CountIndexName,
+		clusterId,
+	)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to upsert occurrences",
+			zap.String("clusterId", clusterId),
+			zap.String("otherClusterId", otherClusterId),
+			zap.Error(err),
+		)
+		return fmt.Errorf("error upserting occurrences: %w", err)
+	}
+	return nil
+}
+
+func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
+	ctx context.Context,
+	newLog model.LogEntry,
+	buckets []Bucket,
+) (map[string]CountInfo, error) {
 	var countMap = make(map[string]CountInfo)
 	for _, bucket := range buckets {
 		fromTime, toTime := getTimeRange(newLog.Timestamp, bucket)
-		coOccurringLogs, err := cs.getCoOccurringLogs(newLog.ClusterId, fromTime, toTime, ctx)
+		coOccurringLogs, err := cs.getCoOccurringLogs(ctx, newLog.ClusterId, fromTime, toTime)
 		if err != nil {
 			return nil, err
 		}
 		coOccurringLogsByClusterId := groupCoOccurringLogsByClusterId(coOccurringLogs)
 		for coOccurringClusterId, groupedCoOccurringLogs := range coOccurringLogsByClusterId {
-			occurrences, err := cs.getOccurrencesOfClusterId(coOccurringClusterId, ctx)
+			occurrences, err := cs.getOccurrencesOfClusterId(ctx, coOccurringClusterId, newLog.Timestamp, bucket)
 			if err != nil {
 				return nil, err
 			}
@@ -104,12 +176,12 @@ func (cs *CountService) CountOccurrences(newLog model.LogEntry, buckets []Bucket
 }
 
 func (cs *CountService) getCoOccurringLogs(
+	ctx context.Context,
 	clusterId string,
 	fromTime time.Time,
 	toTime time.Time,
-	ctx context.Context,
 ) ([]model.LogEntry, error) {
-	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	queryBody, err := json.Marshal(countCoOccurrencesQueryBuilder(clusterId, fromTime, toTime))
 	if err != nil {
@@ -120,7 +192,7 @@ func (cs *CountService) getCoOccurringLogs(
 		)
 		return nil, fmt.Errorf("error marshaling query: %w", err)
 	}
-	res, err := cs.ac.Search(string(queryBody), elasticsearch.LogIndexName, querySize, queryCtx)
+	res, err := cs.ac.Search(queryCtx, string(queryBody), elasticsearch.LogIndexName, querySize)
 	if err != nil {
 		cs.logger.Error(
 			"Failed to search for count co-occurrences",
@@ -141,46 +213,17 @@ func (cs *CountService) getCoOccurringLogs(
 	return coOccurringLogs, nil
 }
 
-func (cs *CountService) getInstancesOfClusterId(
-	clusterId string,
+func (cs *CountService) getOccurrencesOfClusterId(
 	ctx context.Context,
-) ([]model.LogEntry, error) {
-	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	clusterId string,
+	timestamp time.Time,
+	bucket Bucket,
+) (int64, error) {
+	// *2 because we want to search for a decent sized window around the timestamp
+	fromTime, toTime := getTimeRange(timestamp, bucket*2)
+	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	queryBody, err := json.Marshal(countOccurrencesQueryBuilder(clusterId))
-	if err != nil {
-		cs.logger.Error(
-			"Failed to marshal occurrences query for clusterId",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error marshaling query: %w", err)
-	}
-	res, err := cs.ac.Search(string(queryBody), elasticsearch.LogIndexName, querySize, queryCtx)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to search for occurrences",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error searching for count Occurrences: %w", err)
-	}
-	searchLogs, err := elasticsearch.ConvertToLogDocuments(res)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to convert search results to log documents",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error converting search results to log documents: %w", err)
-	}
-	return searchLogs, nil
-}
-
-func (cs *CountService) getOccurrencesOfClusterId(clusterId string, ctx context.Context) (int64, error) {
-	queryCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	query := countOccurrencesQueryBuilder(clusterId)
+	query := countOccurrencesQueryBuilder(clusterId, fromTime, toTime)
 	queryBody, err := json.Marshal(query)
 	if err != nil {
 		cs.logger.Error(
@@ -190,7 +233,7 @@ func (cs *CountService) getOccurrencesOfClusterId(clusterId string, ctx context.
 		)
 		return 0, fmt.Errorf("error marshaling query: %w", err)
 	}
-	return cs.ac.Count(string(queryBody), elasticsearch.LogIndexName, queryCtx)
+	return cs.ac.Count(queryCtx, string(queryBody), elasticsearch.LogIndexName)
 }
 
 func groupCoOccurringLogsByClusterId(logs []model.LogEntry) map[string][]model.LogEntry {

@@ -10,8 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
-const Retries = 30
-const WaitTime = 5
+const retries = 30
+const waitTime = 5
 
 type Bootstrapper struct {
 	esClient *elasticsearch.Client
@@ -27,7 +27,7 @@ func NewBootstrapper(esClient *elasticsearch.Client, logger *zap.Logger) *Bootst
 
 func (bs *Bootstrapper) BootstrapElasticsearch() error {
 
-	if err := bs.waitForElasticsearch(Retries, WaitTime*time.Second); err != nil {
+	if err := bs.waitForElasticsearch(retries, waitTime*time.Second); err != nil {
 		return fmt.Errorf("failed to connect to Elasticsearch: %w", err)
 	}
 
@@ -36,6 +36,10 @@ func (bs *Bootstrapper) BootstrapElasticsearch() error {
 	}
 
 	if err := bs.createIndex(SpanIndexName, spanIndex); err != nil {
+		return fmt.Errorf("error creating index trace template: %w", err)
+	}
+
+	if err := bs.createIndex(CountIndexName, countIndex); err != nil {
 		return fmt.Errorf("error creating index trace template: %w", err)
 	}
 
