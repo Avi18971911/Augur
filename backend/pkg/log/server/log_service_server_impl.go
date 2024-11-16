@@ -49,20 +49,25 @@ func (lss *LogServiceServerImpl) Export(
 			serviceName := scopeLog.Scope.Name
 			for _, log := range scopeLog.LogRecords {
 				typedLog := typeLog(log, serviceName)
-				logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(serviceName, typedLog, ctx)
-				if err != nil {
-					lss.logger.Error("Failed to parse log with message", zap.Error(err))
-					continue
-				}
-				err = lss.cache.Put(logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
-				if err != nil {
-					lss.logger.Error("Failed to put log in cache", zap.Error(err))
-					continue
-				}
-				err = lss.countService.CountAndUpdateOccurrences(ctx, logWithClusterId, buckets)
-				if err != nil {
-					lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
-				}
+
+				go func(typedLog model.LogEntry, serviceName string) {
+					processCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+					logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(processCtx, serviceName, typedLog)
+					if err != nil {
+						lss.logger.Error("Failed to parse log with message", zap.Error(err))
+						return
+					}
+					err = lss.cache.Put(processCtx, logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
+					if err != nil {
+						lss.logger.Error("Failed to put log in cache", zap.Error(err))
+						return
+					}
+					err = lss.countService.CountAndUpdateOccurrences(processCtx, logWithClusterId, buckets)
+					if err != nil {
+						lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
+					}
+				}(typedLog, serviceName)
 			}
 		}
 	}

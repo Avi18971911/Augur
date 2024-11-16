@@ -39,7 +39,7 @@ func main() {
 		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
 
-	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Async)
+	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Wait)
 	logProcessorService := service.NewLogProcessorService(ac, logger)
 	countService := service.NewCountService(ac, logger)
 
