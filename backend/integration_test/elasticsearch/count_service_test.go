@@ -159,13 +159,13 @@ func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs
 }
 
 func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEntry) error {
-	genericInput := make([]interface{}, len(logs))
+	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(logs)
+	if err != nil {
+		return err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	for i, log := range logs {
-		genericInput[i] = log
-	}
-	err := ac.BulkIndex(ctx, genericInput, nil, elasticsearch.LogIndexName)
+	err = ac.BulkIndex(ctx, dataMap, metaMap, elasticsearch.LogIndexName)
 	if err != nil {
 		return err
 	}
