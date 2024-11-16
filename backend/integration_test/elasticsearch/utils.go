@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	augurElastic "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/elastic/go-elasticsearch/v8"
 	"os"
-	"strings"
 )
 
 func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) error {
@@ -45,21 +45,23 @@ func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) 
 	return nil
 }
 
-func deleteAllDocuments(es *elasticsearch.Client, indexName string) error {
-	query := `{
-		"query": {
-			"match_all": {}
-		}
-	}`
+func deleteAllDocuments(es *elasticsearch.Client) error {
+	indexes := []string{augurElastic.LogIndexName, augurElastic.SpanIndexName, augurElastic.CountIndexName}
 
-	res, err := es.DeleteByQuery([]string{indexName}, strings.NewReader(query))
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all": map[string]interface{}{},
+		},
+	}
+	queryJSON, _ := json.Marshal(query)
+	res, err := es.DeleteByQuery(indexes, bytes.NewReader(queryJSON), es.DeleteByQuery.WithRefresh(true))
 	if err != nil {
 		return fmt.Errorf("failed to delete documents by query: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("failed to delete documents in index %s: %s", indexName, res.String())
+		return fmt.Errorf("failed to delete documents in index %s", res.String())
 	}
 	return nil
 }
