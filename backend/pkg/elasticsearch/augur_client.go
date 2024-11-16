@@ -280,39 +280,59 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 	return interfaces
 }
 
+func normalizeTimestampToNanoseconds(timestamp string) string {
+	isUTC := strings.HasSuffix(timestamp, "Z")
+	if isUTC {
+		timestamp = strings.TrimSuffix(timestamp, "Z")
+	}
+
+	parts := strings.SplitN(timestamp, ".", 2)
+	if len(parts) == 2 {
+		fractionalPart := parts[1]
+
+		// 9 digits (nanosecond)
+		if len(fractionalPart) > 9 {
+			fractionalPart = fractionalPart[:9]
+		} else if len(fractionalPart) < 9 {
+			fractionalPart = fractionalPart + strings.Repeat("0", 9-len(fractionalPart))
+		}
+
+		timestamp = parts[0] + "." + fractionalPart
+	}
+
+	if isUTC {
+		timestamp += "Z"
+	}
+	return timestamp
+}
+
 // TODO: avoid this cumbersome function by using an elasticsearch client closer to logs
 func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, error) {
 	var docs []logModel.LogEntry
-	var err error
 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
-		// Try multiple timestamp formats
-		layouts := []string{
-			"2006-01-02T15:04:05.000000000Z", // full format with nanoseconds
-			"2006-01-02T15:04:05.000Z",       // microseconds
-			"2006-01-02T15:04:05Z",           // seconds only
-		}
+		// Nanosecond layout
+		layout := "2006-01-02T15:04:05.000000000Z"
 
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
 		}
 
-		var timestampParsed time.Time
+		fmt.Printf("Timestamp before parsing: '%s'\n", timestamp)
 
-		for _, layout := range layouts {
-			timestampParsed, err = time.Parse(layout, timestamp)
-			if err == nil {
-				doc.Timestamp = timestampParsed
-				break
-			}
-		}
+		timestamp = normalizeTimestampToNanoseconds(timestamp)
 
+		fmt.Printf("Timestamp after parsing: '%s'\n", timestamp)
+
+		timestampParsed, err := time.Parse(layout, timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
 		}
+
+		doc.Timestamp = timestampParsed
 
 		severity, ok := item["severity"].(string)
 		if !ok {
