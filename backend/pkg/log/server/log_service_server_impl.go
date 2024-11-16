@@ -12,23 +12,28 @@ import (
 	"time"
 )
 
+var buckets = []service.Bucket{2500}
+
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
 	cache        cache.WriteBehindCache[model.LogEntry]
 	logger       *zap.Logger
 	logProcessor service.LogProcessorService
+	countService *service.CountService
 }
 
 func NewLogServiceServerImpl(
 	logger *zap.Logger,
 	cache cache.WriteBehindCache[model.LogEntry],
 	logProcessor service.LogProcessorService,
+	countService *service.CountService,
 ) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
 	return &LogServiceServerImpl{
 		logger:       logger,
 		cache:        cache,
 		logProcessor: logProcessor,
+		countService: countService,
 	}
 }
 
@@ -42,14 +47,19 @@ func (lss *LogServiceServerImpl) Export(
 			serviceName := scopeLog.Scope.Name
 			for _, log := range scopeLog.LogRecords {
 				typedLog := typeLog(log, serviceName)
-				err := lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
 				logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(serviceName, typedLog, ctx)
 				if err != nil {
 					lss.logger.Error("Failed to parse log with message", zap.Error(err))
+					continue
 				}
 				err = lss.cache.Put(logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
 				if err != nil {
 					lss.logger.Error("Failed to put log in cache", zap.Error(err))
+					continue
+				}
+				err = lss.countService.CountAndUpdateOccurrences(ctx, logWithClusterId, buckets)
+				if err != nil {
+					lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
 				}
 			}
 		}

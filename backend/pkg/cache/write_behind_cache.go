@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
@@ -106,6 +108,12 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
 		return fmt.Errorf("error bulk indexing to Elasticsearch: %w", err)
 	}
 	return nil
+}
+
+func generateLogId(timeStamp time.Time, message string) string {
+	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), message)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }
 
 var (

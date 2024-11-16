@@ -39,8 +39,9 @@ func main() {
 		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
 
-	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Wait)
+	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Async)
 	logProcessorService := service.NewLogProcessorService(ac, logger)
+	countService := service.NewCountService(ac, logger)
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
@@ -82,6 +83,7 @@ func main() {
 		logger,
 		writeBehindLogCache,
 		logProcessorService,
+		countService,
 	)
 
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
