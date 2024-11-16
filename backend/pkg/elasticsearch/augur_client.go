@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/model"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
-	"strings"
-	"time"
 )
 
 const SearchResultSize = 10
@@ -211,20 +212,37 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
-		layout := "2006-01-02T15:04:05.000000000Z"
+		// Try multiple timestamp formats
+		layouts := []string{
+			"2006-01-02T15:04:05.000000000Z", // full format with nanoseconds
+			"2006-01-02T15:04:05.000Z",       // microseconds
+			"2006-01-02T15:04:05Z",           // seconds only
+		}
+
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert timestamp to string %s", item["timestamp"])
+			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
 		}
-		doc.Timestamp, err = time.Parse(layout, timestamp)
+
+		var timestampParsed time.Time
+
+		for _, layout := range layouts {
+			timestampParsed, err = time.Parse(layout, timestamp)
+			if err == nil {
+				doc.Timestamp = timestampParsed
+				break
+			}
+		}
+
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert timestamp to time.Time")
+			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
 		}
 
 		severity, ok := item["severity"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert severity to string")
 		}
+
 		doc.Severity = logModel.Level(severity)
 
 		message, ok := item["message"].(string)
