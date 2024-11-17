@@ -24,6 +24,7 @@ func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) 
 		delete(doc, "_id")
 		delete(doc, "_index")
 		delete(doc, "_score")
+		delete(doc, "_ignored")
 		// elastic search doesn't like the _source field, need to move it to top-level
 		if source, ok := doc["_source"].(map[string]interface{}); ok {
 			for key, value := range source {

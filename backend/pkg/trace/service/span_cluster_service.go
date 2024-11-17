@@ -99,7 +99,7 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 	if err != nil {
 		return model.Span{}, fmt.Errorf("failed to search for similar spans in Elasticsearch: %w", err)
 	}
-	totalSpans, err := convertToSpanDocuments(res)
+	totalSpans, err := ConvertToSpanDocuments(res)
 	if err != nil {
 		return model.Span{}, fmt.Errorf("failed to convert search results to span documents: %w", err)
 	}
@@ -130,17 +130,15 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 	return newLogEntry, nil
 }
 
-func convertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) {
+func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) {
 	var spans []model.Span
-	var err error
 	for _, hit := range res {
 		doc := model.Span{}
 
 		id, ok := hit["_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert _id to string %s", hit["_id"])
+		if ok {
+			doc.Id = id
 		}
-		doc.Id = id
 
 		spanId, ok := hit["span_id"].(string)
 		if !ok {
@@ -205,24 +203,50 @@ func convertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) 
 		doc.ClusterEvent = clusterEvent
 
 		clusterId, ok := hit["cluster_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert cluster_id to string %s", hit["cluster_id"])
+		if ok {
+			doc.ClusterId = clusterId
 		}
-		doc.ClusterId = clusterId
 
-		attributes, ok := hit["attributes"].(map[string]string)
+		attributes, ok := hit["attributes"].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("failed to convert attributes to map[string]interface{} %s", hit["attributes"])
 		}
-		doc.Attributes = attributes
+		doc.Attributes = typeAttributes(attributes)
 
-		events, ok := hit["events"].([]model.SpanEvent)
+		events, ok := hit["events"].([]interface{})
 		if !ok {
 			return nil, fmt.Errorf("failed to convert events to []map[string]interface{} %s", hit["events"])
 		}
-		doc.Events = events
+		doc.Events = make([]model.SpanEvent, len(events))
+		for i, event := range events {
+			doc.Events[i] = typeEvent(event)
+		}
 
 		spans = append(spans, doc)
 	}
 	return spans, nil
+}
+
+func typeEvent(event interface{}) model.SpanEvent {
+	eventMap := event.(map[string]interface{})
+	eventName := eventMap["name"].(string)
+	eventAttributes := eventMap["attributes"].(map[string]interface{})
+	eventTimestamp := eventMap["timestamp"].(string)
+	eventTimestampParsed, err := augurElasticsearch.ParseTimestamp(eventTimestamp)
+	if err != nil {
+		return model.SpanEvent{}
+	}
+	return model.SpanEvent{
+		Name:       eventName,
+		Attributes: typeAttributes(eventAttributes),
+		Timestamp:  eventTimestampParsed,
+	}
+}
+
+func typeAttributes(attributes map[string]interface{}) map[string]string {
+	typedAttributes := make(map[string]string)
+	for k, v := range attributes {
+		typedAttributes[k] = fmt.Sprintf("%v", v)
+	}
+	return typedAttributes
 }
