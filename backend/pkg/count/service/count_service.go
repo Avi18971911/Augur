@@ -14,10 +14,25 @@ const csTimeOut = 2000 * time.Millisecond
 
 var indices = []string{elasticsearch.LogIndexName, elasticsearch.SpanIndexName}
 
-type TimeInfo struct {
+type LogInfo struct {
 	Timestamp time.Time
-	FromTime  time.Time
-	ToTime    time.Time
+}
+
+type SpanInfo struct {
+	FromTime time.Time
+	ToTime   time.Time
+}
+
+type CalculatedTimeInfo struct {
+	FromTime         time.Time
+	ToTime           time.Time
+	ExtendedFromTime time.Time
+	ExtendedToTime   time.Time
+}
+
+type TimeInfo struct {
+	SpanInfo *SpanInfo
+	LogInfo  *LogInfo
 }
 
 type CountService struct {
@@ -106,16 +121,13 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	buckets []Bucket,
 ) (map[string]CountInfo, error) {
 	var countMap = make(map[string]CountInfo)
-	var fromTime, toTime, fromExtendedTime, toExtendedTime = timeInfo.FromTime, timeInfo.ToTime, timeInfo.FromTime, timeInfo.ToTime
 	for _, bucket := range buckets {
-		if fromTime == (time.Time{}) || toTime == (time.Time{}) {
-			if timeInfo.Timestamp == (time.Time{}) {
-				return nil, fmt.Errorf("one of timeInfo.Timestamp, (timeInfo.fromTime and " +
-					"timeInfo.toTime) is required")
-			}
-			fromTime, toTime = getTimeRange(timeInfo.Timestamp, bucket)
-			fromExtendedTime, toExtendedTime = getTimeRange(timeInfo.Timestamp, bucket*2)
+		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
+		if err != nil {
+			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
+		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
+		fromExtendedTime, toExtendedTime := calculatedTimeInfo.ExtendedFromTime, calculatedTimeInfo.ExtendedToTime
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
 		if err != nil {
 			return nil, err
@@ -235,4 +247,29 @@ func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error
 		clusters[i] = doc
 	}
 	return clusters, nil
+}
+
+func getTimeRangeForBucket(timeInfo TimeInfo, bucket Bucket) (CalculatedTimeInfo, error) {
+	if timeInfo.SpanInfo != nil {
+		midLength := timeInfo.SpanInfo.ToTime.Sub(timeInfo.SpanInfo.FromTime) / 2
+		extendedStartTime, extendedEndTime :=
+			timeInfo.SpanInfo.FromTime.Add(-midLength), timeInfo.SpanInfo.ToTime.Add(midLength)
+		return CalculatedTimeInfo{
+			FromTime:         timeInfo.SpanInfo.FromTime,
+			ToTime:           timeInfo.SpanInfo.ToTime,
+			ExtendedFromTime: extendedStartTime,
+			ExtendedToTime:   extendedEndTime,
+		}, nil
+	} else if timeInfo.LogInfo != nil {
+		startTime, endTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket)
+		extendedStartTime, extendedEndTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket*2)
+		return CalculatedTimeInfo{
+			FromTime:         startTime,
+			ToTime:           endTime,
+			ExtendedFromTime: extendedStartTime,
+			ExtendedToTime:   extendedEndTime,
+		}, nil
+	} else {
+		return CalculatedTimeInfo{}, fmt.Errorf("timeInfo.spanInfo or timeInfo.logInfo is required")
+	}
 }
