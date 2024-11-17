@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/model"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
-	"strings"
-	"time"
 )
 
 const SearchResultSize = 10
@@ -279,27 +280,65 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 	return interfaces
 }
 
+func normalizeTimestampToNanoseconds(timestamp string) string {
+	isUTC := strings.HasSuffix(timestamp, "Z")
+	if isUTC {
+		timestamp = strings.TrimSuffix(timestamp, "Z")
+	}
+
+	parts := strings.SplitN(timestamp, ".", 2)
+	if len(parts) == 2 {
+		fractionalPart := parts[1]
+
+		// 9 digits (nanosecond)
+		if len(fractionalPart) > 9 {
+			fractionalPart = fractionalPart[:9]
+		} else if len(fractionalPart) < 9 {
+			fractionalPart = fractionalPart + strings.Repeat("0", 9-len(fractionalPart))
+		}
+
+		timestamp = parts[0] + "." + fractionalPart
+	}
+
+	if isUTC {
+		timestamp += "Z"
+	}
+	return timestamp
+}
+
 // TODO: avoid this cumbersome function by using an elasticsearch client closer to logs
 func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, error) {
 	var docs []logModel.LogEntry
-	var err error
 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
+		// Nanosecond layout
+		layout := "2006-01-02T15:04:05.000000000Z"
+
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert timestamp to string %s", item["timestamp"])
+			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
 		}
-		doc.Timestamp, err = ParseTimestamp(timestamp)
+
+		fmt.Printf("Timestamp before parsing: '%s'\n", timestamp)
+
+		timestamp = normalizeTimestampToNanoseconds(timestamp)
+
+		fmt.Printf("Timestamp after parsing: '%s'\n", timestamp)
+
+		timestampParsed, err := time.Parse(layout, timestamp)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert timestamp to time.Time")
+			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
 		}
+
+		doc.Timestamp = timestampParsed
 
 		severity, ok := item["severity"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert severity to string")
 		}
+
 		doc.Severity = logModel.Level(severity)
 
 		message, ok := item["message"].(string)
@@ -324,20 +363,4 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	}
 
 	return docs, nil
-}
-
-// ParseTimestamp either truncated or pads (pre-pend) the timestamp to 10 (9 + Z) digits
-// for some fucking reason Golang cannot handle simple timestamp format conversions
-func ParseTimestamp(timestamp string) (time.Time, error) {
-	layout := "2006-01-02T15:04:05.000000000Z"
-
-	parts := strings.Split(timestamp, ".")
-	if len(parts) == 2 && len(parts[1]) > 10 {
-		parts[1] = parts[1][:10]
-	} else if len(parts[1]) < 10 {
-		parts[1] = strings.Repeat("0", 10-len(parts[1])) + parts[1]
-	}
-	adjustedTimestamp := strings.Join(parts, ".")
-
-	return time.Parse(layout, adjustedTimestamp)
 }
