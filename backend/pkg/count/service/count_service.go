@@ -14,6 +14,12 @@ const csTimeOut = 2000 * time.Millisecond
 
 var indices = []string{elasticsearch.LogIndexName, elasticsearch.SpanIndexName}
 
+type TimeInfo struct {
+	Timestamp time.Time
+	FromTime  time.Time
+	ToTime    time.Time
+}
+
 type CountService struct {
 	ac     elasticsearch.AugurClient
 	logger *zap.Logger
@@ -26,104 +32,6 @@ func NewCountService(ac elasticsearch.AugurClient, logger *zap.Logger) *CountSer
 	}
 }
 
-func countOccurrencesQueryBuilder(clusterId string, fromTime, toTime time.Time) map[string]interface{} {
-	return map[string]interface{}{
-		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []map[string]interface{}{
-					{
-						"term": map[string]interface{}{
-							"cluster_id": clusterId,
-						},
-					},
-				},
-				"should": []map[string]interface{}{
-					{
-						"range": map[string]interface{}{
-							"timestamp": map[string]interface{}{
-								"gte": fromTime,
-								"lte": toTime,
-							},
-						},
-					},
-					{
-						"bool": map[string]interface{}{
-							"must": []map[string]interface{}{
-								{
-									"range": map[string]interface{}{
-										"start_time": map[string]interface{}{
-											"gte": fromTime,
-											"lte": toTime,
-										},
-									},
-								},
-								{
-									"range": map[string]interface{}{
-										"end_time": map[string]interface{}{
-											"gte": fromTime,
-											"lte": toTime,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				"minimum_should_match": 1,
-			},
-		},
-	}
-}
-
-func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime time.Time) map[string]interface{} {
-	return map[string]interface{}{
-		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must_not": []map[string]interface{}{
-					{
-						"term": map[string]interface{}{
-							"cluster_id": clusterId,
-						},
-					},
-				},
-				"should": []map[string]interface{}{
-					{
-						"range": map[string]interface{}{
-							"timestamp": map[string]interface{}{
-								"gte": fromTime,
-								"lte": toTime,
-							},
-						},
-					},
-					{
-						"bool": map[string]interface{}{
-							"must": []map[string]interface{}{
-								{
-									"range": map[string]interface{}{
-										"start_time": map[string]interface{}{
-											"gte": fromTime,
-											"lte": toTime,
-										},
-									},
-								},
-								{
-									"range": map[string]interface{}{
-										"end_time": map[string]interface{}{
-											"gte": fromTime,
-											"lte": toTime,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				"minimum_should_match": 1,
-			},
-		},
-	}
-}
-
 func getTimeRange(timestamp time.Time, bucket Bucket) (time.Time, time.Time) {
 	fromTime := timestamp.Add(-time.Millisecond * time.Duration(bucket/2))
 	toTime := timestamp.Add(time.Millisecond * time.Duration(bucket/2))
@@ -133,10 +41,10 @@ func getTimeRange(timestamp time.Time, bucket Bucket) (time.Time, time.Time) {
 func (cs *CountService) CountAndUpdateOccurrences(
 	ctx context.Context,
 	clusterId string,
-	timeStamp time.Time,
+	timeInfo TimeInfo,
 	buckets []Bucket,
 ) error {
-	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeStamp, buckets)
+	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeInfo, buckets)
 	if err != nil {
 		return err
 	}
@@ -194,19 +102,32 @@ func (cs *CountService) updateOccurrences(
 func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	ctx context.Context,
 	clusterId string,
-	timestamp time.Time,
+	timeInfo TimeInfo,
 	buckets []Bucket,
 ) (map[string]CountInfo, error) {
 	var countMap = make(map[string]CountInfo)
+	var fromTime, toTime, fromExtendedTime, toExtendedTime = timeInfo.FromTime, timeInfo.ToTime, timeInfo.FromTime, timeInfo.ToTime
 	for _, bucket := range buckets {
-		fromTime, toTime := getTimeRange(timestamp, bucket)
+		if fromTime == (time.Time{}) || toTime == (time.Time{}) {
+			if timeInfo.Timestamp == (time.Time{}) {
+				return nil, fmt.Errorf("one of timeInfo.Timestamp, (timeInfo.fromTime and " +
+					"timeInfo.toTime) is required")
+			}
+			fromTime, toTime = getTimeRange(timeInfo.Timestamp, bucket)
+			fromExtendedTime, toExtendedTime = getTimeRange(timeInfo.Timestamp, bucket*2)
+		}
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
 		if err != nil {
 			return nil, err
 		}
 		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
 		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
-			occurrences, err := cs.getOccurrencesOfClusterId(ctx, coOccurringClusterId, timestamp, bucket)
+			occurrences, err := cs.getOccurrencesOfClusterId(
+				ctx,
+				coOccurringClusterId,
+				fromExtendedTime,
+				toExtendedTime,
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -268,11 +189,10 @@ func (cs *CountService) getCoOccurringCluster(
 func (cs *CountService) getOccurrencesOfClusterId(
 	ctx context.Context,
 	clusterId string,
-	timestamp time.Time,
-	bucket Bucket,
+	fromTime time.Time,
+	toTime time.Time,
 ) (int64, error) {
 	// *2 because we want to search for a decent sized window around the timestamp
-	fromTime, toTime := getTimeRange(timestamp, bucket*2)
 	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	query := countOccurrencesQueryBuilder(clusterId, fromTime, toTime)

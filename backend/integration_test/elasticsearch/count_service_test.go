@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
-	service2 "github.com/Avi18971911/Augur/pkg/count/service"
+	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func TestCount(t *testing.T) {
 	var querySize = 100
 
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
-	countService := service2.NewCountService(ac, logger)
+	cs := countService.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
@@ -49,13 +49,14 @@ func TestCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service2.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		countInfo, err := countService.CountOccurrencesAndCoOccurrencesByCoClusterId(
+		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
 			ctx,
 			newLog.ClusterId,
-			newLog.Timestamp, buckets,
+			countService.TimeInfo{Timestamp: newLog.Timestamp},
+			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -85,10 +86,15 @@ func TestCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service2.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = countService.CountAndUpdateOccurrences(ctx, newLog.ClusterId, newLog.Timestamp, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{Timestamp: newLog.Timestamp},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
@@ -126,14 +132,24 @@ func TestCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service2.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = countService.CountAndUpdateOccurrences(ctx, newLog.ClusterId, newLog.Timestamp, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{Timestamp: newLog.Timestamp},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = countService.CountAndUpdateOccurrences(ctx, newLog.ClusterId, newLog.Timestamp, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{Timestamp: newLog.Timestamp},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
