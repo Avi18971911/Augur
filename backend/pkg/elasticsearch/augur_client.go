@@ -364,19 +364,3 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 
 	return docs, nil
 }
-
-// parseTimestamp either truncated or pads (pre-pend) the timestamp to 10 (9 + Z) digits
-// for some fucking reason Golang cannot handle simple timestamp format conversions
-func parseTimestamp(timestamp string) (time.Time, error) {
-	layout := "2006-01-02T15:04:05.000000000Z"
-
-	parts := strings.Split(timestamp, ".")
-	if len(parts) == 2 && len(parts[1]) > 10 {
-		parts[1] = parts[1][:10]
-	} else if len(parts[1]) < 10 {
-		parts[1] = strings.Repeat("0", 10-len(parts[1])) + parts[1]
-	}
-	adjustedTimestamp := strings.Join(parts, ".")
-
-	return time.Parse(layout, adjustedTimestamp)
-}
