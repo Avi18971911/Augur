@@ -34,6 +34,12 @@ var spanIndex = map[string]interface{}{
 				"type":    "object",
 				"enabled": "true",
 			},
+			"span_kind": map[string]string{
+				"type": "keyword",
+			},
+			"cluster_event": map[string]string{
+				"type": "text",
+			},
 			"events": map[string]interface{}{
 				"type": "nested",
 				"properties": map[string]interface{}{
