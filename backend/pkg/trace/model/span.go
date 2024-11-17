@@ -12,9 +12,10 @@ type Span struct {
 	EndTime      time.Time         `json:"end_time"`
 	ActionName   string            `json:"action_name"`
 	SpanKind     string            `json:"span_kind"`
-	ClusterEvent string            `json:"cluster_event"` // Textual data used for clustering
-	Attributes   map[string]string `json:"attributes"`    // Metadata like HTTP status, user info
-	Events       []SpanEvent       `json:"events"`        // Important events within the span
+	ClusterEvent string            `json:"cluster_event"`        // Textual data used for clustering
+	ClusterId    string            `json:"cluster_id,omitempty"` // ID of the cluster this span belongs to
+	Attributes   map[string]string `json:"attributes"`           // Metadata like HTTP status, user info
+	Events       []SpanEvent       `json:"events"`               // Important events within the span
 }
 
 type SpanEvent struct {

@@ -36,7 +36,7 @@ type AugurClient interface {
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
-	Search(ctx context.Context, query string, index string, queryResultSize int) ([]map[string]interface{}, error)
+	Search(ctx context.Context, query string, index string, queryResultSize *int) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
@@ -202,13 +202,13 @@ func (a *AugurClientImpl) Search(
 	ctx context.Context,
 	query string,
 	index string,
-	queryResultSize int,
+	queryResultSize *int,
 ) ([]map[string]interface{}, error) {
 	var trueQueryResultSize int
-	if queryResultSize == -1 {
+	if queryResultSize == nil {
 		trueQueryResultSize = SearchResultSize
 	} else {
-		trueQueryResultSize = queryResultSize
+		trueQueryResultSize = *queryResultSize
 	}
 
 	res, err := a.es.Search(
@@ -291,7 +291,7 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 		if !ok {
 			return nil, fmt.Errorf("failed to convert timestamp to string %s", item["timestamp"])
 		}
-		doc.Timestamp, err = parseTimestamp(timestamp)
+		doc.Timestamp, err = ParseTimestamp(timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert timestamp to time.Time")
 		}
@@ -326,9 +326,9 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	return docs, nil
 }
 
-// parseTimestamp either truncated or pads (pre-pend) the timestamp to 10 (9 + Z) digits
+// ParseTimestamp either truncated or pads (pre-pend) the timestamp to 10 (9 + Z) digits
 // for some fucking reason Golang cannot handle simple timestamp format conversions
-func parseTimestamp(timestamp string) (time.Time, error) {
+func ParseTimestamp(timestamp string) (time.Time, error) {
 	layout := "2006-01-02T15:04:05.000000000Z"
 
 	parts := strings.Split(timestamp, ".")

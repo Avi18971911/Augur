@@ -93,7 +93,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	}
 	queryCtx, queryCancel := context.WithTimeout(ctx, lpTimeOut)
 	defer queryCancel()
-	res, err := lps.ac.Search(queryCtx, string(queryBody), augurElasticsearch.LogIndexName, -1)
+	res, err := lps.ac.Search(queryCtx, string(queryBody), augurElasticsearch.LogIndexName, nil)
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
@@ -104,7 +104,6 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	totalLogs = append(totalLogs, log)
 
 	parsedLogs := getLogsWithClusterId(totalLogs)
-	lps.logger.Info("Parsed logs", zap.Any("parsedLogs", parsedLogs))
 
 	// last log is the new one so don't update it
 	ids := make([]string, len(parsedLogs)-1)
