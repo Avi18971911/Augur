@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-const querySize = 10000
 const csTimeOut = 2000 * time.Millisecond
 
 type CountService struct {
@@ -192,7 +191,8 @@ func (cs *CountService) getCoOccurringLogs(
 		)
 		return nil, fmt.Errorf("error marshaling query: %w", err)
 	}
-	res, err := cs.ac.Search(queryCtx, string(queryBody), elasticsearch.LogIndexName, querySize)
+	var querySize = 10000
+	res, err := cs.ac.Search(queryCtx, string(queryBody), elasticsearch.LogIndexName, &querySize)
 	if err != nil {
 		cs.logger.Error(
 			"Failed to search for count co-occurrences",
