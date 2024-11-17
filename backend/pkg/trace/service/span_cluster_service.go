@@ -168,7 +168,7 @@ func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) 
 		if !ok {
 			return nil, fmt.Errorf("failed to convert start_time to string %s", hit["start_time"])
 		}
-		startTimeParsed, err := augurElasticsearch.ParseTimestamp(startTime)
+		startTimeParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(startTime)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse start_time to time.Time")
 		}
@@ -178,7 +178,7 @@ func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) 
 		if !ok {
 			return nil, fmt.Errorf("failed to convert end_time to string %s", hit["end_time"])
 		}
-		endTimeParsed, err := augurElasticsearch.ParseTimestamp(endTime)
+		endTimeParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(endTime)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse end_time to time.Time")
 		}
@@ -232,7 +232,7 @@ func typeEvent(event interface{}) model.SpanEvent {
 	eventName := eventMap["name"].(string)
 	eventAttributes := eventMap["attributes"].(map[string]interface{})
 	eventTimestamp := eventMap["timestamp"].(string)
-	eventTimestampParsed, err := augurElasticsearch.ParseTimestamp(eventTimestamp)
+	eventTimestampParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(eventTimestamp)
 	if err != nil {
 		return model.SpanEvent{}
 	}

@@ -280,7 +280,7 @@ func ToInterfaceSlice[T any](values []T) []interface{} {
 	return interfaces
 }
 
-func normalizeTimestampToNanoseconds(timestamp string) string {
+func NormalizeTimestampToNanoseconds(timestamp string) (time.Time, error) {
 	isUTC := strings.HasSuffix(timestamp, "Z")
 	if isUTC {
 		timestamp = strings.TrimSuffix(timestamp, "Z")
@@ -303,7 +303,9 @@ func normalizeTimestampToNanoseconds(timestamp string) string {
 	if isUTC {
 		timestamp += "Z"
 	}
-	return timestamp
+
+	layout := "2006-01-02T15:04:05.000000000Z"
+	return time.Parse(layout, timestamp)
 }
 
 // TODO: avoid this cumbersome function by using an elasticsearch client closer to logs
@@ -313,21 +315,12 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
-		// Nanosecond layout
-		layout := "2006-01-02T15:04:05.000000000Z"
-
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
 		}
 
-		fmt.Printf("Timestamp before parsing: '%s'\n", timestamp)
-
-		timestamp = normalizeTimestampToNanoseconds(timestamp)
-
-		fmt.Printf("Timestamp after parsing: '%s'\n", timestamp)
-
-		timestampParsed, err := time.Parse(layout, timestamp)
+		timestampParsed, err := NormalizeTimestampToNanoseconds(timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
 		}
