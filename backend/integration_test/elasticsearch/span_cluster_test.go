@@ -38,7 +38,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newSpan.ClusterId)
 		spansQuery := getSpansWithClusterIdQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, spansQuery, elasticsearch.SpanIndexName, &querySize)
+		docs, err := ac.Search(ctx, spansQuery, []string{elasticsearch.SpanIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for similar spans in Elasticsearch: %v", err)
 		}

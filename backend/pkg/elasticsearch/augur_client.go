@@ -37,7 +37,7 @@ type AugurClient interface {
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
-	Search(ctx context.Context, query string, index string, queryResultSize *int) ([]map[string]interface{}, error)
+	Search(ctx context.Context, query string, indices []string, queryResultSize *int) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
@@ -46,7 +46,7 @@ type AugurClient interface {
 	Upsert(ctx context.Context, upsertScript map[string]interface{}, index string, id string) error
 	// Count counts the number of documents in the index matching the query
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
-	Count(ctx context.Context, query string, index string) (int64, error)
+	Count(ctx context.Context, query string, indices []string) (int64, error)
 }
 
 type AugurClientImpl struct {
@@ -202,7 +202,7 @@ func (a *AugurClientImpl) Index(
 func (a *AugurClientImpl) Search(
 	ctx context.Context,
 	query string,
-	index string,
+	indices []string,
 	queryResultSize *int,
 ) ([]map[string]interface{}, error) {
 	var trueQueryResultSize int
@@ -214,7 +214,7 @@ func (a *AugurClientImpl) Search(
 
 	res, err := a.es.Search(
 		a.es.Search.WithContext(ctx),
-		a.es.Search.WithIndex(index),
+		a.es.Search.WithIndex(indices...),
 		a.es.Search.WithBody(strings.NewReader(query)),
 		a.es.Search.WithPretty(),
 		a.es.Search.WithSize(trueQueryResultSize),
@@ -246,11 +246,11 @@ func (a *AugurClientImpl) Search(
 func (a *AugurClientImpl) Count(
 	ctx context.Context,
 	query string,
-	index string,
+	indices []string,
 ) (int64, error) {
 	res, err := a.es.Count(
 		a.es.Count.WithContext(ctx),
-		a.es.Count.WithIndex(index),
+		a.es.Count.WithIndex(indices...),
 		a.es.Count.WithBody(strings.NewReader(query)),
 		a.es.Count.WithPretty(),
 	)

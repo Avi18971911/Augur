@@ -95,7 +95,7 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 	var querySize = 100
 	queryCtx, queryCancel := context.WithTimeout(ctx, scTimeOut)
 	defer queryCancel()
-	res, err := scs.ac.Search(queryCtx, string(queryBody), augurElasticsearch.SpanIndexName, &querySize)
+	res, err := scs.ac.Search(queryCtx, string(queryBody), []string{augurElasticsearch.SpanIndexName}, &querySize)
 	if err != nil {
 		return model.Span{}, fmt.Errorf("failed to search for similar spans in Elasticsearch: %w", err)
 	}
