@@ -176,7 +176,7 @@ func TestSpanCount(t *testing.T) {
 
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
 	cs := countService.NewCountService(ac, logger)
-	t.Run("should be able to count co-occurrences within", func(t *testing.T) {
+	t.Run("should be able to count co-occurrences of logs within", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -225,6 +225,135 @@ func TestSpanCount(t *testing.T) {
 		assert.Equal(t, int64(len(logsOfDifferentTime)), relevantCountInfo.Occurrences)
 		assert.Equal(t, int64(numWithinBucket), relevantCountInfo.CoOccurrences)
 	})
+
+	t.Run("should be able to count co-occurrences of overlapping spans", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newSpan := spanModel.Span{
+			EndTime:   initialTime.Add(time.Second * 2),
+			StartTime: initialTime.Add(-time.Second * 2),
+			ClusterId: "initialClusterId",
+		}
+		overlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second),
+			initialTime.Add(time.Second*4),
+			numWithinBucket,
+		)
+		nonOverlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second*3),
+			initialTime.Add(time.Second*9),
+			numWithinBucket,
+		)
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		if err != nil {
+			t.Error("Failed to load span into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, append(overlappingSpans, nonOverlappingSpans...))
+		if err != nil {
+			t.Error("Failed to load overlapping spans into elasticsearch")
+		}
+		buckets := []countService.Bucket{2500}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		relevantCountInfo := countInfo["differentTime"]
+		assert.Equal(t, int64(len(overlappingSpans)+len(nonOverlappingSpans)), relevantCountInfo.Occurrences)
+		assert.Equal(t, int64(len(overlappingSpans)), relevantCountInfo.CoOccurrences)
+	})
+
+	t.Run("should update existing entries in the database", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newSpan := spanModel.Span{
+			EndTime:   initialTime.Add(time.Second * 2),
+			StartTime: initialTime.Add(-time.Second * 2),
+			ClusterId: "initialClusterId",
+		}
+		overlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second),
+			initialTime.Add(time.Second*4),
+			numWithinBucket,
+		)
+		nonOverlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second*3),
+			initialTime.Add(time.Second*9),
+			numWithinBucket,
+		)
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		if err != nil {
+			t.Error("Failed to load span into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, append(overlappingSpans, nonOverlappingSpans...))
+		if err != nil {
+			t.Error("Failed to load overlapping spans into elasticsearch")
+		}
+		buckets := []countService.Bucket{2500}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		searchQueryBody := countQuery(newSpan.ClusterId)
+		var querySize = 100
+		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+		countEntry := countEntries[0]
+		assert.Equal(t, int64(len(overlappingSpans)+len(nonOverlappingSpans))*2, countEntry.Occurrences)
+		assert.Equal(t, int64(len(overlappingSpans)*2), countEntry.CoOccurrences)
+	})
 }
 
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
@@ -236,6 +365,23 @@ func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs
 		}
 	}
 	return logs
+}
+
+func makeSpansOfSameClusterId(
+	clusterId string,
+	startTime time.Time,
+	endTime time.Time,
+	numberOfSpans int,
+) []spanModel.Span {
+	spans := make([]spanModel.Span, numberOfSpans)
+	for i := 0; i < numberOfSpans; i++ {
+		spans[i] = spanModel.Span{
+			ClusterId: clusterId,
+			StartTime: startTime,
+			EndTime:   endTime,
+		}
+	}
+	return spans
 }
 
 func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Data) error {
