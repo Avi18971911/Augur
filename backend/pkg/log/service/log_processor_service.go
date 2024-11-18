@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"time"
 )
 
 const lpTimeOut = 1000 * time.Millisecond
@@ -30,9 +31,12 @@ func NewLogProcessorService(ac augurElasticsearch.AugurClient, logger *zap.Logge
 }
 
 // TODO: Consider making a Log Repository that handles this Elasticsearch logic
-func moreLikeThisQueryBuilder(service string, phrase string) map[string]interface{} {
+func moreLikeThisQueryBuilder(service string, phrase string, timestamp time.Time) map[string]interface{} {
 	// more_like_this: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html
 	// bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
+
+	timestampStr := timestamp.Format("2006-01-02T15:04:05.000000000Z")
+
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -49,6 +53,16 @@ func moreLikeThisQueryBuilder(service string, phrase string) map[string]interfac
 					{
 						"term": map[string]interface{}{
 							"service": service,
+						},
+					},
+				},
+				"filter": []map[string]interface{}{
+					{
+						"range": map[string]interface{}{
+							"timestamp": map[string]interface{}{
+								"gte": fmt.Sprintf("%s||-1d/d", timestampStr),
+								"lte": fmt.Sprintf("%s||/d", timestampStr),
+							},
 						},
 					},
 				},
@@ -87,7 +101,8 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	log model.LogEntry,
 	ctx context.Context,
 ) (model.LogEntry, error) {
-	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(service, log.Message))
+	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(service, log.Message, log.Timestamp))
+	fmt.Println("Generated Elasticsearch query body:", string(queryBody))
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}

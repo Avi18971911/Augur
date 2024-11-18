@@ -3,12 +3,13 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestUpdates(t *testing.T) {
@@ -33,7 +34,7 @@ func TestUpdates(t *testing.T) {
 			Service: "kafka.cluster.Partition",
 			Message: "[Partition __consumer_offsets-99 broker=2] Log loaded for partition " +
 				"__consumer_offsets-55 with initial high watermark 0",
-			Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 8748, time.UTC),
+			Timestamp: time.Now(),
 		}
 		newLog, err := logProcessor.ParseLogWithMessage(logService, logEntry, ctx)
 		if err != nil {
