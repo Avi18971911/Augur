@@ -72,7 +72,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		}
 		assert.NotEqual(t, "", newSpan.ClusterId)
 		span2 := model.Span{
-			ClusterEvent: "NotTheSame",
+			ClusterEvent: "service=flagd,operation=resolveInt,kind=SPAN_KIND_INTERNAL,attributes=map[]",
 		}
 		newSpan2, err := spanClusterer.ClusterAndUpdateSpans(ctx, span2)
 		if err != nil {

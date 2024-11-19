@@ -29,7 +29,6 @@ func NewSpanClusterService(ac augurElasticsearch.AugurClient, logger *zap.Logger
 	}
 }
 
-// TODO: Consider making a Log Repository that handles this Elasticsearch logic
 func moreLikeThisQueryBuilder(phrase string) map[string]interface{} {
 	// more_like_this: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html
 	// bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
@@ -43,7 +42,7 @@ func moreLikeThisQueryBuilder(phrase string) map[string]interface{} {
 							"like":                 phrase,
 							"min_term_freq":        1,
 							"min_doc_freq":         1,
-							"minimum_should_match": "50%",
+							"minimum_should_match": "80%",
 						},
 					},
 				},
@@ -104,6 +103,11 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 		return model.Span{}, fmt.Errorf("failed to convert search results to span documents: %w", err)
 	}
 	totalSpans = append(totalSpans, span)
+	totalSpansClusterIds := make([]string, len(totalSpans))
+	for i, span := range totalSpans {
+		totalSpansClusterIds[i] = span.ClusterId
+	}
+	scs.logger.Info("total spans", zap.Any("totalSpans", totalSpansClusterIds))
 
 	clusteredSpans := getSpansWithClusterId(totalSpans)
 

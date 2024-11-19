@@ -63,7 +63,9 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	if err != nil {
 		return err
 	}
+	cs.logger.Info("CountMap length", zap.Int("length", len(countMap)))
 	for otherClusterId, countInfo := range countMap {
+		cs.logger.Info("Updating occurrences", zap.String("clusterId", clusterId), zap.String("otherClusterId", otherClusterId))
 		err = cs.updateOccurrences(ctx, clusterId, otherClusterId, countInfo)
 		if err != nil {
 			return err
@@ -95,6 +97,7 @@ func (cs *CountService) updateOccurrences(
 	}
 
 	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
+	cs.logger.Info("Upserting with statement", zap.Any("statement", updateStatement))
 	defer cancel()
 	err := cs.ac.Upsert(
 		upsertCtx,
@@ -128,7 +131,10 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
 		fromExtendedTime, toExtendedTime := calculatedTimeInfo.ExtendedFromTime, calculatedTimeInfo.ExtendedToTime
+		cs.logger.Info("Time range", zap.Time("fromTime", fromTime), zap.Time("toTime", toTime))
+		cs.logger.Info("Extended time range", zap.Time("fromExtendedTime", fromExtendedTime), zap.Time("toExtendedTime", toExtendedTime))
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
+		cs.logger.Info("Co-occurring clusters", zap.Any("coOccurringClusters", len(coOccurringClusters)))
 		if err != nil {
 			return nil, err
 		}
@@ -251,14 +257,11 @@ func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error
 
 func getTimeRangeForBucket(timeInfo TimeInfo, bucket Bucket) (CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
-		midLength := timeInfo.SpanInfo.ToTime.Sub(timeInfo.SpanInfo.FromTime) / 2
-		extendedStartTime, extendedEndTime :=
-			timeInfo.SpanInfo.FromTime.Add(-midLength), timeInfo.SpanInfo.ToTime.Add(midLength)
 		return CalculatedTimeInfo{
-			FromTime:         timeInfo.SpanInfo.FromTime,
-			ToTime:           timeInfo.SpanInfo.ToTime,
-			ExtendedFromTime: extendedStartTime,
-			ExtendedToTime:   extendedEndTime,
+			FromTime:         timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket/2)),
+			ToTime:           timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket/2)),
+			ExtendedFromTime: timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket)),
+			ExtendedToTime:   timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket)),
 		}, nil
 	} else if timeInfo.LogInfo != nil {
 		startTime, endTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket)

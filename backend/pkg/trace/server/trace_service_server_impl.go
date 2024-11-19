@@ -51,28 +51,32 @@ func (tss TraceServiceServerImpl) Export(
 		// we need to group because the spans underneath the same resource span may not have the same trace id
 		groupedSpans := groupTypedSpansByTraceID(typedSpans)
 		go func(groupedSpans map[string][]model.Span) {
-			processCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
 			for traceID, spans := range groupedSpans {
 				newSpansWithClusterId := make([]model.Span, len(spans))
 				for i, span := range spans {
-					newSpan, err := tss.clusterService.ClusterAndUpdateSpans(processCtx, span)
-					if err != nil {
-						tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
-						continue
-					}
-					var buckets = []count.Bucket{2500}
-					err = tss.countService.CountAndUpdateOccurrences(processCtx, newSpan.ClusterId, count.TimeInfo{
-						SpanInfo: &count.SpanInfo{
-							FromTime: newSpan.StartTime,
-							ToTime:   newSpan.EndTime,
-						},
-					}, buckets)
-					if err != nil {
-						tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
-						continue
-					}
-					newSpansWithClusterId[i] = newSpan
+					func() {
+						clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer clusterCancel()
+						countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer countCancel()
+						newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
+						if err != nil {
+							tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
+							return
+						}
+						var buckets = []count.Bucket{10000}
+						err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
+							SpanInfo: &count.SpanInfo{
+								FromTime: newSpan.StartTime,
+								ToTime:   newSpan.EndTime,
+							},
+						}, buckets)
+						if err != nil {
+							tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
+							return
+						}
+						newSpansWithClusterId[i] = newSpan
+					}()
 				}
 				err := tss.writeBehindCache.Put(traceID, newSpansWithClusterId)
 				if err != nil {
