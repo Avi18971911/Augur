@@ -30,10 +30,10 @@ const (
 type AugurClient interface {
 	// BulkIndex indexes (inserts) multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkIndex(ctx context.Context, data []interface{}, metaInfo []map[string]interface{}, index string) error
+	BulkIndex(ctx context.Context, data []map[string]interface{}, metaInfo []map[string]interface{}, index string) error
 	// Index indexes (inserts) a single document in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
-	Index(ctx context.Context, data interface{}, metaInfo map[string]interface{}, index string) error
+	Index(ctx context.Context, data map[string]interface{}, metaInfo map[string]interface{}, index string) error
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
@@ -134,7 +134,7 @@ func (a *AugurClientImpl) Upsert(
 
 func (a *AugurClientImpl) BulkIndex(
 	ctx context.Context,
-	data []interface{},
+	data []map[string]interface{},
 	metaInfo []map[string]interface{},
 	index string,
 ) error {
@@ -189,14 +189,14 @@ func (a *AugurClientImpl) BulkIndex(
 
 func (a *AugurClientImpl) Index(
 	ctx context.Context,
-	data interface{},
+	data map[string]interface{},
 	metaInfo map[string]interface{},
 	index string,
 ) error {
 	if metaInfo == nil {
-		return a.BulkIndex(ctx, []interface{}{data}, nil, index)
+		return a.BulkIndex(ctx, []map[string]interface{}{data}, nil, index)
 	}
-	return a.BulkIndex(ctx, []interface{}{data}, []map[string]interface{}{metaInfo}, index)
+	return a.BulkIndex(ctx, []map[string]interface{}{data}, []map[string]interface{}{metaInfo}, index)
 }
 
 func (a *AugurClientImpl) Search(
@@ -272,12 +272,28 @@ func (a *AugurClientImpl) Count(
 	return int64(countResponse.Count), nil
 }
 
-func ToInterfaceSlice[T any](values []T) []interface{} {
-	interfaces := make([]interface{}, len(values))
+func ToMetaAndDataMap[T any](values []T) ([]map[string]interface{}, []map[string]interface{}, error) {
+	dataMap := make([]map[string]interface{}, len(values))
+	metaMap := make([]map[string]interface{}, len(values))
 	for i, v := range values {
-		interfaces[i] = v
+		data, err := json.Marshal(v)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to marshal value to JSON: %w", err)
+		}
+		var mapStruct map[string]interface{}
+		if err := json.Unmarshal(data, &mapStruct); err != nil {
+			return nil, nil, fmt.Errorf("failed to unmarshal JSON to map: %w", err)
+		}
+
+		if id, ok := mapStruct["_id"]; ok {
+			delete(mapStruct, "_id")
+			metaMap[i] = map[string]interface{}{"index": map[string]interface{}{"_id": id}}
+		} else {
+			metaMap[i] = map[string]interface{}{"index": map[string]interface{}{}}
+		}
+		dataMap[i] = mapStruct
 	}
-	return interfaces
+	return metaMap, dataMap, nil
 }
 
 func normalizeTimestampToNanoseconds(timestamp string) string {
