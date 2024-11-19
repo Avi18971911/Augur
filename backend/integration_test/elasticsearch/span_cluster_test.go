@@ -29,7 +29,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		span := model.Span{
-			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart",
+			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
 		}
 		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
 		if err != nil {
@@ -46,7 +46,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to convert search results to span documents: %v", err)
 		}
-		assert.Equal(t, querySize, len(spanDocs))
+		assert.Equal(t, 30, len(spanDocs))
 		for _, doc := range spanDocs {
 			assert.Equal(t, newSpan.ClusterId, doc.ClusterId)
 		}
@@ -64,7 +64,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		span := model.Span{
-			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart",
+			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
 		}
 		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
 		if err != nil {
