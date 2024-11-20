@@ -17,6 +17,7 @@ func TestCount(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
+	var querySize = 100
 
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
 	countService := service.NewCountService(ac, logger)
@@ -88,7 +89,7 @@ func TestCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, 100)
+		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -133,7 +134,7 @@ func TestCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, 100)
+		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}

@@ -37,7 +37,7 @@ type AugurClient interface {
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
-	Search(ctx context.Context, query string, index string, queryResultSize int) ([]map[string]interface{}, error)
+	Search(ctx context.Context, query string, index string, queryResultSize *int) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
@@ -203,13 +203,13 @@ func (a *AugurClientImpl) Search(
 	ctx context.Context,
 	query string,
 	index string,
-	queryResultSize int,
+	queryResultSize *int,
 ) ([]map[string]interface{}, error) {
 	var trueQueryResultSize int
-	if queryResultSize == -1 {
+	if queryResultSize == nil {
 		trueQueryResultSize = SearchResultSize
 	} else {
-		trueQueryResultSize = queryResultSize
+		trueQueryResultSize = *queryResultSize
 	}
 
 	res, err := a.es.Search(
@@ -296,7 +296,7 @@ func ToMetaAndDataMap[T any](values []T) ([]map[string]interface{}, []map[string
 	return metaMap, dataMap, nil
 }
 
-func normalizeTimestampToNanoseconds(timestamp string) string {
+func NormalizeTimestampToNanoseconds(timestamp string) (time.Time, error) {
 	isUTC := strings.HasSuffix(timestamp, "Z")
 	if isUTC {
 		timestamp = strings.TrimSuffix(timestamp, "Z")
@@ -319,7 +319,9 @@ func normalizeTimestampToNanoseconds(timestamp string) string {
 	if isUTC {
 		timestamp += "Z"
 	}
-	return timestamp
+
+	layout := "2006-01-02T15:04:05.000000000Z"
+	return time.Parse(layout, timestamp)
 }
 
 // TODO: avoid this cumbersome function by using an elasticsearch client closer to logs
@@ -329,21 +331,12 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	for _, item := range data {
 		doc := logModel.LogEntry{}
 
-		// Nanosecond layout
-		layout := "2006-01-02T15:04:05.000000000Z"
-
 		timestamp, ok := item["timestamp"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
 		}
 
-		fmt.Printf("Timestamp before parsing: '%s'\n", timestamp)
-
-		timestamp = normalizeTimestampToNanoseconds(timestamp)
-
-		fmt.Printf("Timestamp after parsing: '%s'\n", timestamp)
-
-		timestampParsed, err := time.Parse(layout, timestamp)
+		timestampParsed, err := NormalizeTimestampToNanoseconds(timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
 		}

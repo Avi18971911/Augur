@@ -41,7 +41,8 @@ func TestUpdates(t *testing.T) {
 		}
 		assert.NotEqual(t, "", newLog.ClusterId)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, logsQuery, "log_index", 100)
+		var querySize = 100
+		docs, err := ac.Search(ctx, logsQuery, "log_index", &querySize)
 		logDocs, err := elasticsearch.ConvertToLogDocuments(docs)
 		assert.Equal(t, 10, len(logDocs))
 		for _, doc := range logDocs {

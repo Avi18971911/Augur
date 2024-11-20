@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
@@ -82,6 +83,8 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 	traceId := hex.EncodeToString(span.TraceId)
 	attributes := getAttributes(span)
 	events := getEvents(span)
+	spanKind := getSpanKind(span)
+	clusterEvent := getClusterString(serviceName, span.Name, spanKind, getAttributesString(attributes))
 
 	return model.Span{
 		SpanID:       spanId,
@@ -93,6 +96,8 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 		ActionName:   span.Name,
 		Attributes:   attributes,
 		Events:       events,
+		SpanKind:     spanKind,
+		ClusterEvent: clusterEvent,
 	}
 }
 
@@ -118,6 +123,24 @@ func getAttributes(span *v1.Span) map[string]string {
 		attributes[attribute.Key] = attribute.Value.GetStringValue()
 	}
 	return attributes
+}
+
+func getSpanKind(span *v1.Span) string {
+	return span.Kind.String()
+}
+
+func getAttributesString(attributes map[string]string) string {
+	return fmt.Sprintf("%v", attributes)
+}
+
+func getClusterString(serviceName string, actionName string, spanKind string, attributes string) string {
+	return fmt.Sprintf(
+		"service=%s,operation=%s,kind=%s,attributes=%v",
+		serviceName,
+		actionName,
+		spanKind,
+		attributes,
+	)
 }
 
 func groupTypedSpansByTraceID(spans []model.Span) map[string][]model.Span {
