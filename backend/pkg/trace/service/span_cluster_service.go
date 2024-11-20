@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const scTimeOut = 1000 * time.Millisecond
+const scTimeOut = 1 * time.Second
 
 type SpanClusterService interface {
 	ClusterAndUpdateSpans(ctx context.Context, span model.Span) (model.Span, error)

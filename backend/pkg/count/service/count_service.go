@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const csTimeOut = 2000 * time.Millisecond
+const csTimeOut = 2 * time.Second
 
 var indices = []string{elasticsearch.LogIndexName, elasticsearch.SpanIndexName}
 

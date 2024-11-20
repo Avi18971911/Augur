@@ -356,19 +356,8 @@ func TestSpanCount(t *testing.T) {
 	})
 }
 
-func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
-	logs := make([]model.LogEntry, numberOfLogs)
-	for i := 0; i < numberOfLogs; i++ {
-		logs[i] = model.LogEntry{
-			ClusterId: clusterId,
-			Timestamp: timestamp,
-		}
-	}
-	return logs
-}
-
-func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEntry) error {
-	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(logs)
+func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Data) error {
+	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(data)
 	if err != nil {
 		return err
 	}
@@ -379,6 +368,17 @@ func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEnt
 		return err
 	}
 	return nil
+}
+
+func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
+	logs := make([]model.LogEntry, numberOfLogs)
+	for i := 0; i < numberOfLogs; i++ {
+		logs[i] = model.LogEntry{
+			ClusterId: clusterId,
+			Timestamp: timestamp,
+		}
+	}
+	return logs
 }
 
 func makeSpansOfSameClusterId(
@@ -397,21 +397,6 @@ func makeSpansOfSameClusterId(
 	}
 	return spans
 }
-
-func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Data) error {
-	genericInput := make([]interface{}, len(data))
-	for i, log := range data {
-		genericInput[i] = log
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err := ac.BulkIndex(ctx, genericInput, nil, elasticsearch.LogIndexName)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 
 func countQuery(clusterId string) string {
 	query := map[string]interface{}{
