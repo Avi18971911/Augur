@@ -64,7 +64,7 @@ func (cs *CountService) CountAndUpdateOccurrences(
 		return err
 	}
 	for otherClusterId, countInfo := range countMap {
-		err = cs.updateOccurrences(ctx, clusterId, otherClusterId, countInfo)
+		err = cs.updateCounts(ctx, clusterId, otherClusterId, countInfo)
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	return nil
 }
 
-func (cs *CountService) updateOccurrences(
+func (cs *CountService) updateCounts(
 	ctx context.Context,
 	clusterId string,
 	otherClusterId string,
@@ -133,6 +133,10 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 			return nil, err
 		}
 		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
+		err = cs.increaseOccurrencesForMisses(ctx, clusterId, coOccurringClustersByClusterId)
+		if err != nil {
+			cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
+		}
 		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
 			occurrences, err := cs.getOccurrencesOfClusterId(
 				ctx,
@@ -218,6 +222,31 @@ func (cs *CountService) getOccurrencesOfClusterId(
 		return 0, fmt.Errorf("error marshaling query: %w", err)
 	}
 	return cs.ac.Count(queryCtx, string(queryBody), indices)
+}
+
+func (cs *CountService) increaseOccurrencesForMisses(
+	ctx context.Context,
+	clusterId string,
+	coOccurringClusters map[string][]model.Cluster,
+) error {
+	listOfCoOccurringClusters := make([]string, len(coOccurringClusters))
+	i := 0
+	for key, _ := range coOccurringClusters {
+		listOfCoOccurringClusters[i] = key
+		i++
+	}
+
+	incrementQuery := incrementNonMatchedClusterIds(clusterId, listOfCoOccurringClusters)
+	queryBody, err := json.Marshal(incrementQuery)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to marshal increment query",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return fmt.Errorf("error marshaling increment query: %w", err)
+	}
+	return cs.ac.UpdateByQuery(ctx, string(queryBody), indices)
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {

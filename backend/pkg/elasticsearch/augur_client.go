@@ -44,6 +44,9 @@ type AugurClient interface {
 	// Upsert updates or inserts a document in the index using a script or upsert annotation
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html#upserts
 	Upsert(ctx context.Context, upsertScript map[string]interface{}, index string, id string) error
+	// UpdateByQuery updates documents in the index matching the query. Useful for updating multiple documents.
+	// https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html
+	UpdateByQuery(ctx context.Context, query string, indices []string) error
 	// Count counts the number of documents in the index matching the query
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html
 	Count(ctx context.Context, query string, indices []string) (int64, error)
@@ -270,6 +273,27 @@ func (a *AugurClientImpl) Count(
 	}
 
 	return int64(countResponse.Count), nil
+}
+
+func (a *AugurClientImpl) UpdateByQuery(
+	ctx context.Context,
+	query string,
+	indices []string,
+) error {
+	res, err := a.es.UpdateByQuery(
+		indices,
+		a.es.UpdateByQuery.WithBody(strings.NewReader(query)),
+		a.es.UpdateByQuery.WithContext(ctx),
+		a.es.UpdateByQuery.WithRefresh(a.refreshRate == string(Immediate)),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update by query in Elasticsearch: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("update by query error: %s", res.String())
+	}
+	return nil
 }
 
 func ToMetaAndDataMap[T any](values []T) ([]map[string]interface{}, []map[string]interface{}, error) {
