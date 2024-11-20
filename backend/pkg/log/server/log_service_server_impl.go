@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"github.com/Avi18971911/Augur/pkg/cache"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -12,23 +14,28 @@ import (
 	"time"
 )
 
+var buckets = []service.Bucket{2500}
+
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
 	cache        cache.WriteBehindCache[model.LogEntry]
 	logger       *zap.Logger
 	logProcessor service.LogProcessorService
+	countService *service.CountService
 }
 
 func NewLogServiceServerImpl(
 	logger *zap.Logger,
 	cache cache.WriteBehindCache[model.LogEntry],
 	logProcessor service.LogProcessorService,
+	countService *service.CountService,
 ) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
 	return &LogServiceServerImpl{
 		logger:       logger,
 		cache:        cache,
 		logProcessor: logProcessor,
+		countService: countService,
 	}
 }
 
@@ -42,15 +49,25 @@ func (lss *LogServiceServerImpl) Export(
 			serviceName := scopeLog.Scope.Name
 			for _, log := range scopeLog.LogRecords {
 				typedLog := typeLog(log, serviceName)
-				err := lss.cache.Put(typedLog.Service, []model.LogEntry{typedLog})
-				logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(serviceName, typedLog, ctx)
-				if err != nil {
-					lss.logger.Error("Failed to parse log with message", zap.Error(err))
-				}
-				err = lss.cache.Put(logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
-				if err != nil {
-					lss.logger.Error("Failed to put log in cache", zap.Error(err))
-				}
+
+				go func(typedLog model.LogEntry, serviceName string) {
+					processCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+					logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(processCtx, serviceName, typedLog)
+					if err != nil {
+						lss.logger.Error("Failed to parse log with message", zap.Error(err))
+						return
+					}
+					err = lss.cache.Put(processCtx, logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
+					if err != nil {
+						lss.logger.Error("Failed to put log in cache", zap.Error(err))
+						return
+					}
+					err = lss.countService.CountAndUpdateOccurrences(processCtx, logWithClusterId, buckets)
+					if err != nil {
+						lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
+					}
+				}(typedLog, serviceName)
 			}
 		}
 	}
@@ -64,6 +81,7 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	traceId := hex.EncodeToString(log.TraceId)
 	spanId := hex.EncodeToString(log.SpanId)
 	return model.LogEntry{
+		Id:        generateLogId(timestamp, message),
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,
@@ -92,4 +110,10 @@ func getSeverity(severityNumber v1.SeverityNumber) model.Level {
 	default:
 		return model.InfoLevel
 	}
+}
+
+func generateLogId(timeStamp time.Time, message string) string {
+	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), message)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }

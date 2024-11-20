@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-const WriteQueueSize = 100
-const timeOut = 500 * time.Millisecond
+const WriteQueueSize = 10
+const timeOut = 2 * time.Second
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.
 // Eviction is based on LRU and LFU policies.
@@ -20,7 +20,7 @@ const timeOut = 500 * time.Millisecond
 // TODO: If we want to use cache, use interface to allow for overwrites
 type WriteBehindCache[ValueType any] interface {
 	Get(key string) ([]ValueType, error)
-	Put(key string, value []ValueType) error
+	Put(ctx context.Context, key string, value []ValueType) error
 }
 
 type WriteBehindCacheImpl[ValueType interface{}] struct {
@@ -60,12 +60,12 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Get(key string) ([]ValueType, error)
 	return typedValue, nil
 }
 
-func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) error {
+func (wbc *WriteBehindCacheImpl[ValueType]) Put(ctx context.Context, key string, value []ValueType) error {
 	wbc.mu.Lock()
 	wbc.writeQueue = append(wbc.writeQueue, value...)
 	wbc.mu.Unlock()
 	if len(wbc.writeQueue) > WriteQueueSize {
-		err := wbc.flushToElasticsearch()
+		err := wbc.flushToElasticsearch(ctx)
 		if err != nil {
 			return fmt.Errorf("error flushing to Elasticsearch: %w", err)
 		}
@@ -90,15 +90,19 @@ func (wbc *WriteBehindCacheImpl[ValueType]) Put(key string, value []ValueType) e
 	return nil
 }
 
-func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch() error {
+func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch(ctx context.Context) error {
 	wbc.mu.Lock()
 	defer wbc.mu.Unlock()
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	bulkCtx, cancel := context.WithTimeout(ctx, timeOut)
 	defer cancel()
-	err := wbc.ac.BulkIndex(
-		ctx,
-		augurElasticsearch.ToInterfaceSlice(wbc.writeQueue),
-		nil,
+	metaMap, dataMap, err := augurElasticsearch.ToMetaAndDataMap(wbc.writeQueue)
+	if err != nil {
+		return fmt.Errorf("error converting write queue to meta and data map: %w", err)
+	}
+	err = wbc.ac.BulkIndex(
+		bulkCtx,
+		dataMap,
+		metaMap,
 		wbc.esIndexName,
 	)
 	wbc.writeQueue = []ValueType{}
