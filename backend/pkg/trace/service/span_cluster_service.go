@@ -97,7 +97,6 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 	for i, span := range totalSpans {
 		totalSpansClusterIds[i] = span.ClusterId
 	}
-	scs.logger.Info("total spans", zap.Any("totalSpans", totalSpansClusterIds))
 
 	clusteredSpans := getSpansWithClusterId(totalSpans)
 

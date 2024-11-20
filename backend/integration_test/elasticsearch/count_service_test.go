@@ -258,7 +258,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
-		buckets := []countService.Bucket{700}
+		buckets := []countService.Bucket{1000}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
@@ -311,7 +311,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
-		buckets := []countService.Bucket{700}
+		buckets := []countService.Bucket{1000}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		err = cs.CountAndUpdateOccurrences(
