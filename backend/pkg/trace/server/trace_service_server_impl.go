@@ -41,6 +41,8 @@ func (tss TraceServiceServerImpl) Export(
 	ctx context.Context,
 	req *protoTrace.ExportTraceServiceRequest,
 ) (*protoTrace.ExportTraceServiceResponse, error) {
+	putCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 	for _, resourceSpan := range req.ResourceSpans {
 		serviceName := getServiceName(resourceSpan)
 		if serviceName == "Never Assigned" {
@@ -78,7 +80,7 @@ func (tss TraceServiceServerImpl) Export(
 						newSpansWithClusterId[i] = newSpan
 					}()
 				}
-				err := tss.writeBehindCache.Put(traceID, newSpansWithClusterId)
+				err := tss.writeBehindCache.Put(putCtx, traceID, newSpansWithClusterId)
 				if err != nil {
 					tss.logger.Error("Failed to put span in cache", zap.Error(err))
 				}

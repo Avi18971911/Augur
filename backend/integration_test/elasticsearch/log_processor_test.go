@@ -35,7 +35,7 @@ func TestUpdates(t *testing.T) {
 				"__consumer_offsets-55 with initial high watermark 0",
 			Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 8748, time.UTC),
 		}
-		newLog, err := logProcessor.ParseLogWithMessage(logService, logEntry, ctx)
+		newLog, err := logProcessor.ParseLogWithMessage(ctx, logService, logEntry)
 		if err != nil {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}

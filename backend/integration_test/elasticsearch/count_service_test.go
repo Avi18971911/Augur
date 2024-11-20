@@ -367,6 +367,20 @@ func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs
 	return logs
 }
 
+func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEntry) error {
+	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(logs)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = ac.BulkIndex(ctx, dataMap, metaMap, elasticsearch.LogIndexName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func makeSpansOfSameClusterId(
 	clusterId string,
 	startTime time.Time,
@@ -397,6 +411,7 @@ func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Da
 	}
 	return nil
 }
+
 
 func countQuery(clusterId string) string {
 	query := map[string]interface{}{

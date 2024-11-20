@@ -11,10 +11,10 @@ import (
 	"time"
 )
 
-const lpTimeOut = 1000 * time.Millisecond
+const lpTimeOut = 2 * time.Second
 
 type LogProcessorService interface {
-	ParseLogWithMessage(service string, log model.LogEntry, ctx context.Context) (model.LogEntry, error)
+	ParseLogWithMessage(ctx context.Context, service string, log model.LogEntry) (model.LogEntry, error)
 }
 
 type LogProcessorServiceImpl struct {
@@ -83,9 +83,9 @@ func getLogsWithClusterId(logs []model.LogEntry) []model.LogEntry {
 }
 
 func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
+	ctx context.Context,
 	service string,
 	log model.LogEntry,
-	ctx context.Context,
 ) (model.LogEntry, error) {
 	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(service, log.Message))
 	if err != nil {
