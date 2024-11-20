@@ -354,6 +354,49 @@ func TestSpanCount(t *testing.T) {
 		assert.Equal(t, int64(len(overlappingSpans)+len(nonOverlappingSpans))*2, countEntry.Occurrences)
 		assert.Equal(t, int64(len(overlappingSpans)*2), countEntry.CoOccurrences)
 	})
+
+	t.Run("test count mechanism on real data", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		err = loadTestDataFromFile(es, elasticsearch.SpanIndexName, "data_dump/span_index_array_cluster_id.json")
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		buckets := []countService.Bucket{500}
+		layout := "2006-01-02T15:04:05.999999999Z"
+		timeStart, err := time.Parse(layout, "2024-11-19T14:22:23.384569167Z")
+		timeEnd, err := time.Parse(layout, "2024-11-19T14:22:23.385116917Z")
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			"dc2d0b04-3ba0-48bb-9766-487cce46def7",
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: timeStart, ToTime: timeEnd,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		var querySize = 100
+		searchQueryBody := countQuery("dc2d0b04-3ba0-48bb-9766-487cce46def7")
+		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+		countEntry := countEntries[0]
+		assert.Equal(t, int64(30), countEntry.Occurrences)
+		assert.Equal(t, int64(30), countEntry.CoOccurrences)
+	})
 }
 
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const WriteQueueSize = 100
+const WriteQueueSize = 1
 const timeOut = 500 * time.Millisecond
 
 // WriteBehindCache is an interface for a cache batches writes to a backend store or database.

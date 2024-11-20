@@ -64,7 +64,7 @@ func (tss TraceServiceServerImpl) Export(
 							tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
 							return
 						}
-						var buckets = []count.Bucket{10000}
+						var buckets = []count.Bucket{500}
 						err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
 							SpanInfo: &count.SpanInfo{
 								FromTime: newSpan.StartTime,
