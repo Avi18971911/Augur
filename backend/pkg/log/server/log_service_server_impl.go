@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/cache"
+	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -14,21 +15,21 @@ import (
 	"time"
 )
 
-var buckets = []service.Bucket{2500}
+var buckets = []count.Bucket{2500}
 
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
 	cache        cache.WriteBehindCache[model.LogEntry]
 	logger       *zap.Logger
 	logProcessor service.LogProcessorService
-	countService *service.CountService
+	countService *count.CountService
 }
 
 func NewLogServiceServerImpl(
 	logger *zap.Logger,
 	cache cache.WriteBehindCache[model.LogEntry],
 	logProcessor service.LogProcessorService,
-	countService *service.CountService,
+	countService *count.CountService,
 ) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
 	return &LogServiceServerImpl{
@@ -63,7 +64,16 @@ func (lss *LogServiceServerImpl) Export(
 						lss.logger.Error("Failed to put log in cache", zap.Error(err))
 						return
 					}
-					err = lss.countService.CountAndUpdateOccurrences(processCtx, logWithClusterId, buckets)
+					err = lss.countService.CountAndUpdateOccurrences(
+						processCtx,
+						logWithClusterId.ClusterId,
+						count.TimeInfo{
+							LogInfo: &count.LogInfo{
+								Timestamp: logWithClusterId.Timestamp,
+							},
+						},
+						buckets,
+					)
 					if err != nil {
 						lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
 					}

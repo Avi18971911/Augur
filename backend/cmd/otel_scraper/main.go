@@ -1,6 +1,8 @@
 package main
 
 import (
+	count "github.com/Avi18971911/Augur/pkg/count/service"
+	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"net"
 
 	"github.com/Avi18971911/Augur/pkg/cache"
@@ -41,7 +43,8 @@ func main() {
 
 	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Wait)
 	logProcessorService := service.NewLogProcessorService(ac, logger)
-	countService := service.NewCountService(ac, logger)
+	spanClusterService := spanService.NewSpanClusterService(ac, logger)
+	countService := count.NewCountService(ac, logger)
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
@@ -78,6 +81,8 @@ func main() {
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
 		writeBehindTraceCache,
+		spanClusterService,
+		countService,
 	)
 	logServiceServer := logsServer.NewLogServiceServerImpl(
 		logger,
