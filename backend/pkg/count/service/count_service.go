@@ -24,10 +24,8 @@ type SpanInfo struct {
 }
 
 type CalculatedTimeInfo struct {
-	FromTime         time.Time
-	ToTime           time.Time
-	ExtendedFromTime time.Time
-	ExtendedToTime   time.Time
+	FromTime time.Time
+	ToTime   time.Time
 }
 
 type TimeInfo struct {
@@ -127,7 +125,6 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
-		fromExtendedTime, toExtendedTime := calculatedTimeInfo.ExtendedFromTime, calculatedTimeInfo.ExtendedToTime
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
 		if err != nil {
 			return nil, err
@@ -138,24 +135,15 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 			cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
 		}
 		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
-			occurrences, err := cs.getOccurrencesOfClusterId(
-				ctx,
-				coOccurringClusterId,
-				fromExtendedTime,
-				toExtendedTime,
-			)
-			if err != nil {
-				return nil, err
-			}
 			if _, ok := countMap[coOccurringClusterId]; !ok {
 				countMap[coOccurringClusterId] = CountInfo{
 					CoOccurrences: int64(len(groupedCoOccurringClusters)),
-					Occurrences:   occurrences,
+					Occurrences:   int64(len(groupedCoOccurringClusters)),
 				}
 			} else {
 				countMap[coOccurringClusterId] = CountInfo{
 					CoOccurrences: int64(len(groupedCoOccurringClusters)) + countMap[coOccurringClusterId].CoOccurrences,
-					Occurrences:   occurrences + countMap[coOccurringClusterId].Occurrences,
+					Occurrences:   int64(len(groupedCoOccurringClusters)) + countMap[coOccurringClusterId].Occurrences,
 				}
 			}
 		}
@@ -200,28 +188,6 @@ func (cs *CountService) getCoOccurringCluster(
 		return nil, fmt.Errorf("error converting search results to cluster: %w", err)
 	}
 	return coOccurringClusters, nil
-}
-
-func (cs *CountService) getOccurrencesOfClusterId(
-	ctx context.Context,
-	clusterId string,
-	fromTime time.Time,
-	toTime time.Time,
-) (int64, error) {
-	// *2 because we want to search for a decent sized window around the timestamp
-	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
-	defer cancel()
-	query := countOccurrencesQueryBuilder(clusterId, fromTime, toTime)
-	queryBody, err := json.Marshal(query)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to marshal occurrences query for clusterId",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return 0, fmt.Errorf("error marshaling query: %w", err)
-	}
-	return cs.ac.Count(queryCtx, string(queryBody), indices)
 }
 
 func (cs *CountService) increaseOccurrencesForMisses(
@@ -281,19 +247,14 @@ func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error
 func getTimeRangeForBucket(timeInfo TimeInfo, bucket Bucket) (CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
 		return CalculatedTimeInfo{
-			FromTime:         timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket/2)),
-			ToTime:           timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket/2)),
-			ExtendedFromTime: timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket)),
-			ExtendedToTime:   timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket)),
+			FromTime: timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket/2)),
+			ToTime:   timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket/2)),
 		}, nil
 	} else if timeInfo.LogInfo != nil {
 		startTime, endTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket)
-		extendedStartTime, extendedEndTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket*2)
 		return CalculatedTimeInfo{
-			FromTime:         startTime,
-			ToTime:           endTime,
-			ExtendedFromTime: extendedStartTime,
-			ExtendedToTime:   extendedEndTime,
+			FromTime: startTime,
+			ToTime:   endTime,
 		}, nil
 	} else {
 		return CalculatedTimeInfo{}, fmt.Errorf("timeInfo.spanInfo or timeInfo.logInfo is required")
