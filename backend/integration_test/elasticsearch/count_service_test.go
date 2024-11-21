@@ -5,22 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
+	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch"
 	"github.com/Avi18971911/Augur/pkg/log/model"
-	"github.com/Avi18971911/Augur/pkg/log/service"
+	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-func TestCount(t *testing.T) {
+func TestLogCount(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	var querySize = 100
 
 	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
-	countService := service.NewCountService(ac, logger)
+	cs := countService.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences within the smallest bucket", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
@@ -41,18 +42,23 @@ func TestCount(t *testing.T) {
 				numWithinBucket,
 			)...,
 		)
-		err = loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadLogsIntoElasticsearch(ac, logsOfDifferentTime)
+		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		countInfo, err := countService.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, newLog, buckets)
+		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
@@ -73,23 +79,28 @@ func TestCount(t *testing.T) {
 			Timestamp: initialTime,
 		}
 		logsOfDifferentTime := makeLogsOfSameClusterId("differentTime", initialTime.Add(time.Second), numWithinBucket)
-		err = loadLogsIntoElasticsearch(ac, logsOfDifferentTime)
+		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = countService.CountAndUpdateOccurrences(ctx, newLog, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -114,27 +125,37 @@ func TestCount(t *testing.T) {
 			Timestamp: initialTime,
 		}
 		logsOfDifferentTime := makeLogsOfSameClusterId("differentTime", initialTime.Add(time.Second), numWithinBucket)
-		err = loadLogsIntoElasticsearch(ac, logsOfDifferentTime)
+		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadLogsIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []service.Bucket{2500}
+		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = countService.CountAndUpdateOccurrences(ctx, newLog, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = countService.CountAndUpdateOccurrences(ctx, newLog, buckets)
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, elasticsearch.CountIndexName, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -148,6 +169,207 @@ func TestCount(t *testing.T) {
 	})
 }
 
+func TestSpanCount(t *testing.T) {
+	if es == nil {
+		t.Error("es is uninitialized or otherwise nil")
+	}
+
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
+	cs := countService.NewCountService(ac, logger)
+	t.Run("should be able to count co-occurrences of logs within", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newSpan := spanModel.Span{
+			EndTime:   initialTime.Add(time.Second * 2),
+			StartTime: initialTime.Add(-time.Second * 2),
+			ClusterId: "initialClusterId",
+		}
+		logsOfDifferentTime := makeLogsOfSameClusterId("differentTime", initialTime.Add(time.Second), numWithinBucket)
+		logsOfDifferentTime = append(
+			logsOfDifferentTime,
+			makeLogsOfSameClusterId(
+				"differentTime",
+				initialTime.Add(time.Second*4),
+				numWithinBucket,
+			)...,
+		)
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		if err != nil {
+			t.Error("Failed to load span into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime)
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		buckets := []countService.Bucket{2500}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		relevantCountInfo := countInfo["differentTime"]
+		assert.Equal(t, int64(len(logsOfDifferentTime)), relevantCountInfo.Occurrences)
+		assert.Equal(t, int64(numWithinBucket), relevantCountInfo.CoOccurrences)
+	})
+
+	t.Run("should be able to count co-occurrences of overlapping spans", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newSpan := spanModel.Span{
+			EndTime:   initialTime.Add(time.Second * 2),
+			StartTime: initialTime.Add(-time.Second * 2),
+			ClusterId: "initialClusterId",
+		}
+		overlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second),
+			initialTime.Add(time.Second*4),
+			numWithinBucket,
+		)
+		nonOverlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second*3),
+			initialTime.Add(time.Second*9),
+			numWithinBucket,
+		)
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		if err != nil {
+			t.Error("Failed to load span into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, append(overlappingSpans, nonOverlappingSpans...))
+		if err != nil {
+			t.Error("Failed to load overlapping spans into elasticsearch")
+		}
+		buckets := []countService.Bucket{1000}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		relevantCountInfo := countInfo["differentTime"]
+		assert.Equal(t, int64(len(overlappingSpans)+len(nonOverlappingSpans)), relevantCountInfo.Occurrences)
+		assert.Equal(t, int64(len(overlappingSpans)), relevantCountInfo.CoOccurrences)
+	})
+
+	t.Run("should update existing entries in the database", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newSpan := spanModel.Span{
+			EndTime:   initialTime.Add(time.Second * 2),
+			StartTime: initialTime.Add(-time.Second * 2),
+			ClusterId: "initialClusterId",
+		}
+		overlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second),
+			initialTime.Add(time.Second*4),
+			numWithinBucket,
+		)
+		nonOverlappingSpans := makeSpansOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second*3),
+			initialTime.Add(time.Second*9),
+			numWithinBucket,
+		)
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		if err != nil {
+			t.Error("Failed to load span into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, append(overlappingSpans, nonOverlappingSpans...))
+		if err != nil {
+			t.Error("Failed to load overlapping spans into elasticsearch")
+		}
+		buckets := []countService.Bucket{1000}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newSpan.ClusterId,
+			countService.TimeInfo{
+				SpanInfo: &countService.SpanInfo{
+					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
+				},
+			},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		searchQueryBody := countQuery(newSpan.ClusterId)
+		var querySize = 100
+		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+		countEntry := countEntries[0]
+		assert.Equal(t, int64(len(overlappingSpans)+len(nonOverlappingSpans))*2, countEntry.Occurrences)
+		assert.Equal(t, int64(len(overlappingSpans)*2), countEntry.CoOccurrences)
+	})
+}
+
+func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Data) error {
+	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(data)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = ac.BulkIndex(ctx, dataMap, metaMap, elasticsearch.LogIndexName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
 	logs := make([]model.LogEntry, numberOfLogs)
 	for i := 0; i < numberOfLogs; i++ {
@@ -159,18 +381,21 @@ func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs
 	return logs
 }
 
-func loadLogsIntoElasticsearch(ac elasticsearch.AugurClient, logs []model.LogEntry) error {
-	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(logs)
-	if err != nil {
-		return err
+func makeSpansOfSameClusterId(
+	clusterId string,
+	startTime time.Time,
+	endTime time.Time,
+	numberOfSpans int,
+) []spanModel.Span {
+	spans := make([]spanModel.Span, numberOfSpans)
+	for i := 0; i < numberOfSpans; i++ {
+		spans[i] = spanModel.Span{
+			ClusterId: clusterId,
+			StartTime: startTime,
+			EndTime:   endTime,
+		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = ac.BulkIndex(ctx, dataMap, metaMap, elasticsearch.LogIndexName)
-	if err != nil {
-		return err
-	}
-	return nil
+	return spans
 }
 
 func countQuery(clusterId string) string {

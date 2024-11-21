@@ -15,9 +15,9 @@ func TestSpanClusterUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
+	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
 	spanClusterer := service.NewSpanClusterService(ac, logger)
-	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
+	t.Run("should be able to process and update spans of the same type", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -29,7 +29,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		span := model.Span{
-			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart",
+			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
 		}
 		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
 		if err != nil {
@@ -38,7 +38,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newSpan.ClusterId)
 		spansQuery := getSpansWithClusterIdQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, spansQuery, elasticsearch.SpanIndexName, &querySize)
+		docs, err := ac.Search(ctx, spansQuery, []string{elasticsearch.SpanIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for similar spans in Elasticsearch: %v", err)
 		}
@@ -46,10 +46,40 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to convert search results to span documents: %v", err)
 		}
-		assert.Equal(t, querySize, len(spanDocs))
+		assert.Equal(t, 30, len(spanDocs))
 		for _, doc := range spanDocs {
 			assert.Equal(t, newSpan.ClusterId, doc.ClusterId)
 		}
+	})
+
+	t.Run("should not assign spans with different cluster events to the same cluster id", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		err = loadTestDataFromFile(es, elasticsearch.SpanIndexName, "data_dump/span_index_array.json")
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		span := model.Span{
+			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
+		}
+		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
+		if err != nil {
+			t.Errorf("Failed to parse span with message: %v", err)
+		}
+		assert.NotEqual(t, "", newSpan.ClusterId)
+		span2 := model.Span{
+			ClusterEvent: "service=flagd,operation=resolveInt,kind=SPAN_KIND_INTERNAL,attributes=map[]",
+		}
+		newSpan2, err := spanClusterer.ClusterAndUpdateSpans(ctx, span2)
+		if err != nil {
+			t.Errorf("Failed to parse span with message: %v", err)
+		}
+		assert.NotEqual(t, "", newSpan2.ClusterId)
+		assert.NotEqual(t, newSpan.ClusterId, newSpan2.ClusterId)
 	})
 }
 

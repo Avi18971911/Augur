@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const scTimeOut = 1000 * time.Millisecond
+const scTimeOut = 1 * time.Second
 
 type SpanClusterService interface {
 	ClusterAndUpdateSpans(ctx context.Context, span model.Span) (model.Span, error)
@@ -29,23 +29,12 @@ func NewSpanClusterService(ac augurElasticsearch.AugurClient, logger *zap.Logger
 	}
 }
 
-// TODO: Consider making a Log Repository that handles this Elasticsearch logic
-func moreLikeThisQueryBuilder(phrase string) map[string]interface{} {
-	// more_like_this: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html
-	// bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
+func equalityQueryBuilder(phrase string) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []map[string]interface{}{
-					{
-						"more_like_this": map[string]interface{}{
-							"fields":               []string{"cluster_event"},
-							"like":                 phrase,
-							"min_term_freq":        1,
-							"min_doc_freq":         1,
-							"minimum_should_match": "50%",
-						},
-					},
+			"term": map[string]interface{}{
+				"cluster_event": map[string]interface{}{
+					"value": phrase,
 				},
 			},
 		},
@@ -88,14 +77,14 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 	ctx context.Context,
 	span model.Span,
 ) (model.Span, error) {
-	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(span.ClusterEvent))
+	queryBody, err := json.Marshal(equalityQueryBuilder(span.ClusterEvent))
 	if err != nil {
 		return model.Span{}, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
 	var querySize = 100
 	queryCtx, queryCancel := context.WithTimeout(ctx, scTimeOut)
 	defer queryCancel()
-	res, err := scs.ac.Search(queryCtx, string(queryBody), augurElasticsearch.SpanIndexName, &querySize)
+	res, err := scs.ac.Search(queryCtx, string(queryBody), []string{augurElasticsearch.SpanIndexName}, &querySize)
 	if err != nil {
 		return model.Span{}, fmt.Errorf("failed to search for similar spans in Elasticsearch: %w", err)
 	}
@@ -104,6 +93,10 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 		return model.Span{}, fmt.Errorf("failed to convert search results to span documents: %w", err)
 	}
 	totalSpans = append(totalSpans, span)
+	totalSpansClusterIds := make([]string, len(totalSpans))
+	for i, span := range totalSpans {
+		totalSpansClusterIds[i] = span.ClusterId
+	}
 
 	clusteredSpans := getSpansWithClusterId(totalSpans)
 

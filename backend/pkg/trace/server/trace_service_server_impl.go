@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/cache"
+	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
+	"github.com/Avi18971911/Augur/pkg/trace/service"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"go.uber.org/zap"
@@ -16,16 +18,22 @@ type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
 	logger           *zap.Logger
 	writeBehindCache cache.WriteBehindCache[model.Span]
+	clusterService   service.SpanClusterService
+	countService     *count.CountService
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
 	cache cache.WriteBehindCache[model.Span],
+	clusterService service.SpanClusterService,
+	countService *count.CountService,
 ) TraceServiceServerImpl {
 	logger.Info("Creating new TraceServiceServerImpl")
 	return TraceServiceServerImpl{
 		logger:           logger,
 		writeBehindCache: cache,
+		clusterService:   clusterService,
+		countService:     countService,
 	}
 }
 
@@ -44,12 +52,40 @@ func (tss TraceServiceServerImpl) Export(
 		typedSpans := getTypedSpans(resourceSpan, serviceName)
 		// we need to group because the spans underneath the same resource span may not have the same trace id
 		groupedSpans := groupTypedSpansByTraceID(typedSpans)
-		for traceID, spans := range groupedSpans {
-			err := tss.writeBehindCache.Put(putCtx, traceID, spans)
-			if err != nil {
-				tss.logger.Error("Failed to put span in cache", zap.Error(err))
+		go func(groupedSpans map[string][]model.Span) {
+			for traceID, spans := range groupedSpans {
+				newSpansWithClusterId := make([]model.Span, len(spans))
+				for i, span := range spans {
+					func() {
+						clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer clusterCancel()
+						countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer countCancel()
+						newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
+						if err != nil {
+							tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
+							return
+						}
+						var buckets = []count.Bucket{500}
+						err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
+							SpanInfo: &count.SpanInfo{
+								FromTime: newSpan.StartTime,
+								ToTime:   newSpan.EndTime,
+							},
+						}, buckets)
+						if err != nil {
+							tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
+							return
+						}
+						newSpansWithClusterId[i] = newSpan
+					}()
+				}
+				err := tss.writeBehindCache.Put(putCtx, traceID, newSpansWithClusterId)
+				if err != nil {
+					tss.logger.Error("Failed to put span in cache", zap.Error(err))
+				}
 			}
-		}
+		}(groupedSpans)
 	}
 
 	return &protoTrace.ExportTraceServiceResponse{}, nil

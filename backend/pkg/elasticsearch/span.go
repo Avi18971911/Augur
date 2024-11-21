@@ -38,7 +38,7 @@ var spanIndex = map[string]interface{}{
 				"type": "keyword",
 			},
 			"cluster_event": map[string]string{
-				"type": "text",
+				"type": "keyword",
 			},
 			"cluster_id": map[string]string{
 				"type": "keyword",
