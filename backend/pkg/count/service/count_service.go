@@ -212,7 +212,10 @@ func (cs *CountService) increaseOccurrencesForMisses(
 		)
 		return fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	return cs.ac.UpdateByQuery(ctx, string(queryBody), indices)
+	updateIndices := []string{elasticsearch.CountIndexName}
+	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
+	defer cancel()
+	return cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {
