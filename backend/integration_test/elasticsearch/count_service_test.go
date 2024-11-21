@@ -242,6 +242,74 @@ func TestLogCount(t *testing.T) {
 		assert.Equal(t, int64(numWithinBucket+1), countEntry.Occurrences)
 		assert.Equal(t, int64(numWithinBucket), countEntry.CoOccurrences)
 	})
+
+	t.Run("should not add occurrences for misses if no co-occurrences have been found", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		numWithinBucket := 4
+		numOutsideBucket := 2
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newLog := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: initialTime,
+		}
+		logsOfSameTime := makeLogsOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second),
+			numWithinBucket,
+		)
+		logsOfDifferentTime := makeLogsOfSameClusterId(
+			"differentTime",
+			initialTime.Add(time.Second*2),
+			numOutsideBucket,
+		)
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		err = loadDataIntoElasticsearch(ac, append(logsOfSameTime, logsOfDifferentTime...))
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		buckets := []countService.Bucket{2500}
+		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer missCancel()
+		err = cs.CountAndUpdateOccurrences(
+			missCtx,
+			logsOfDifferentTime[0].ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences for misses: %v", err)
+		}
+		hitCtx, hitCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer hitCancel()
+		err = cs.CountAndUpdateOccurrences(
+			hitCtx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences for successes: %v", err)
+		}
+		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer queryCancel()
+		searchQueryBody := countQuery(newLog.ClusterId)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+		countEntry := countEntries[0]
+		assert.Equal(t, int64(len(logsOfSameTime)), countEntry.Occurrences)
+	})
 }
 
 func TestSpanCount(t *testing.T) {
