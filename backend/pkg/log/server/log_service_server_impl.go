@@ -66,21 +66,6 @@ func (lss *LogServiceServerImpl) Export(
 						lss.logger.Error("Failed to put log in cache", zap.Error(err))
 						return
 					}
-					countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer countCancel()
-					err = lss.countService.CountAndUpdateOccurrences(
-						countCtx,
-						logWithClusterId.ClusterId,
-						count.TimeInfo{
-							LogInfo: &count.LogInfo{
-								Timestamp: logWithClusterId.Timestamp,
-							},
-						},
-						buckets,
-					)
-					if err != nil {
-						lss.logger.Error("Failed to count and update occurrences", zap.Error(err))
-					}
 				}(typedLog, serviceName)
 			}
 		}

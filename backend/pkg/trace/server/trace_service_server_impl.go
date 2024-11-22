@@ -58,22 +58,9 @@ func (tss TraceServiceServerImpl) Export(
 						func() {
 							clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
 							defer clusterCancel()
-							countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
-							defer countCancel()
 							newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
 							if err != nil {
 								tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
-								return
-							}
-							var buckets = []count.Bucket{500}
-							err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
-								SpanInfo: &count.SpanInfo{
-									FromTime: newSpan.StartTime,
-									ToTime:   newSpan.EndTime,
-								},
-							}, buckets)
-							if err != nil {
-								tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
 								return
 							}
 							newSpansWithClusterId[i] = newSpan
