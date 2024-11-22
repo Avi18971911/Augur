@@ -148,6 +148,16 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]model.LogEntry, err
 
 		doc.Timestamp = timestampParsed
 
+		createdAt, ok := item["created_at"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert created_at to string")
+		}
+		createdAtParsed, err := client.NormalizeTimestampToNanoseconds(createdAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert created_at '%s' to time.Time: %v", createdAt, err)
+		}
+		doc.CreatedAt = createdAtParsed
+
 		severity, ok := item["severity"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert severity to string")

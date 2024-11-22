@@ -102,7 +102,6 @@ func (a *AugurClientImpl) UpdateByQuery(
 }
 
 type SearchAfterParams struct {
-	Id        string
 	CreatedAt time.Time
 }
 
@@ -112,7 +111,6 @@ type SearchAfterResult struct {
 }
 
 type SearchAfterSuccess struct {
-	Id        string
 	CreatedAt time.Time
 	Result    []map[string]interface{}
 }
@@ -148,7 +146,6 @@ func (a *AugurClientImpl) SearchAfter(
 			searchCtx, searchCancel := context.WithTimeout(ctx, timeOut)
 			res, err := a.es.Search(
 				a.es.Search.WithContext(searchCtx),
-				a.es.Search.WithIndex(indices...),
 				a.es.Search.WithBody(strings.NewReader(string(pitQueryJson))),
 				a.es.Search.WithSize(getQuerySize(querySize)),
 			)
@@ -186,7 +183,6 @@ func (a *AugurClientImpl) SearchAfter(
 			}
 
 			lastDoc := esResponse.Hits.HitArray[len(esResponse.Hits.HitArray)-1]
-			lastId := lastDoc.ID
 			timestampString, ok := lastDoc.Source["created_at"].(string)
 			if !ok {
 				searchAfterChannel <- createSearchAfterFailure(
@@ -207,13 +203,11 @@ func (a *AugurClientImpl) SearchAfter(
 			}
 			finalResult := SearchAfterResult{
 				Success: &SearchAfterSuccess{
-					Id:        lastId,
 					CreatedAt: timestampParsed,
 					Result:    results,
 				},
 			}
 			currentSearchParams = &SearchAfterParams{
-				Id:        lastId,
 				CreatedAt: timestampParsed,
 			}
 			searchAfterChannel <- finalResult
@@ -304,14 +298,11 @@ func buildSearchWithPitQuery(
 	}
 	query["sort"] = []map[string]interface{}{
 		{
-			"_id": "asc",
-		},
-		{
 			"created_at": "asc",
 		},
 	}
 	if searchAfterParams != nil {
-		query["search_after"] = []interface{}{searchAfterParams.Id, searchAfterParams.CreatedAt}
+		query["search_after"] = []interface{}{searchAfterParams.CreatedAt}
 	}
 	return query
 }
