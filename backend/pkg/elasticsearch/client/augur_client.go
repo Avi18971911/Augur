@@ -29,6 +29,15 @@ type AugurClient interface {
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default
 	Search(ctx context.Context, query string, indices []string, queryResultSize *int) ([]map[string]interface{}, error)
+	// SearchAfter searches for documents in the index using the search_after parameter. This allows for Pagination.
+	// https://www.elastic.co/guide/en/elasticsearch/reference/master/paginate-search-results.html
+	SearchAfter(
+		ctx context.Context,
+		query map[string]interface{},
+		indices []string,
+		searchAfterParams *SearchAfterParams,
+		queryResultSize *int,
+	) <-chan SearchAfterResult
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
