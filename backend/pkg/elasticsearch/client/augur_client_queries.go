@@ -106,40 +106,123 @@ type SearchAfterParams struct {
 	CreatedAt time.Time
 }
 
+type SearchAfterResult struct {
+	Success *SearchAfterSuccess
+	Error   *error
+}
+
+type SearchAfterSuccess struct {
+	Id        string
+	CreatedAt time.Time
+	Result    []map[string]interface{}
+}
+
 func (a *AugurClientImpl) SearchAfter(
 	ctx context.Context,
 	query map[string]interface{},
 	indices []string,
 	searchAfterParams *SearchAfterParams,
 	querySize *int,
-) (string, bool, error) {
+) <-chan SearchAfterResult {
 	keepAlive := "1m"
-	pitId, err := a.openPointInTime(ctx, indices, keepAlive)
-	if err != nil {
-		return s, b, err2
-	}
+	searchAfterChannel := make(chan SearchAfterResult)
+	go func() {
+		defer close(searchAfterChannel)
 
-	defer a.closePointInTime(ctx, pitId, err)
-	pitQuery := buildSearchWithPitQuery(query, pitId, searchAfterParams)
-	pitQueryJson, err := json.Marshal(pitQuery)
-	if err != nil {
-		return "", false, fmt.Errorf("failed to marshal pit query: %w", err)
-	}
+		var currentSearchParams = searchAfterParams
+		pitId, err := a.openPointInTime(ctx, indices, keepAlive)
+		if err != nil {
+			searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to open point in time: %w", err))
+			return
+		}
+		defer a.closePointInTime(ctx, pitId)
 
-	res, err := a.es.Search(
-		a.es.Search.WithContext(ctx),
-		a.es.Search.WithIndex(indices...),
-		a.es.Search.WithBody(strings.NewReader(string(pitQueryJson))),
-		a.es.Search.WithSize(getQuerySize(querySize)),
-	)
-	if err != nil {
-		return "", false, fmt.Errorf("failed to execute query: %w", err)
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return "", false, fmt.Errorf("failed to execute query: %s", res.String())
-	}
-	return pitId, true, nil
+		for {
+			pitQuery := buildSearchWithPitQuery(query, pitId, currentSearchParams)
+			pitQueryJson, err := json.Marshal(pitQuery)
+			if err != nil {
+				searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to marshal pit query: %w", err))
+				return
+			}
+
+			searchCtx, searchCancel := context.WithTimeout(ctx, timeOut)
+			res, err := a.es.Search(
+				a.es.Search.WithContext(searchCtx),
+				a.es.Search.WithIndex(indices...),
+				a.es.Search.WithBody(strings.NewReader(string(pitQueryJson))),
+				a.es.Search.WithSize(getQuerySize(querySize)),
+			)
+
+			if err != nil {
+				searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to execute query: %w", err))
+				searchCancel()
+				return
+			}
+
+			if res.IsError() {
+				searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to execute query: %s", res.String()))
+				searchCancel()
+				res.Body.Close()
+				return
+			}
+
+			var esResponse model.EsResponse
+			if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+				searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to decode response body: %w", err))
+				searchCancel()
+				res.Body.Close()
+				return
+			}
+			if len(esResponse.Hits.HitArray) == 0 {
+				searchCancel()
+				res.Body.Close()
+				break // No more results
+			}
+
+			var results []map[string]interface{}
+			for _, hit := range esResponse.Hits.HitArray {
+				results = append(results, hit.Source)
+				results[len(results)-1]["_id"] = hit.ID
+			}
+
+			lastDoc := esResponse.Hits.HitArray[len(esResponse.Hits.HitArray)-1]
+			lastId := lastDoc.ID
+			timestampString, ok := lastDoc.Source["created_at"].(string)
+			if !ok {
+				searchAfterChannel <- createSearchAfterFailure(
+					fmt.Errorf("failed to convert timestamp to string %v", lastDoc.Source["created_at"]),
+				)
+				searchCancel()
+				res.Body.Close()
+				return
+			}
+			timestampParsed, err := NormalizeTimestampToNanoseconds(timestampString)
+			if err != nil {
+				searchAfterChannel <- createSearchAfterFailure(
+					fmt.Errorf("failed to convert timestamp '%s' to time.Time: %w", timestampString, err),
+				)
+				searchCancel()
+				res.Body.Close()
+				return
+			}
+			finalResult := SearchAfterResult{
+				Success: &SearchAfterSuccess{
+					Id:        lastId,
+					CreatedAt: timestampParsed,
+					Result:    results,
+				},
+			}
+			currentSearchParams = &SearchAfterParams{
+				Id:        lastId,
+				CreatedAt: timestampParsed,
+			}
+			searchAfterChannel <- finalResult
+			searchCancel()
+			res.Body.Close()
+		}
+	}()
+
+	return searchAfterChannel
 }
 
 func (a *AugurClientImpl) openPointInTime(
@@ -168,9 +251,9 @@ func (a *AugurClientImpl) openPointInTime(
 	return pitId, err
 }
 
-func (a *AugurClientImpl) closePointInTime(ctx context.Context, pitID string, err error) error {
+func (a *AugurClientImpl) closePointInTime(ctx context.Context, pitID string) error {
 	var buf bytes.Buffer
-	body := map[string]interface{}{"pit_id": pitID}
+	body := map[string]interface{}{"id": pitID}
 	if err := json.NewEncoder(&buf).Encode(body); err != nil {
 		log.Fatalf("Error encoding close PIT request body: %v", err)
 	}
@@ -231,4 +314,11 @@ func buildSearchWithPitQuery(
 		query["search_after"] = []interface{}{searchAfterParams.Id, searchAfterParams.CreatedAt}
 	}
 	return query
+}
+
+func createSearchAfterFailure(err error) SearchAfterResult {
+	return SearchAfterResult{
+		Success: nil,
+		Error:   &err,
+	}
 }
