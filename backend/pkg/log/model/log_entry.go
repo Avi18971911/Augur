@@ -4,6 +4,7 @@ import "time"
 
 type LogEntry struct {
 	Id        string    `json:"_id,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	Timestamp time.Time `json:"timestamp"`
 	Severity  Level     `json:"severity"`
 	Message   string    `json:"message"`

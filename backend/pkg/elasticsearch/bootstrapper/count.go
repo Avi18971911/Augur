@@ -9,6 +9,9 @@ var countIndex = map[string]interface{}{
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"type": "date",
+			},
 			"cluster_id": map[string]interface{}{
 				"type": "keyword",
 			},

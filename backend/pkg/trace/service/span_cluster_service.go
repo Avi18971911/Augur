@@ -57,6 +57,7 @@ func getSpansWithClusterId(spans []model.Span) []model.Span {
 	for i, span := range spans {
 		newSpans[i] = model.Span{
 			Id:           span.Id,
+			CreatedAt:    span.CreatedAt,
 			SpanID:       span.SpanID,
 			ParentSpanID: span.ParentSpanID,
 			TraceID:      span.TraceID,

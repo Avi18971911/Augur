@@ -98,10 +98,16 @@ func (a *AugurClientImpl) UpdateByQuery(
 	return nil
 }
 
+type SearchAfterParams struct {
+	Id    string
+
+}
+
 func (a *AugurClientImpl) SearchAfter(
 	ctx context.Context,
 	query map[string]interface{},
 	indices []string,
+	searchAfterParams
 	orderingParams []map[string]string,
 	querySize *int,
 ) (string, bool, error) {

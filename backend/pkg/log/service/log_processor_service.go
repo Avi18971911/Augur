@@ -73,6 +73,7 @@ func getLogsWithClusterId(logs []model.LogEntry) []model.LogEntry {
 	for i, log := range logs {
 		newLogs[i] = model.LogEntry{
 			Id:        log.Id,
+			CreatedAt: log.CreatedAt,
 			Timestamp: log.Timestamp,
 			Severity:  log.Severity,
 			Message:   log.Message,

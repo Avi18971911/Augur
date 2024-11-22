@@ -112,6 +112,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 	clusterEvent := getClusterString(serviceName, span.Name, spanKind, getAttributesString(attributes))
 
 	return model.Span{
+		CreatedAt:    time.Now().UTC(),
 		SpanID:       spanId,
 		ParentSpanID: parentSpanId,
 		TraceID:      traceId,

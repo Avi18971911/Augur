@@ -90,6 +90,7 @@ func (cs *CountService) updateCounts(
 			},
 		},
 		"upsert": map[string]interface{}{
+			"created_at":     time.Now().UTC(),
 			"cluster_id":     clusterId,
 			"co_cluster_id":  otherClusterId,
 			"occurrences":    countInfo.Occurrences,

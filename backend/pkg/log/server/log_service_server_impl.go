@@ -81,6 +81,7 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	spanId := hex.EncodeToString(log.SpanId)
 	return model.LogEntry{
 		Id:        generateLogId(timestamp, message),
+		CreatedAt: time.Now().UTC(),
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,

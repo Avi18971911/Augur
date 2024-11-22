@@ -9,6 +9,9 @@ var spanIndex = map[string]interface{}{
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
+			"created_at": map[string]string{
+				"type": "date",
+			},
 			"span_id": map[string]string{
 				"type": "keyword",
 			},
