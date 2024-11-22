@@ -61,6 +61,10 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	if err != nil {
 		return err
 	}
+	err = cs.increaseOccurrencesForMisses(ctx, clusterId, countMap)
+	if err != nil {
+		cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
+	}
 	for otherClusterId, countInfo := range countMap {
 		err = cs.updateCounts(ctx, clusterId, otherClusterId, countInfo)
 		if err != nil {
@@ -130,7 +134,6 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 			return nil, err
 		}
 		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
-		err = cs.increaseOccurrencesForMisses(ctx, clusterId, coOccurringClustersByClusterId)
 		if err != nil {
 			cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
 		}
@@ -193,11 +196,11 @@ func (cs *CountService) getCoOccurringCluster(
 func (cs *CountService) increaseOccurrencesForMisses(
 	ctx context.Context,
 	clusterId string,
-	coOccurringClusters map[string][]model.Cluster,
+	coOccurringClustersByCount map[string]CountInfo,
 ) error {
-	listOfCoOccurringClusters := make([]string, len(coOccurringClusters))
+	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
 	i := 0
-	for key, _ := range coOccurringClusters {
+	for key, _ := range coOccurringClustersByCount {
 		listOfCoOccurringClusters[i] = key
 		i++
 	}
