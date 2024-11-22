@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/elastic/go-elasticsearch/v8"
 	"os"
 )
@@ -47,7 +47,7 @@ func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) 
 }
 
 func deleteAllDocuments(es *elasticsearch.Client) error {
-	indexes := []string{db_model.LogIndexName, db_model.SpanIndexName, db_model.CountIndexName}
+	indexes := []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName, bootstrapper.CountIndexName}
 
 	query := map[string]interface{}{
 		"query": map[string]interface{}{

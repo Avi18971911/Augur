@@ -3,8 +3,8 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/Avi18971911/Augur/pkg/trace/service"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		err = loadTestDataFromFile(es, db_model.SpanIndexName, "data_dump/span_index_array.json")
+		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data_dump/span_index_array.json")
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}
@@ -39,7 +39,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newSpan.ClusterId)
 		spansQuery := getSpansWithClusterIdQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, spansQuery, []string{db_model.SpanIndexName}, &querySize)
+		docs, err := ac.Search(ctx, spansQuery, []string{bootstrapper.SpanIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for similar spans in Elasticsearch: %v", err)
 		}
@@ -58,7 +58,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		err = loadTestDataFromFile(es, db_model.SpanIndexName, "data_dump/span_index_array.json")
+		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data_dump/span_index_array.json")
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}

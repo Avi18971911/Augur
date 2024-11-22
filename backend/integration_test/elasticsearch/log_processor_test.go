@@ -3,8 +3,8 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
 	"github.com/stretchr/testify/assert"
@@ -43,8 +43,8 @@ func TestUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newLog.ClusterId)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, logsQuery, []string{db_model.LogIndexName}, &querySize)
-		logDocs, err := client.ConvertToLogDocuments(docs)
+		docs, err := ac.Search(ctx, logsQuery, []string{bootstrapper.LogIndexName}, &querySize)
+		logDocs, err := service.ConvertToLogDocuments(docs)
 		assert.Equal(t, 10, len(logDocs))
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)

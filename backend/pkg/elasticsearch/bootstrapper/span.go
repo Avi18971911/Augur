@@ -1,4 +1,4 @@
-package db_model
+package bootstrapper
 
 const SpanIndexName = "span_index"
 

@@ -4,7 +4,6 @@ import (
 	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"net"
 
@@ -69,13 +68,13 @@ func main() {
 	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
 		ristrettoTraceCache,
 		ac,
-		db_model.SpanIndexName,
+		bootstrapper.SpanIndexName,
 		logger,
 	)
 	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](
 		ristrettoLogCache,
 		ac,
-		db_model.LogIndexName,
+		bootstrapper.LogIndexName,
 		logger,
 	)
 

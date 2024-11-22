@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -98,7 +98,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
-	totalLogs, err := client.ConvertToLogDocuments(res)
+	totalLogs, err := ConvertToLogDocuments(res)
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to convert search results to log documents: %w", err)
 	}
@@ -126,13 +126,54 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 
 	newLogEntry := parsedLogs[len(parsedLogs)-1]
 
-	/*
-		DISABLE THIS FOR NOW: We want to bulk index logs instead of indexing one by one
-		err = lps.ac.Index(newLogEntry, nil, augurElasticsearch.LogIndexName)
-		if err != nil {
-			return model.LogEntry{}, fmt.Errorf("failed to index new log in Elasticsearch: %w", err)
-		}
-	*/
-
 	return newLogEntry, nil
+}
+
+func ConvertToLogDocuments(data []map[string]interface{}) ([]model.LogEntry, error) {
+	var docs []model.LogEntry
+
+	for _, item := range data {
+		doc := model.LogEntry{}
+
+		timestamp, ok := item["timestamp"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert timestamp to string %v", item["timestamp"])
+		}
+
+		timestampParsed, err := client.NormalizeTimestampToNanoseconds(timestamp)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert timestamp '%s' to time.Time: %v", timestamp, err)
+		}
+
+		doc.Timestamp = timestampParsed
+
+		severity, ok := item["severity"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert severity to string")
+		}
+
+		doc.Severity = model.Level(severity)
+
+		message, ok := item["message"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert message to string")
+		}
+		doc.Message = message
+
+		service, ok := item["service"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert service to string")
+		}
+		doc.Service = service
+
+		clusterId, ok := item["cluster_id"].(string)
+		if ok {
+			doc.ClusterId = clusterId
+		}
+
+		doc.Id = item["_id"].(string)
+		docs = append(docs, doc)
+	}
+
+	return docs, nil
 }

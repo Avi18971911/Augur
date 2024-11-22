@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/count/model"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"go.uber.org/zap"
 	"time"
 )
 
 const csTimeOut = 2 * time.Second
 
-var indices = []string{db_model.LogIndexName, db_model.SpanIndexName}
+var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
 type LogInfo struct {
 	Timestamp time.Time
@@ -102,7 +102,7 @@ func (cs *CountService) updateCounts(
 	err := cs.ac.Upsert(
 		upsertCtx,
 		updateStatement,
-		db_model.CountIndexName,
+		bootstrapper.CountIndexName,
 		clusterId,
 	)
 	if err != nil {
@@ -216,7 +216,7 @@ func (cs *CountService) increaseOccurrencesForMisses(
 		)
 		return fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	updateIndices := []string{db_model.CountIndexName}
+	updateIndices := []string{bootstrapper.CountIndexName}
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	return cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)

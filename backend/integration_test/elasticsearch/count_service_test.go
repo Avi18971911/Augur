@@ -6,8 +6,8 @@ import (
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
@@ -107,7 +107,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -162,7 +162,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -231,7 +231,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -300,7 +300,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -490,7 +490,7 @@ func TestSpanCount(t *testing.T) {
 		}
 		searchQueryBody := countQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -511,7 +511,7 @@ func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = ac.BulkIndex(ctx, dataMap, metaMap, db_model.LogIndexName)
+	err = ac.BulkIndex(ctx, dataMap, metaMap, bootstrapper.LogIndexName)
 	if err != nil {
 		return err
 	}
