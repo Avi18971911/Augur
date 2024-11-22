@@ -6,7 +6,8 @@ import (
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestLogCount(t *testing.T) {
 	}
 	var querySize = 100
 
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
+	ac := client.NewAugurClientImpl(es, client.Immediate)
 	cs := countService.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences of logs within the same timespan", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -106,7 +107,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -161,7 +162,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -230,7 +231,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -299,7 +300,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -317,7 +318,7 @@ func TestSpanCount(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Wait)
+	ac := client.NewAugurClientImpl(es, client.Wait)
 	cs := countService.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences of logs within the same timespan", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -489,7 +490,7 @@ func TestSpanCount(t *testing.T) {
 		}
 		searchQueryBody := countQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{elasticsearch.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{db_model.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -503,14 +504,14 @@ func TestSpanCount(t *testing.T) {
 	})
 }
 
-func loadDataIntoElasticsearch[Data any](ac elasticsearch.AugurClient, data []Data) error {
-	metaMap, dataMap, err := elasticsearch.ToMetaAndDataMap(data)
+func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) error {
+	metaMap, dataMap, err := client.ToMetaAndDataMap(data)
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = ac.BulkIndex(ctx, dataMap, metaMap, elasticsearch.LogIndexName)
+	err = ac.BulkIndex(ctx, dataMap, metaMap, db_model.LogIndexName)
 	if err != nil {
 		return err
 	}

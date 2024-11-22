@@ -1,10 +1,12 @@
-package elasticsearch
+package client
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"strings"
 	"time"
 
@@ -208,19 +210,12 @@ func (a *AugurClientImpl) Search(
 	indices []string,
 	queryResultSize *int,
 ) ([]map[string]interface{}, error) {
-	var trueQueryResultSize int
-	if queryResultSize == nil {
-		trueQueryResultSize = SearchResultSize
-	} else {
-		trueQueryResultSize = *queryResultSize
-	}
-
 	res, err := a.es.Search(
 		a.es.Search.WithContext(ctx),
 		a.es.Search.WithIndex(indices...),
 		a.es.Search.WithBody(strings.NewReader(query)),
 		a.es.Search.WithPretty(),
-		a.es.Search.WithSize(trueQueryResultSize),
+		a.es.Search.WithSize(getQuerySize(queryResultSize)),
 	)
 
 	if err != nil {
@@ -292,6 +287,73 @@ func (a *AugurClientImpl) UpdateByQuery(
 	defer res.Body.Close()
 	if res.IsError() {
 		return fmt.Errorf("update by query error: %s", res.String())
+	}
+	return nil
+}
+
+func (a *AugurClientImpl) SearchAfter(
+	ctx context.Context,
+	query map[string]interface{},
+	indices []string,
+	orderingParams []map[string]string,
+	querySize *int,
+) (string, bool, error) {
+	keepAlive := "1m"
+	pitRes, err := a.es.OpenPointInTime(
+		indices,
+		keepAlive,
+		a.es.OpenPointInTime.WithContext(ctx),
+	)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to open point in time: %w", err)
+	}
+	defer pitRes.Body.Close()
+	if pitRes.IsError() {
+		return "", false, fmt.Errorf("failed to open point in time: %s", pitRes.String())
+	}
+	pitId, err := readPitBody(pitRes.Body)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to read pit id: %w", err)
+	}
+
+	pitQuery := buildSearchWithPitQuery(query, pitId, orderingParams)
+	pitQueryJson, err := json.Marshal(pitQuery)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to marshal pit query: %w", err)
+	}
+
+	res, err := a.es.Search(
+		a.es.Search.WithContext(ctx),
+		a.es.Search.WithIndex(indices...),
+		a.es.Search.WithBody(strings.NewReader(string(pitQueryJson))),
+		a.es.Search.WithSize(getQuerySize(querySize)),
+	)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return "", false, fmt.Errorf("failed to execute query: %s", res.String())
+	}
+}
+
+func (a *AugurClientImpl) closePointInTime(pitID string, ctx context.Context, err error) error {
+	var buf bytes.Buffer
+	body := map[string]interface{}{"pit_id": pitID}
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		log.Fatalf("Error encoding close PIT request body: %v", err)
+	}
+
+	res, err := a.es.ClosePointInTime(
+		a.es.ClosePointInTime.WithBody(&buf),
+		a.es.ClosePointInTime.WithContext(ctx),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to close PIT: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("failed to close PIT: %s", res.String())
 	}
 	return nil
 }
@@ -396,4 +458,24 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]logModel.LogEntry, 
 	}
 
 	return docs, nil
+}
+
+func readPitBody(body io.ReadCloser) (string, error) {
+	var pitResponse map[string]any
+	if err := json.NewDecoder(body).Decode(&pitResponse); err != nil {
+		return "", fmt.Errorf("failed to decode pit response: %w", err)
+	}
+	pitId, ok := pitResponse["id"].(string)
+	if !ok {
+		return "", fmt.Errorf("failed to read pit id")
+	}
+	return pitId, nil
+}
+
+func getQuerySize(querySize *int) int {
+	if querySize == nil {
+		return SearchResultSize
+	} else {
+		return *querySize
+	}
 }

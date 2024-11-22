@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/count/model"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"go.uber.org/zap"
 	"time"
 )
 
 const csTimeOut = 2 * time.Second
 
-var indices = []string{elasticsearch.LogIndexName, elasticsearch.SpanIndexName}
+var indices = []string{db_model.LogIndexName, db_model.SpanIndexName}
 
 type LogInfo struct {
 	Timestamp time.Time
@@ -34,11 +35,11 @@ type TimeInfo struct {
 }
 
 type CountService struct {
-	ac     elasticsearch.AugurClient
+	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewCountService(ac elasticsearch.AugurClient, logger *zap.Logger) *CountService {
+func NewCountService(ac client.AugurClient, logger *zap.Logger) *CountService {
 	return &CountService{
 		ac:     ac,
 		logger: logger,
@@ -101,7 +102,7 @@ func (cs *CountService) updateCounts(
 	err := cs.ac.Upsert(
 		upsertCtx,
 		updateStatement,
-		elasticsearch.CountIndexName,
+		db_model.CountIndexName,
 		clusterId,
 	)
 	if err != nil {
@@ -215,7 +216,7 @@ func (cs *CountService) increaseOccurrencesForMisses(
 		)
 		return fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	updateIndices := []string{elasticsearch.CountIndexName}
+	updateIndices := []string{db_model.CountIndexName}
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	return cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)

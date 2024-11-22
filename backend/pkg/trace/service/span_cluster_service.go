@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -18,11 +19,11 @@ type SpanClusterService interface {
 }
 
 type SpanClusterServiceImpl struct {
-	ac     augurElasticsearch.AugurClient
+	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewSpanClusterService(ac augurElasticsearch.AugurClient, logger *zap.Logger) SpanClusterService {
+func NewSpanClusterService(ac client.AugurClient, logger *zap.Logger) SpanClusterService {
 	return &SpanClusterServiceImpl{
 		ac:     ac,
 		logger: logger,
@@ -161,7 +162,7 @@ func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) 
 		if !ok {
 			return nil, fmt.Errorf("failed to convert start_time to string %s", hit["start_time"])
 		}
-		startTimeParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(startTime)
+		startTimeParsed, err := client.NormalizeTimestampToNanoseconds(startTime)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse start_time to time.Time")
 		}
@@ -171,7 +172,7 @@ func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) 
 		if !ok {
 			return nil, fmt.Errorf("failed to convert end_time to string %s", hit["end_time"])
 		}
-		endTimeParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(endTime)
+		endTimeParsed, err := client.NormalizeTimestampToNanoseconds(endTime)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse end_time to time.Time")
 		}
@@ -225,7 +226,7 @@ func typeEvent(event interface{}) model.SpanEvent {
 	eventName := eventMap["name"].(string)
 	eventAttributes := eventMap["attributes"].(map[string]interface{})
 	eventTimestamp := eventMap["timestamp"].(string)
-	eventTimestampParsed, err := augurElasticsearch.NormalizeTimestampToNanoseconds(eventTimestamp)
+	eventTimestampParsed, err := client.NormalizeTimestampToNanoseconds(eventTimestamp)
 	if err != nil {
 		return model.SpanEvent{}
 	}

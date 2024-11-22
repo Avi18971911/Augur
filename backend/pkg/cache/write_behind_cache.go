@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/zap"
 	"sync"

@@ -3,7 +3,8 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/Avi18971911/Augur/pkg/trace/service"
 	"github.com/stretchr/testify/assert"
@@ -15,14 +16,14 @@ func TestSpanClusterUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
+	ac := client.NewAugurClientImpl(es, client.Immediate)
 	spanClusterer := service.NewSpanClusterService(ac, logger)
 	t.Run("should be able to process and update spans of the same type", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		err = loadTestDataFromFile(es, elasticsearch.SpanIndexName, "data_dump/span_index_array.json")
+		err = loadTestDataFromFile(es, db_model.SpanIndexName, "data_dump/span_index_array.json")
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}
@@ -38,7 +39,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newSpan.ClusterId)
 		spansQuery := getSpansWithClusterIdQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, spansQuery, []string{elasticsearch.SpanIndexName}, &querySize)
+		docs, err := ac.Search(ctx, spansQuery, []string{db_model.SpanIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for similar spans in Elasticsearch: %v", err)
 		}
@@ -57,7 +58,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		err = loadTestDataFromFile(es, elasticsearch.SpanIndexName, "data_dump/span_index_array.json")
+		err = loadTestDataFromFile(es, db_model.SpanIndexName, "data_dump/span_index_array.json")
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}

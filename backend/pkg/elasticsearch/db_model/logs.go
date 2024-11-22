@@ -1,4 +1,4 @@
-package elasticsearch
+package db_model
 
 const LogIndexName = "log_index"
 

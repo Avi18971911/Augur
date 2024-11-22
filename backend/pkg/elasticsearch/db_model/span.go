@@ -1,4 +1,4 @@
-package elasticsearch
+package db_model
 
 const SpanIndexName = "span_index"
 

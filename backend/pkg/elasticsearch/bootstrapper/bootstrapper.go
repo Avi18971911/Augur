@@ -1,8 +1,10 @@
-package elasticsearch
+package bootstrapper
 
 import (
 	"encoding/json"
 	"fmt"
+	elasticsearch2 "github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"strings"
 	"time"
 
@@ -31,15 +33,15 @@ func (bs *Bootstrapper) BootstrapElasticsearch() error {
 		return fmt.Errorf("failed to connect to Elasticsearch: %w", err)
 	}
 
-	if err := bs.createIndex(LogIndexName, logIndex); err != nil {
+	if err := bs.createIndex(db_model.LogIndexName, elasticsearch2.logIndex); err != nil {
 		return fmt.Errorf("error creating index log template: %w", err)
 	}
 
-	if err := bs.createIndex(SpanIndexName, spanIndex); err != nil {
+	if err := bs.createIndex(db_model.SpanIndexName, elasticsearch2.spanIndex); err != nil {
 		return fmt.Errorf("error creating index trace template: %w", err)
 	}
 
-	if err := bs.createIndex(CountIndexName, countIndex); err != nil {
+	if err := bs.createIndex(db_model.CountIndexName, elasticsearch2.countIndex); err != nil {
 		return fmt.Errorf("error creating index trace template: %w", err)
 	}
 

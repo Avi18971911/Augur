@@ -3,7 +3,8 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ func TestUpdates(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
-	ac := elasticsearch.NewAugurClientImpl(es, elasticsearch.Immediate)
+	ac := client.NewAugurClientImpl(es, client.Immediate)
 	logProcessor := service.NewLogProcessorService(ac, logger)
 	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -42,8 +43,8 @@ func TestUpdates(t *testing.T) {
 		assert.NotEqual(t, "", newLog.ClusterId)
 		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, logsQuery, []string{elasticsearch.LogIndexName}, &querySize)
-		logDocs, err := elasticsearch.ConvertToLogDocuments(docs)
+		docs, err := ac.Search(ctx, logsQuery, []string{db_model.LogIndexName}, &querySize)
+		logDocs, err := client.ConvertToLogDocuments(docs)
 		assert.Equal(t, 10, len(logDocs))
 		for _, doc := range logDocs {
 			assert.Equal(t, newLog.ClusterId, doc.ClusterId)

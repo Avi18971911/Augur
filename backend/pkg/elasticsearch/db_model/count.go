@@ -1,4 +1,4 @@
-package elasticsearch
+package db_model
 
 const CountIndexName = "count_index"
 

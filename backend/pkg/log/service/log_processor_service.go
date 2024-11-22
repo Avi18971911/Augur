@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/db_model"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -18,11 +19,11 @@ type LogProcessorService interface {
 }
 
 type LogProcessorServiceImpl struct {
-	ac     augurElasticsearch.AugurClient
+	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewLogProcessorService(ac augurElasticsearch.AugurClient, logger *zap.Logger) LogProcessorService {
+func NewLogProcessorService(ac client.AugurClient, logger *zap.Logger) LogProcessorService {
 	return &LogProcessorServiceImpl{
 		ac:     ac,
 		logger: logger,
@@ -97,7 +98,7 @@ func (lps *LogProcessorServiceImpl) ParseLogWithMessage(
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
-	totalLogs, err := augurElasticsearch.ConvertToLogDocuments(res)
+	totalLogs, err := client.ConvertToLogDocuments(res)
 	if err != nil {
 		return model.LogEntry{}, fmt.Errorf("failed to convert search results to log documents: %w", err)
 	}
