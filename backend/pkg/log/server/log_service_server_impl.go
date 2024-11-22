@@ -59,13 +59,17 @@ func (lss *LogServiceServerImpl) Export(
 						lss.logger.Error("Failed to parse log with message", zap.Error(err))
 						return
 					}
-					err = lss.cache.Put(processCtx, logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
+					insertCtx, insertCancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer insertCancel()
+					err = lss.cache.Put(insertCtx, logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
 					if err != nil {
 						lss.logger.Error("Failed to put log in cache", zap.Error(err))
 						return
 					}
+					countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer countCancel()
 					err = lss.countService.CountAndUpdateOccurrences(
-						processCtx,
+						countCtx,
 						logWithClusterId.ClusterId,
 						count.TimeInfo{
 							LogInfo: &count.LogInfo{

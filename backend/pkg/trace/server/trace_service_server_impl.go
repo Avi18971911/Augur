@@ -41,8 +41,6 @@ func (tss TraceServiceServerImpl) Export(
 	ctx context.Context,
 	req *protoTrace.ExportTraceServiceRequest,
 ) (*protoTrace.ExportTraceServiceResponse, error) {
-	putCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
 	for _, resourceSpan := range req.ResourceSpans {
 		serviceName := getServiceName(resourceSpan)
 		if serviceName == "Never Assigned" {
@@ -54,36 +52,40 @@ func (tss TraceServiceServerImpl) Export(
 		groupedSpans := groupTypedSpansByTraceID(typedSpans)
 		go func(groupedSpans map[string][]model.Span) {
 			for traceID, spans := range groupedSpans {
-				newSpansWithClusterId := make([]model.Span, len(spans))
-				for i, span := range spans {
-					func() {
-						clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
-						defer clusterCancel()
-						countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
-						defer countCancel()
-						newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
-						if err != nil {
-							tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
-							return
-						}
-						var buckets = []count.Bucket{500}
-						err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
-							SpanInfo: &count.SpanInfo{
-								FromTime: newSpan.StartTime,
-								ToTime:   newSpan.EndTime,
-							},
-						}, buckets)
-						if err != nil {
-							tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
-							return
-						}
-						newSpansWithClusterId[i] = newSpan
-					}()
-				}
-				err := tss.writeBehindCache.Put(putCtx, traceID, newSpansWithClusterId)
-				if err != nil {
-					tss.logger.Error("Failed to put span in cache", zap.Error(err))
-				}
+				func() {
+					newSpansWithClusterId := make([]model.Span, len(spans))
+					for i, span := range spans {
+						func() {
+							clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
+							defer clusterCancel()
+							countCtx, countCancel := context.WithTimeout(context.Background(), 10*time.Second)
+							defer countCancel()
+							newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
+							if err != nil {
+								tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
+								return
+							}
+							var buckets = []count.Bucket{500}
+							err = tss.countService.CountAndUpdateOccurrences(countCtx, newSpan.ClusterId, count.TimeInfo{
+								SpanInfo: &count.SpanInfo{
+									FromTime: newSpan.StartTime,
+									ToTime:   newSpan.EndTime,
+								},
+							}, buckets)
+							if err != nil {
+								tss.logger.Error("Failed to count and update occurrences", zap.Error(err))
+								return
+							}
+							newSpansWithClusterId[i] = newSpan
+						}()
+					}
+					putCtx, putCancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer putCancel()
+					err := tss.writeBehindCache.Put(putCtx, traceID, newSpansWithClusterId)
+					if err != nil {
+						tss.logger.Error("Failed to put span in cache", zap.Error(err))
+					}
+				}()
 			}
 		}(groupedSpans)
 	}
