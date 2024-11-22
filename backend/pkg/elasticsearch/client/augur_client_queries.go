@@ -9,7 +9,10 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
 )
+
+const timeOut = 1 * time.Second
 
 func (a *AugurClientImpl) Search(
 	ctx context.Context,
@@ -99,37 +102,25 @@ func (a *AugurClientImpl) UpdateByQuery(
 }
 
 type SearchAfterParams struct {
-	Id    string
-
+	Id        string
+	CreatedAt time.Time
 }
 
 func (a *AugurClientImpl) SearchAfter(
 	ctx context.Context,
 	query map[string]interface{},
 	indices []string,
-	searchAfterParams
-	orderingParams []map[string]string,
+	searchAfterParams *SearchAfterParams,
 	querySize *int,
 ) (string, bool, error) {
 	keepAlive := "1m"
-	pitRes, err := a.es.OpenPointInTime(
-		indices,
-		keepAlive,
-		a.es.OpenPointInTime.WithContext(ctx),
-	)
+	pitId, err := a.openPointInTime(ctx, indices, keepAlive)
 	if err != nil {
-		return "", false, fmt.Errorf("failed to open point in time: %w", err)
-	}
-	defer pitRes.Body.Close()
-	if pitRes.IsError() {
-		return "", false, fmt.Errorf("failed to open point in time: %s", pitRes.String())
-	}
-	pitId, err := readPitBody(pitRes.Body)
-	if err != nil {
-		return "", false, fmt.Errorf("failed to read pit id: %w", err)
+		return s, b, err2
 	}
 
-	pitQuery := buildSearchWithPitQuery(query, pitId, orderingParams)
+	defer a.closePointInTime(ctx, pitId, err)
+	pitQuery := buildSearchWithPitQuery(query, pitId, searchAfterParams)
 	pitQueryJson, err := json.Marshal(pitQuery)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to marshal pit query: %w", err)
@@ -151,16 +142,44 @@ func (a *AugurClientImpl) SearchAfter(
 	return pitId, true, nil
 }
 
-func (a *AugurClientImpl) closePointInTime(pitID string, ctx context.Context, err error) error {
+func (a *AugurClientImpl) openPointInTime(
+	ctx context.Context,
+	indices []string,
+	keepAlive string,
+) (string, error) {
+	openPitCtx, cancel := context.WithTimeout(ctx, timeOut)
+	defer cancel()
+	pitRes, err := a.es.OpenPointInTime(
+		indices,
+		keepAlive,
+		a.es.OpenPointInTime.WithContext(openPitCtx),
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to open point in time: %w", err)
+	}
+	defer pitRes.Body.Close()
+	if pitRes.IsError() {
+		return "", fmt.Errorf("failed to open point in time: %s", pitRes.String())
+	}
+	pitId, err := readPitBody(pitRes.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read pit id: %w", err)
+	}
+	return pitId, err
+}
+
+func (a *AugurClientImpl) closePointInTime(ctx context.Context, pitID string, err error) error {
 	var buf bytes.Buffer
 	body := map[string]interface{}{"pit_id": pitID}
 	if err := json.NewEncoder(&buf).Encode(body); err != nil {
 		log.Fatalf("Error encoding close PIT request body: %v", err)
 	}
 
+	closePitCtx, cancel := context.WithTimeout(ctx, timeOut)
+	defer cancel()
 	res, err := a.es.ClosePointInTime(
 		a.es.ClosePointInTime.WithBody(&buf),
-		a.es.ClosePointInTime.WithContext(ctx),
+		a.es.ClosePointInTime.WithContext(closePitCtx),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to close PIT: %w", err)
@@ -195,13 +214,21 @@ func getQuerySize(querySize *int) int {
 func buildSearchWithPitQuery(
 	query map[string]interface{},
 	pitId string,
-	filterParams []map[string]string,
+	searchAfterParams *SearchAfterParams,
 ) map[string]interface{} {
 	query["pit"] = map[string]string{
 		"id": pitId,
 	}
-	if len(filterParams) > 0 {
-		query["filter"] = filterParams
+	query["sort"] = []map[string]interface{}{
+		{
+			"_id": "asc",
+		},
+		{
+			"created_at": "asc",
+		},
+	}
+	if searchAfterParams != nil {
+		query["search_after"] = []interface{}{searchAfterParams.Id, searchAfterParams.CreatedAt}
 	}
 	return query
 }
