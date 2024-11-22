@@ -66,21 +66,28 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	if err != nil {
 		cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
 	}
+	metaMap := make([]map[string]interface{}, len(countMap))
+	updateMap := make([]map[string]interface{}, len(countMap))
+	i := 0
 	for otherClusterId, countInfo := range countMap {
-		err = cs.updateCounts(ctx, clusterId, otherClusterId, countInfo)
-		if err != nil {
-			return err
-		}
+		meta, update := cs.getUpdateStatement(clusterId, otherClusterId, countInfo)
+		metaMap[i] = meta
+		updateMap[i] = update
+		i++
 	}
-	return nil
+	if len(updateMap) == 0 {
+		return nil
+	}
+	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
+	defer cancel()
+	return cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
 }
 
-func (cs *CountService) updateCounts(
-	ctx context.Context,
+func (cs *CountService) getUpdateStatement(
 	clusterId string,
 	otherClusterId string,
 	countInfo CountInfo,
-) error {
+) (map[string]interface{}, map[string]interface{}) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
@@ -98,24 +105,14 @@ func (cs *CountService) updateCounts(
 		},
 	}
 
-	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
-	defer cancel()
-	err := cs.ac.Upsert(
-		upsertCtx,
-		updateStatement,
-		bootstrapper.CountIndexName,
-		clusterId,
-	)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to upsert occurrences",
-			zap.String("clusterId", clusterId),
-			zap.String("otherClusterId", otherClusterId),
-			zap.Error(err),
-		)
-		return fmt.Errorf("error upserting occurrences: %w", err)
+	metaInfo := map[string]interface{}{
+		"update": map[string]interface{}{
+			"_id":               clusterId,
+			"_index":            bootstrapper.CountIndexName,
+			"retry_on_conflict": 5,
+		},
 	}
-	return nil
+	return metaInfo, updateStatement
 }
 
 func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
@@ -207,7 +204,10 @@ func (cs *CountService) increaseOccurrencesForMisses(
 		i++
 	}
 
-	incrementQuery := incrementNonMatchedClusterIds(clusterId, listOfCoOccurringClusters)
+	incrementQuery := getIncrementNonMatchedClusterIdsQuery(
+		clusterId,
+		listOfCoOccurringClusters,
+	)
 	queryBody, err := json.Marshal(incrementQuery)
 	if err != nil {
 		cs.logger.Error(

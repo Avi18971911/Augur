@@ -96,7 +96,10 @@ func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime
 	}
 }
 
-func incrementNonMatchedClusterIds(coOccurringClusterId string, matchedClusterIds []string) map[string]interface{} {
+func getIncrementNonMatchedClusterIdsQuery(
+	coOccurringClusterId string,
+	matchedClusterIds []string,
+) map[string]interface{} {
 	return map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.increment",

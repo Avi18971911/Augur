@@ -124,10 +124,16 @@ func (a *AugurClientImpl) SearchAfter(
 ) <-chan SearchAfterResult {
 	keepAlive := "1m"
 	searchAfterChannel := make(chan SearchAfterResult)
-	go func() {
+	go func(
+		ctx context.Context,
+		query map[string]interface{},
+		indices []string,
+		searchAfterParams *SearchAfterParams,
+		querySize *int,
+	) {
 		defer close(searchAfterChannel)
 
-		var currentSearchParams = searchAfterParams
+		currentSearchParams := searchAfterParams
 		pitId, err := a.openPointInTime(ctx, indices, keepAlive)
 		if err != nil {
 			searchAfterChannel <- createSearchAfterFailure(fmt.Errorf("failed to open point in time: %w", err))
@@ -214,7 +220,7 @@ func (a *AugurClientImpl) SearchAfter(
 			searchCancel()
 			res.Body.Close()
 		}
-	}()
+	}(ctx, query, indices, searchAfterParams, querySize)
 
 	return searchAfterChannel
 }
@@ -303,6 +309,8 @@ func buildSearchWithPitQuery(
 	}
 	if searchAfterParams != nil {
 		query["search_after"] = []interface{}{searchAfterParams.CreatedAt}
+	} else {
+		query["search_after"] = []interface{}{0}
 	}
 	return query
 }
