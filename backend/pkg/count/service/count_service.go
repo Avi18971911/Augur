@@ -12,7 +12,6 @@ import (
 )
 
 const csTimeOut = 2 * time.Second
-const numUpdateQueryRetries = 10
 
 var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
@@ -85,7 +84,7 @@ func (cs *CountService) updateCoOccurrences(
 	updateMap := make([]map[string]interface{}, len(countMap))
 	i := 0
 	for otherClusterId, countInfo := range countMap {
-		meta, update := getUpdateStatement(clusterId, otherClusterId, countInfo)
+		meta, update := buildUpdateClusterCountsQuery(clusterId, otherClusterId, countInfo)
 		metaMap[i] = meta
 		updateMap[i] = update
 		i++
@@ -151,7 +150,7 @@ func (cs *CountService) getCoOccurringCluster(
 ) ([]model.Cluster, error) {
 	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	queryBody, err := json.Marshal(countCoOccurrencesQueryBuilder(clusterId, fromTime, toTime))
+	queryBody, err := json.Marshal(buildGetCoOccurringClustersQuery(clusterId, fromTime, toTime))
 	if err != nil {
 		cs.logger.Error(
 			"Failed to marshal count co-occurrences query",
@@ -187,17 +186,29 @@ func (cs *CountService) increaseOccurrencesForMisses(
 	clusterId string,
 	coOccurringClustersByCount map[string]CountInfo,
 ) error {
-	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
-	if len(coOccurringClustersByCount) == 0 {
+	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
+	if len(listOfCoOccurringClusters) == 0 {
 		return nil
 	}
-	i := 0
-	for key, _ := range coOccurringClustersByCount {
-		listOfCoOccurringClusters[i] = key
-		i++
+
+	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
+	if err != nil {
+		return err
 	}
 
-	incrementQuery := getIncrementNonMatchedClusterIdsQuery(
+	err = cs.updateOccurrencesForMisses(ctx, clusterIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cs *CountService) getNonMatchingClusterIds(
+	ctx context.Context,
+	clusterId string,
+	listOfCoOccurringClusters []string,
+) ([]model.Cluster, error) {
+	incrementQuery := buildGetNonMatchedClusterIdsQuery(
 		clusterId,
 		listOfCoOccurringClusters,
 	)
@@ -208,40 +219,55 @@ func (cs *CountService) increaseOccurrencesForMisses(
 			zap.String("clusterId", clusterId),
 			zap.Error(err),
 		)
-		return fmt.Errorf("error marshaling increment query: %w", err)
+		return nil, fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	updateIndices := []string{bootstrapper.CountIndexName}
+	searchIndices := []string{bootstrapper.CountIndexName}
+	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
+	defer searchCancel()
+	res, err := cs.ac.Search(searchCtx, string(queryBody), searchIndices, nil)
+	nonMatchingClusters, err := convertDocsToClusters(res)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to convert search results to cluster documents",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("error converting search results to cluster: %w", err)
+	}
+	return nonMatchingClusters, nil
+}
+
+func (cs *CountService) updateOccurrencesForMisses(
+	ctx context.Context,
+	clusterIds []model.Cluster,
+) error {
+	metaMap := make([]map[string]interface{}, len(clusterIds))
+	updateMap := make([]map[string]interface{}, len(clusterIds))
+	for i, clusterId := range clusterIds {
+		meta, update := buildUpdateNonMatchedClusterIdsQuery(clusterId.ClusterId)
+		metaMap[i] = meta
+		updateMap[i] = update
+	}
+	if len(updateMap) == 0 {
+		return nil
+	}
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	for i := 0; i < numUpdateQueryRetries; i++ {
-		err = cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)
-		if err == nil {
-			return nil
-		}
-		isConflict, parseError := client.IsErrorConflict(err)
-		if parseError != nil {
-			cs.logger.Error(
-				"Failed to parse elasticserach error",
-				zap.String("clusterId", clusterId),
-				zap.Error(parseError),
-			)
-			return fmt.Errorf("error parsing error: %w", parseError)
-		}
-		if isConflict {
-			cs.logger.Warn(
-				"Conflict in update by query",
-				zap.String("clusterId", clusterId),
-			)
-			continue
-		}
-		return err
+	err := cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
+	if err != nil {
+		cs.logger.Error("Failed to update occurrences for misses", zap.Error(err))
 	}
-	cs.logger.Error(
-		"Failed to update by query, retried too many times",
-		zap.String("clusterId", clusterId),
-		zap.Error(err),
-	)
-	return nil
+	return err
+}
+
+func getListOfCoOccurringClusters(coOccurringClustersByCount map[string]CountInfo) []string {
+	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
+	i := 0
+	for key, _ := range coOccurringClustersByCount {
+		listOfCoOccurringClusters[i] = key
+		i++
+	}
+	return listOfCoOccurringClusters
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {

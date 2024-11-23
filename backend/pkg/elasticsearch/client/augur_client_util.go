@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/model"
 	"strings"
 	"time"
 )
@@ -58,48 +57,4 @@ func NormalizeTimestampToNanoseconds(timestamp string) (time.Time, error) {
 
 	layout := "2006-01-02T15:04:05.000000000Z"
 	return time.Parse(layout, timestamp)
-}
-
-func extractJSON(input string) (string, error) {
-	start := -1
-	for i, char := range input {
-		if char == '{' {
-			start = i
-			break
-		}
-	}
-	if start == -1 {
-		return "", fmt.Errorf("no JSON object found in the input string")
-	}
-	return input[start:], nil
-}
-
-func ParseElasticSearchError(err error) (*model.ElasticsearchError, error) {
-	var esError *model.ElasticsearchError
-	jsonError, err := extractJSON(err.Error())
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract JSON from error: %w", err)
-	}
-	if err := json.Unmarshal([]byte(jsonError), &esError); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal error to Elasticsearch Error: %w", err)
-	}
-	return esError, nil
-}
-
-func IsErrorConflict(err error) (bool, error) {
-	if err == nil {
-		return false, nil
-	}
-	var parsedError *model.ElasticsearchError
-	if parsedError, err = ParseElasticSearchError(err); err != nil {
-		return false, fmt.Errorf("failed to parse elasticsearch error: %v", err)
-	}
-	var hasConflict = false
-	for _, failure := range parsedError.Failures {
-		if failure.Status == 409 {
-			hasConflict = true
-			break
-		}
-	}
-	return hasConflict, nil
 }

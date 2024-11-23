@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime time.Time) map[string]interface{} {
+func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTime time.Time) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -53,17 +53,11 @@ func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime
 	}
 }
 
-func getIncrementNonMatchedClusterIdsQuery(
+func buildGetNonMatchedClusterIdsQuery(
 	coOccurringClusterId string,
 	matchedClusterIds []string,
 ) map[string]interface{} {
 	return map[string]interface{}{
-		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.increment",
-			"params": map[string]interface{}{
-				"increment": 1,
-			},
-		},
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
 				"must": []map[string]interface{}{
@@ -82,10 +76,32 @@ func getIncrementNonMatchedClusterIdsQuery(
 				},
 			},
 		},
+		"_source": []string{"cluster_id"}, // Retrieve only the document IDs
 	}
 }
 
-func getUpdateStatement(
+func buildUpdateNonMatchedClusterIdsQuery(
+	clusterId string,
+) (map[string]interface{}, map[string]interface{}) {
+	updateStatement := map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.occurrences += params.increment",
+			"params": map[string]interface{}{
+				"increment": 1,
+			},
+		},
+	}
+	metaInfo := map[string]interface{}{
+		"update": map[string]interface{}{
+			"_id":               clusterId,
+			"_index":            bootstrapper.CountIndexName,
+			"retry_on_conflict": 5,
+		},
+	}
+	return metaInfo, updateStatement
+}
+
+func buildUpdateClusterCountsQuery(
 	clusterId string,
 	otherClusterId string,
 	countInfo CountInfo,
