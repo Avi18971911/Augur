@@ -12,6 +12,7 @@ import (
 )
 
 const csTimeOut = 2 * time.Second
+const numUpdateQueryRetries = 10
 
 var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
@@ -62,15 +63,29 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	if err != nil {
 		return err
 	}
+	err = cs.updateCoOccurrences(ctx, clusterId, countMap)
+	if err != nil {
+		cs.logger.Error("Failed to update co-occurrences", zap.Error(err))
+		return err
+	}
 	err = cs.increaseOccurrencesForMisses(ctx, clusterId, countMap)
 	if err != nil {
 		cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
+		return err
 	}
+	return nil
+}
+
+func (cs *CountService) updateCoOccurrences(
+	ctx context.Context,
+	clusterId string,
+	countMap map[string]CountInfo,
+) error {
 	metaMap := make([]map[string]interface{}, len(countMap))
 	updateMap := make([]map[string]interface{}, len(countMap))
 	i := 0
 	for otherClusterId, countInfo := range countMap {
-		meta, update := cs.getUpdateStatement(clusterId, otherClusterId, countInfo)
+		meta, update := getUpdateStatement(clusterId, otherClusterId, countInfo)
 		metaMap[i] = meta
 		updateMap[i] = update
 		i++
@@ -81,38 +96,6 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	return cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
-}
-
-func (cs *CountService) getUpdateStatement(
-	clusterId string,
-	otherClusterId string,
-	countInfo CountInfo,
-) (map[string]interface{}, map[string]interface{}) {
-	updateStatement := map[string]interface{}{
-		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
-			"params": map[string]interface{}{
-				"occurrences":    countInfo.Occurrences,
-				"co_occurrences": countInfo.CoOccurrences,
-			},
-		},
-		"upsert": map[string]interface{}{
-			"created_at":     time.Now().UTC(),
-			"cluster_id":     clusterId,
-			"co_cluster_id":  otherClusterId,
-			"occurrences":    countInfo.Occurrences,
-			"co_occurrences": countInfo.CoOccurrences,
-		},
-	}
-
-	metaInfo := map[string]interface{}{
-		"update": map[string]interface{}{
-			"_id":               clusterId,
-			"_index":            bootstrapper.CountIndexName,
-			"retry_on_conflict": 5,
-		},
-	}
-	return metaInfo, updateStatement
 }
 
 func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
@@ -230,7 +213,35 @@ func (cs *CountService) increaseOccurrencesForMisses(
 	updateIndices := []string{bootstrapper.CountIndexName}
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	return cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)
+	for i := 0; i < numUpdateQueryRetries; i++ {
+		err = cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)
+		if err == nil {
+			return nil
+		}
+		isConflict, parseError := client.IsErrorConflict(err)
+		if parseError != nil {
+			cs.logger.Error(
+				"Failed to parse elasticserach error",
+				zap.String("clusterId", clusterId),
+				zap.Error(parseError),
+			)
+			return fmt.Errorf("error parsing error: %w", parseError)
+		}
+		if isConflict {
+			cs.logger.Warn(
+				"Conflict in update by query",
+				zap.String("clusterId", clusterId),
+			)
+			continue
+		}
+		return err
+	}
+	cs.logger.Error(
+		"Failed to update by query, retried too many times",
+		zap.String("clusterId", clusterId),
+		zap.Error(err),
+	)
+	return nil
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {
