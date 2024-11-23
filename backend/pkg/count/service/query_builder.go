@@ -95,3 +95,32 @@ func countCoOccurrencesQueryBuilder(clusterId string, fromTime time.Time, toTime
 		},
 	}
 }
+
+func incrementNonMatchedClusterIds(coOccurringClusterId string, matchedClusterIds []string) map[string]interface{} {
+	return map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.occurrences += params.increment",
+			"params": map[string]interface{}{
+				"increment": 1,
+			},
+		},
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"term": map[string]interface{}{
+							"co_cluster_id": coOccurringClusterId,
+						},
+					},
+				},
+				"must_not": []map[string]interface{}{
+					{
+						"terms": map[string]interface{}{
+							"cluster_id": matchedClusterIds,
+						},
+					},
+				},
+			},
+		},
+	}
+}
