@@ -186,7 +186,7 @@ func main() {
 	}
 
 	err = deleteAllDocuments(es)
-	ac := client.NewAugurClientImpl(es, client.Wait)
+	ac := client.NewAugurClientImpl(es, client.Async)
 	countService := count.NewCountService(ac, logger)
 	queryMap := getAllDocumentsQuery()
 	querySize := 1000
