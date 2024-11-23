@@ -187,13 +187,13 @@ func (cs *CountService) increaseOccurrencesForMisses(
 	coOccurringClustersByCount map[string]CountInfo,
 ) error {
 	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
-	if len(listOfCoOccurringClusters) == 0 {
-		return nil
-	}
 
 	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
 	if err != nil {
 		return err
+	}
+	if len(clusterIds) == 0 {
+		return nil
 	}
 
 	err = cs.updateOccurrencesForMisses(ctx, clusterIds)
