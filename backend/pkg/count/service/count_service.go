@@ -125,17 +125,24 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	for _, bucket := range buckets {
 		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
 		if err != nil {
+			cs.logger.Error(
+				"Failed to calculate time range for bucket",
+				zap.Any("timeInfo", timeInfo),
+				zap.Error(err),
+			)
 			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
 		if err != nil {
+			cs.logger.Error(
+				"Failed to get co-occurring clusters",
+				zap.String("clusterId", clusterId),
+				zap.Error(err),
+			)
 			return nil, err
 		}
 		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
-		if err != nil {
-			cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
-		}
 		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
 			if _, ok := countMap[coOccurringClusterId]; !ok {
 				countMap[coOccurringClusterId] = CountInfo{
@@ -198,6 +205,9 @@ func (cs *CountService) increaseOccurrencesForMisses(
 	coOccurringClustersByCount map[string]CountInfo,
 ) error {
 	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
+	if len(coOccurringClustersByCount) == 0 {
+		return nil
+	}
 	i := 0
 	for key, _ := range coOccurringClustersByCount {
 		listOfCoOccurringClusters[i] = key
