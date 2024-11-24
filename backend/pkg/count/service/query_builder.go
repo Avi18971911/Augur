@@ -76,12 +76,12 @@ func buildGetNonMatchedClusterIdsQuery(
 				},
 			},
 		},
-		"_source": []string{"cluster_id"}, // Retrieve only the document IDs
+		"_source": []string{"cluster_id"}, // Retrieve only the cluster IDs
 	}
 }
 
 func buildUpdateNonMatchedClusterIdsQuery(
-	clusterId string,
+	id string,
 ) (map[string]interface{}, map[string]interface{}) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
@@ -93,7 +93,7 @@ func buildUpdateNonMatchedClusterIdsQuery(
 	}
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
-			"_id":               clusterId,
+			"_id":               id,
 			"_index":            bootstrapper.CountIndexName,
 			"retry_on_conflict": 5,
 		},
@@ -102,6 +102,7 @@ func buildUpdateNonMatchedClusterIdsQuery(
 }
 
 func buildUpdateClusterCountsQuery(
+	id string,
 	clusterId string,
 	otherClusterId string,
 	countInfo CountInfo,
@@ -125,7 +126,7 @@ func buildUpdateClusterCountsQuery(
 
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
-			"_id":               clusterId,
+			"_id":               id,
 			"_index":            bootstrapper.CountIndexName,
 			"retry_on_conflict": 5,
 		},
