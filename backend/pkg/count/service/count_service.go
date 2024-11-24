@@ -57,22 +57,27 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	clusterId string,
 	timeInfo TimeInfo,
 	buckets []Bucket,
-) error {
+) ([]string, error) {
 	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeInfo, buckets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = cs.updateCoOccurrences(ctx, clusterId, countMap)
 	if err != nil {
 		cs.logger.Error("Failed to update co-occurrences", zap.Error(err))
-		return err
+		return nil, err
 	}
-	err = cs.increaseOccurrencesForMisses(ctx, clusterId, countMap)
-	if err != nil {
-		cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
-		return err
+	return convertCountMapToList(countMap), nil
+}
+
+func convertCountMapToList(countMap map[string]CountInfo) []string {
+	clusterIds := make([]string, len(countMap))
+	i := 0
+	for key, _ := range countMap {
+		clusterIds[i] = key
+		i++
 	}
-	return nil
+	return clusterIds
 }
 
 func (cs *CountService) updateCoOccurrences(
@@ -182,7 +187,7 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) increaseOccurrencesForMisses(
+func (cs *CountService) IncreaseOccurrencesForMisses(
 	ctx context.Context,
 	clusterId string,
 	coOccurringClustersByCount map[string]CountInfo,
