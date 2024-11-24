@@ -44,23 +44,29 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 		return nil, err
 	}
 	metaMapList, documentMapList := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, countMap)
-	clusterIds := convertCountMapToList(countMap)
+	increaseForMissesInput := getIncrementOccurrencesForMissesInput(clusterId, countMap)
 	result := &model.GetCountAndUpdateOccurrencesQueryConstituentsResult{
-		ClusterIds:      clusterIds,
-		MetaMapList:     metaMapList,
-		DocumentMapList: documentMapList,
+		IncreaseIncrementForMissesInput: increaseForMissesInput,
+		MetaMapList:                     metaMapList,
+		DocumentMapList:                 documentMapList,
 	}
 	return result, nil
 }
 
-func convertCountMapToList(countMap map[string]CountInfo) []string {
+func getIncrementOccurrencesForMissesInput(
+	clusterId string,
+	countMap map[string]CountInfo,
+) model.IncreaseMissesInput {
 	clusterIds := make([]string, len(countMap))
 	i := 0
 	for key, _ := range countMap {
 		clusterIds[i] = key
 		i++
 	}
-	return clusterIds
+	return model.IncreaseMissesInput{
+		ClusterId:    clusterId,
+		CoClusterIds: clusterIds,
+	}
 }
 
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
@@ -164,21 +170,25 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) IncreaseOccurrencesForMisses(
+func (cs *CountService) GetMetaAndDocumentInfoForIncrementMissesQuery(
 	ctx context.Context,
-	clusterId string,
-	coOccurringClustersByCount map[string]CountInfo,
-) error {
-	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
-	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
+	input model.IncreaseMissesInput,
+) (*model.GetMetaAndDocumentInfoForIncrementMissesQueryResult, error) {
+	clusterIds, err := cs.getNonMatchingClusterIds(ctx, input.ClusterId, input.CoClusterIds)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(clusterIds) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	return cs.updateOccurrencesForMisses(ctx, clusterId, clusterIds)
+	metaMapList, documentMapList := cs.getUpdateOccurrencesForMissesQueryConstituents(input.ClusterId, clusterIds)
+	result := model.GetMetaAndDocumentInfoForIncrementMissesQueryResult{
+		MetaMapList:     metaMapList,
+		DocumentMapList: documentMapList,
+	}
+	return &result, nil
+
 }
 
 func (cs *CountService) getNonMatchingClusterIds(
@@ -199,7 +209,7 @@ func (cs *CountService) getNonMatchingClusterIds(
 		)
 		return nil, fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	searchIndices := []string{bootstrapper.CountIndexName}
+	searchIndices := []string{bootstrapper.LogIndexName, bootstrapper.CountIndexName}
 	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
 	defer searchCancel()
 	res, err := cs.ac.Search(searchCtx, string(queryBody), searchIndices, nil)
@@ -215,11 +225,10 @@ func (cs *CountService) getNonMatchingClusterIds(
 	return nonMatchingClusters, nil
 }
 
-func (cs *CountService) updateOccurrencesForMisses(
-	ctx context.Context,
+func (cs *CountService) getUpdateOccurrencesForMissesQueryConstituents(
 	coClusterId string,
 	clusterIds []model.Cluster,
-) error {
+) ([]client.MetaMap, []client.DocumentMap) {
 	metaMap := make([]client.MetaMap, len(clusterIds))
 	updateMap := make([]client.DocumentMap, len(clusterIds))
 	for i, clusterId := range clusterIds {
@@ -229,21 +238,9 @@ func (cs *CountService) updateOccurrencesForMisses(
 		updateMap[i] = update
 	}
 	if len(updateMap) == 0 {
-		return nil
+		return nil, nil
 	}
-	updateCtx, updateCancel := context.WithTimeout(ctx, csTimeOut)
-	defer updateCancel()
-	return cs.ac.BulkIndex(updateCtx, metaMap, updateMap, bootstrapper.CountIndexName)
-}
-
-func getListOfCoOccurringClusters(coOccurringClustersByCount map[string]CountInfo) []string {
-	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
-	i := 0
-	for key, _ := range coOccurringClustersByCount {
-		listOfCoOccurringClusters[i] = key
-		i++
-	}
-	return listOfCoOccurringClusters
+	return metaMap, updateMap
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {

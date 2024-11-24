@@ -79,7 +79,7 @@ func groupDataByClusterId(data []map[string]interface{}) (map[string][]map[strin
 
 func processLog(
 	untypedLog map[string]interface{},
-	countService *countService.CountService,
+	cs *countService.CountService,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
 ) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
@@ -91,7 +91,7 @@ func processLog(
 	typedLog := typedLogs[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	result, err := countService.GetCountAndUpdateOccurrencesQueryConstituents(
+	result, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
 		typedLog.ClusterId,
 		countModel.TimeInfo{
@@ -110,7 +110,7 @@ func processLog(
 
 func processSpan(
 	untypedSpan map[string]interface{},
-	countService *countService.CountService,
+	cs *countService.CountService,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
 ) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
@@ -122,7 +122,7 @@ func processSpan(
 	typedSpan := typedSpans[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	result, err := countService.GetCountAndUpdateOccurrencesQueryConstituents(
+	result, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
 		typedSpan.ClusterId,
 		countModel.TimeInfo{
@@ -143,10 +143,10 @@ func processSpan(
 func processData(
 	ac client.AugurClient,
 	dataByClusterId map[string][]map[string]interface{},
-	countService *countService.CountService,
+	cs *countService.CountService,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
-) {
+) []countModel.IncreaseMissesInput {
 	const workerCount = 50
 	inputChannel := make(chan []map[string]interface{}, len(dataByClusterId))
 	for _, data := range dataByClusterId {
@@ -157,29 +157,27 @@ func processData(
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
-	resultChannel := make(chan *countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult)
-	clusterIdList := make([]string, 0, len(dataByClusterId))
+	resultChannel := make(chan *countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, len(dataByClusterId))
+	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, len(dataByClusterId))
 	metaMapList := make([]client.MetaMap, 0, len(dataByClusterId))
 	documentMapList := make([]client.DocumentMap, 0, len(dataByClusterId))
 
 	for i := 0; i < workerCount; i++ {
 		go func() {
-			logger.Info("Worker started processing data", zap.Int("workerId", i))
 			defer wg.Done()
 			for untypedData := range inputChannel {
 				for _, untypedItem := range untypedData {
-					logger.Debug("Processing data", zap.Any("data", untypedItem))
 					dataType := detectDataType(untypedItem)
 					switch dataType {
 					case Log:
-						res, err := processLog(untypedItem, countService, buckets, logger)
+						res, err := processLog(untypedItem, cs, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process log", zap.Error(err))
 						} else {
 							resultChannel <- res
 						}
 					case Span:
-						res, err := processSpan(untypedItem, countService, buckets, logger)
+						res, err := processSpan(untypedItem, cs, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process span", zap.Error(err))
 						} else {
@@ -192,16 +190,17 @@ func processData(
 			}
 		}()
 	}
+	go func() {
+		wg.Wait()
+		close(resultChannel)
+	}()
 
-	wg.Wait()
-	close(resultChannel)
-	logger.Info("All workers have finished processing data")
 	for result := range resultChannel {
 		if result == nil {
 			continue
 		}
-		if result.ClusterIds != nil && len(result.ClusterIds) > 0 {
-			clusterIdList = append(clusterIdList, result.ClusterIds...)
+		if len(result.IncreaseIncrementForMissesInput.CoClusterIds) > 0 {
+			increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
 		}
 		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
 			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
@@ -212,11 +211,71 @@ func processData(
 		}
 	}
 
-	logger.Info("Successfully processed data",
-		zap.Int("clusterIdList", len(clusterIdList)),
-		zap.Int("metaMapList", len(metaMapList)),
-		zap.Int("documentMapList", len(documentMapList)),
+	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer updateCancel()
+	err := ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	if err != nil {
+		logger.Fatal("Failed to bulk index", zap.Error(err))
+	}
+	return increaseMissesList
+}
+
+func processMisses(
+	ac client.AugurClient,
+	increaseMissesInput []countModel.IncreaseMissesInput,
+	cs *countService.CountService,
+	logger *zap.Logger,
+) {
+	const workerCount = 50
+	inputChannel := make(chan countModel.IncreaseMissesInput, len(increaseMissesInput))
+	for _, input := range increaseMissesInput {
+		inputChannel <- input
+	}
+	close(inputChannel)
+
+	var wg sync.WaitGroup
+	wg.Add(workerCount)
+
+	resultChannel := make(
+		chan *countModel.GetMetaAndDocumentInfoForIncrementMissesQueryResult,
+		len(increaseMissesInput),
 	)
+	metaMapList := make([]client.MetaMap, 0, len(increaseMissesInput))
+	documentMapList := make([]client.DocumentMap, 0, len(increaseMissesInput))
+
+	for i := 0; i < workerCount; i++ {
+		go func() {
+			defer wg.Done()
+			for input := range inputChannel {
+				csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
+				result, err := cs.GetMetaAndDocumentInfoForIncrementMissesQuery(csCtx, input)
+				if err != nil {
+					logger.Error("Failed to increment occurrences for misses", zap.Error(err))
+				} else {
+					resultChannel <- result
+				}
+				csCancel()
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChannel)
+	}()
+
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				logger.Fatal("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
 
 	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer updateCancel()
@@ -236,7 +295,7 @@ func main() {
 	}
 
 	err = deleteAllDocuments(es)
-	ac := client.NewAugurClientImpl(es, client.Async)
+	ac := client.NewAugurClientImpl(es, client.Wait)
 	cs := countService.NewCountService(ac, logger)
 	queryMap := getAllDocumentsQuery()
 	querySize := 1000
@@ -246,7 +305,7 @@ func main() {
 	resultChannel := ac.SearchAfter(
 		searchCtx,
 		queryMap,
-		[]string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName},
+		[]string{bootstrapper.SpanIndexName},
 		nil,
 		&querySize,
 	)
@@ -260,7 +319,10 @@ func main() {
 			if err != nil {
 				logger.Fatal("Failed to group data by cluster id", zap.Error(err))
 			}
-			processData(ac, dataByClusterId, cs, buckets, logger)
+			increaseMissesInput := processData(ac, dataByClusterId, cs, buckets, logger)
+			if len(increaseMissesInput) > 0 {
+				processMisses(ac, increaseMissesInput, cs, logger)
+			}
 		}
 	}
 
