@@ -248,7 +248,7 @@ func processMisses(
 			defer wg.Done()
 			for input := range inputChannel {
 				csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
-				result, err := cs.GetMetaAndDocumentInfoForIncrementMissesQuery(csCtx, input)
+				result, err := cs.GetIncrementMissesQueryInfo(csCtx, input)
 				if err != nil {
 					logger.Error("Failed to increment occurrences for misses", zap.Error(err))
 				} else {
@@ -277,6 +277,7 @@ func processMisses(
 		}
 	}
 
+	logger.Info("Bulk indexing misses", zap.Int("count", len(metaMapList)), zap.Int("document_count", len(documentMapList)))
 	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer updateCancel()
 	err := ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
@@ -302,10 +303,12 @@ func main() {
 	buckets := []countService.Bucket{100}
 	searchCtx, searchCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer searchCancel()
+
+	start := time.Now()
 	resultChannel := ac.SearchAfter(
 		searchCtx,
 		queryMap,
-		[]string{bootstrapper.SpanIndexName},
+		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
 		nil,
 		&querySize,
 	)
@@ -325,6 +328,6 @@ func main() {
 			}
 		}
 	}
-
-	logger.Info("Successfully counted and updated occurrences")
+	end := time.Now()
+	logger.Info("Successfully counted and updated occurrences", zap.Duration("duration", end.Sub(start)))
 }

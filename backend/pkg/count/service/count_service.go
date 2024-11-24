@@ -170,19 +170,19 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) GetMetaAndDocumentInfoForIncrementMissesQuery(
+func (cs *CountService) GetIncrementMissesQueryInfo(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
 ) (*model.GetMetaAndDocumentInfoForIncrementMissesQueryResult, error) {
-	clusterIds, err := cs.getNonMatchingClusterIds(ctx, input.ClusterId, input.CoClusterIds)
+	missingCoClusterIds, err := cs.getNonMatchingCoClusterIds(ctx, input.ClusterId, input.CoClusterIds)
 	if err != nil {
 		return nil, err
 	}
-	if len(clusterIds) == 0 {
+	if len(missingCoClusterIds) == 0 {
 		return nil, nil
 	}
 
-	metaMapList, documentMapList := cs.getUpdateOccurrencesForMissesQueryConstituents(input.ClusterId, clusterIds)
+	metaMapList, documentMapList := cs.getIncrementMissesDetails(input.ClusterId, missingCoClusterIds)
 	result := model.GetMetaAndDocumentInfoForIncrementMissesQueryResult{
 		MetaMapList:     metaMapList,
 		DocumentMapList: documentMapList,
@@ -191,12 +191,12 @@ func (cs *CountService) GetMetaAndDocumentInfoForIncrementMissesQuery(
 
 }
 
-func (cs *CountService) getNonMatchingClusterIds(
+func (cs *CountService) getNonMatchingCoClusterIds(
 	ctx context.Context,
 	clusterId string,
 	listOfCoOccurringClusters []string,
 ) ([]model.Cluster, error) {
-	incrementQuery := buildGetNonMatchedClusterIdsQuery(
+	incrementQuery := buildGetNonMatchedCoClusterIdsQuery(
 		clusterId,
 		listOfCoOccurringClusters,
 	)
@@ -209,11 +209,12 @@ func (cs *CountService) getNonMatchingClusterIds(
 		)
 		return nil, fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	searchIndices := []string{bootstrapper.LogIndexName, bootstrapper.CountIndexName}
 	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
 	defer searchCancel()
-	res, err := cs.ac.Search(searchCtx, string(queryBody), searchIndices, nil)
-	nonMatchingClusters, err := convertDocsToClusters(res)
+	queryIndices := []string{bootstrapper.CountIndexName}
+	querySize := 10000
+	res, err := cs.ac.Search(searchCtx, string(queryBody), queryIndices, &querySize)
+	nonMatchingCoClusters, err := convertDocsToCoClusters(res)
 	if err != nil {
 		cs.logger.Error(
 			"Failed to convert search results to cluster documents",
@@ -222,18 +223,18 @@ func (cs *CountService) getNonMatchingClusterIds(
 		)
 		return nil, fmt.Errorf("error converting search results to cluster: %w", err)
 	}
-	return nonMatchingClusters, nil
+	return nonMatchingCoClusters, nil
 }
 
-func (cs *CountService) getUpdateOccurrencesForMissesQueryConstituents(
-	coClusterId string,
-	clusterIds []model.Cluster,
+func (cs *CountService) getIncrementMissesDetails(
+	clusterId string,
+	missingCoClusterIds []model.Cluster,
 ) ([]client.MetaMap, []client.DocumentMap) {
-	metaMap := make([]client.MetaMap, len(clusterIds))
-	updateMap := make([]client.DocumentMap, len(clusterIds))
-	for i, clusterId := range clusterIds {
-		compositeKey := getIDFromConstituents(clusterId.ClusterId, coClusterId)
-		meta, update := buildUpdateNonMatchedClusterIdsQuery(compositeKey)
+	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
+	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
+	for i, missingCoClusterId := range missingCoClusterIds {
+		compositeKey := getIDFromConstituents(clusterId, missingCoClusterId.ClusterId)
+		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
 	}
@@ -266,6 +267,20 @@ func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error
 			return nil, fmt.Errorf("error parsing cluster_id")
 		} else {
 			doc.ClusterId = clusterId
+		}
+		clusters[i] = doc
+	}
+	return clusters, nil
+}
+
+func convertDocsToCoClusters(res []map[string]interface{}) ([]model.Cluster, error) {
+	clusters := make([]model.Cluster, len(res))
+	for i, hit := range res {
+		doc := model.Cluster{}
+		if coClusterId, ok := hit["co_cluster_id"].(string); !ok {
+			return nil, fmt.Errorf("error parsing co_cluster_id")
+		} else {
+			doc.CoClusterId = coClusterId
 		}
 		clusters[i] = doc
 	}

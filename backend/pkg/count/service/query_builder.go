@@ -54,9 +54,9 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 	}
 }
 
-func buildGetNonMatchedClusterIdsQuery(
-	coOccurringClusterId string,
-	matchedClusterIds []string,
+func buildGetNonMatchedCoClusterIdsQuery(
+	clusterId string,
+	matchedCoClusterIds []string,
 ) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
@@ -64,24 +64,24 @@ func buildGetNonMatchedClusterIdsQuery(
 				"must": []map[string]interface{}{
 					{
 						"term": map[string]interface{}{
-							"co_cluster_id": coOccurringClusterId,
+							"cluster_id": clusterId,
 						},
 					},
 				},
 				"must_not": []map[string]interface{}{
 					{
 						"terms": map[string]interface{}{
-							"cluster_id": matchedClusterIds,
+							"co_cluster_id": matchedCoClusterIds,
 						},
 					},
 				},
 			},
 		},
-		"_source": []string{"cluster_id"}, // Retrieve only the cluster IDs
+		"_source": []string{"co_cluster_id"}, // Retrieve only the co-cluster IDs
 	}
 }
 
-func buildUpdateNonMatchedClusterIdsQuery(
+func buildIncrementNonMatchedCoClusterIdsQuery(
 	id string,
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{

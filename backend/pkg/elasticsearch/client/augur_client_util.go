@@ -40,18 +40,23 @@ func NormalizeTimestampToNanoseconds(timestamp string) (time.Time, error) {
 		timestamp = strings.TrimSuffix(timestamp, "Z")
 	}
 
-	parts := strings.SplitN(timestamp, ".", 2)
-	if len(parts) == 2 {
-		fractionalPart := parts[1]
+	// TODO: Handle HH:MM:SS case gracefully
+	if !strings.Contains(timestamp, ".") {
+		timestamp += ".000000000"
+	} else {
+		parts := strings.SplitN(timestamp, ".", 2)
+		if len(parts) == 2 {
+			fractionalPart := parts[1]
 
-		// 9 digits (nanosecond)
-		if len(fractionalPart) > 9 {
-			fractionalPart = fractionalPart[:9]
-		} else if len(fractionalPart) < 9 {
-			fractionalPart = fractionalPart + strings.Repeat("0", 9-len(fractionalPart))
+			// 9 digits (nanosecond)
+			if len(fractionalPart) > 9 {
+				fractionalPart = fractionalPart[:9]
+			} else if len(fractionalPart) < 9 {
+				fractionalPart = fractionalPart + strings.Repeat("0", 9-len(fractionalPart))
+			}
+
+			timestamp = parts[0] + "." + fractionalPart
 		}
-
-		timestamp = parts[0] + "." + fractionalPart
 	}
 
 	if isUTC {
