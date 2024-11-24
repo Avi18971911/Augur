@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/count/model"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"go.uber.org/zap"
 	"time"
 )
 
 const csTimeOut = 2 * time.Second
 
-var indices = []string{elasticsearch.LogIndexName, elasticsearch.SpanIndexName}
+var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
 type LogInfo struct {
 	Timestamp time.Time
@@ -34,11 +35,11 @@ type TimeInfo struct {
 }
 
 type CountService struct {
-	ac     elasticsearch.AugurClient
+	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewCountService(ac elasticsearch.AugurClient, logger *zap.Logger) *CountService {
+func NewCountService(ac client.AugurClient, logger *zap.Logger) *CountService {
 	return &CountService{
 		ac:     ac,
 		logger: logger,
@@ -61,55 +62,39 @@ func (cs *CountService) CountAndUpdateOccurrences(
 	if err != nil {
 		return err
 	}
-	for otherClusterId, countInfo := range countMap {
-		err = cs.updateCounts(ctx, clusterId, otherClusterId, countInfo)
-		if err != nil {
-			return err
-		}
+	err = cs.updateCoOccurrences(ctx, clusterId, countMap)
+	if err != nil {
+		cs.logger.Error("Failed to update co-occurrences", zap.Error(err))
+		return err
+	}
+	err = cs.increaseOccurrencesForMisses(ctx, clusterId, countMap)
+	if err != nil {
+		cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
+		return err
 	}
 	return nil
 }
 
-func (cs *CountService) updateCounts(
+func (cs *CountService) updateCoOccurrences(
 	ctx context.Context,
 	clusterId string,
-	otherClusterId string,
-	countInfo CountInfo,
+	countMap map[string]CountInfo,
 ) error {
-	updateStatement := map[string]interface{}{
-		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
-			"params": map[string]interface{}{
-				"occurrences":    countInfo.Occurrences,
-				"co_occurrences": countInfo.CoOccurrences,
-			},
-		},
-		"upsert": map[string]interface{}{
-			"cluster_id":     clusterId,
-			"co_cluster_id":  otherClusterId,
-			"occurrences":    countInfo.Occurrences,
-			"co_occurrences": countInfo.CoOccurrences,
-		},
+	metaMap := make([]map[string]interface{}, len(countMap))
+	updateMap := make([]map[string]interface{}, len(countMap))
+	i := 0
+	for otherClusterId, countInfo := range countMap {
+		meta, update := buildUpdateClusterCountsQuery(clusterId, otherClusterId, countInfo)
+		metaMap[i] = meta
+		updateMap[i] = update
+		i++
 	}
-
-	upsertCtx, cancel := context.WithTimeout(ctx, csTimeOut)
+	if len(updateMap) == 0 {
+		return nil
+	}
+	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	err := cs.ac.Upsert(
-		upsertCtx,
-		updateStatement,
-		elasticsearch.CountIndexName,
-		clusterId,
-	)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to upsert occurrences",
-			zap.String("clusterId", clusterId),
-			zap.String("otherClusterId", otherClusterId),
-			zap.Error(err),
-		)
-		return fmt.Errorf("error upserting occurrences: %w", err)
-	}
-	return nil
+	return cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
 }
 
 func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
@@ -122,18 +107,24 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	for _, bucket := range buckets {
 		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
 		if err != nil {
+			cs.logger.Error(
+				"Failed to calculate time range for bucket",
+				zap.Any("timeInfo", timeInfo),
+				zap.Error(err),
+			)
 			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, fromTime, toTime)
 		if err != nil {
+			cs.logger.Error(
+				"Failed to get co-occurring clusters",
+				zap.String("clusterId", clusterId),
+				zap.Error(err),
+			)
 			return nil, err
 		}
 		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
-		err = cs.increaseOccurrencesForMisses(ctx, clusterId, coOccurringClustersByClusterId)
-		if err != nil {
-			cs.logger.Error("Failed to increase occurrences for misses", zap.Error(err))
-		}
 		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
 			if _, ok := countMap[coOccurringClusterId]; !ok {
 				countMap[coOccurringClusterId] = CountInfo{
@@ -159,7 +150,7 @@ func (cs *CountService) getCoOccurringCluster(
 ) ([]model.Cluster, error) {
 	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	queryBody, err := json.Marshal(countCoOccurrencesQueryBuilder(clusterId, fromTime, toTime))
+	queryBody, err := json.Marshal(buildGetCoOccurringClustersQuery(clusterId, fromTime, toTime))
 	if err != nil {
 		cs.logger.Error(
 			"Failed to marshal count co-occurrences query",
@@ -193,16 +184,34 @@ func (cs *CountService) getCoOccurringCluster(
 func (cs *CountService) increaseOccurrencesForMisses(
 	ctx context.Context,
 	clusterId string,
-	coOccurringClusters map[string][]model.Cluster,
+	coOccurringClustersByCount map[string]CountInfo,
 ) error {
-	listOfCoOccurringClusters := make([]string, len(coOccurringClusters))
-	i := 0
-	for key, _ := range coOccurringClusters {
-		listOfCoOccurringClusters[i] = key
-		i++
+	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
+
+	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
+	if err != nil {
+		return err
+	}
+	if len(clusterIds) == 0 {
+		return nil
 	}
 
-	incrementQuery := incrementNonMatchedClusterIds(clusterId, listOfCoOccurringClusters)
+	err = cs.updateOccurrencesForMisses(ctx, clusterIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cs *CountService) getNonMatchingClusterIds(
+	ctx context.Context,
+	clusterId string,
+	listOfCoOccurringClusters []string,
+) ([]model.Cluster, error) {
+	incrementQuery := buildGetNonMatchedClusterIdsQuery(
+		clusterId,
+		listOfCoOccurringClusters,
+	)
 	queryBody, err := json.Marshal(incrementQuery)
 	if err != nil {
 		cs.logger.Error(
@@ -210,12 +219,55 @@ func (cs *CountService) increaseOccurrencesForMisses(
 			zap.String("clusterId", clusterId),
 			zap.Error(err),
 		)
-		return fmt.Errorf("error marshaling increment query: %w", err)
+		return nil, fmt.Errorf("error marshaling increment query: %w", err)
 	}
-	updateIndices := []string{elasticsearch.CountIndexName}
+	searchIndices := []string{bootstrapper.CountIndexName}
+	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
+	defer searchCancel()
+	res, err := cs.ac.Search(searchCtx, string(queryBody), searchIndices, nil)
+	nonMatchingClusters, err := convertDocsToClusters(res)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to convert search results to cluster documents",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("error converting search results to cluster: %w", err)
+	}
+	return nonMatchingClusters, nil
+}
+
+func (cs *CountService) updateOccurrencesForMisses(
+	ctx context.Context,
+	clusterIds []model.Cluster,
+) error {
+	metaMap := make([]map[string]interface{}, len(clusterIds))
+	updateMap := make([]map[string]interface{}, len(clusterIds))
+	for i, clusterId := range clusterIds {
+		meta, update := buildUpdateNonMatchedClusterIdsQuery(clusterId.ClusterId)
+		metaMap[i] = meta
+		updateMap[i] = update
+	}
+	if len(updateMap) == 0 {
+		return nil
+	}
 	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
-	return cs.ac.UpdateByQuery(updateCtx, string(queryBody), updateIndices)
+	err := cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
+	if err != nil {
+		cs.logger.Error("Failed to update occurrences for misses", zap.Error(err))
+	}
+	return err
+}
+
+func getListOfCoOccurringClusters(coOccurringClustersByCount map[string]CountInfo) []string {
+	listOfCoOccurringClusters := make([]string, len(coOccurringClustersByCount))
+	i := 0
+	for key, _ := range coOccurringClustersByCount {
+		listOfCoOccurringClusters[i] = key
+		i++
+	}
+	return listOfCoOccurringClusters
 }
 
 func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {

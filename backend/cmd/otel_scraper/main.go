@@ -1,10 +1,13 @@
 package main
 
 import (
+	count "github.com/Avi18971911/Augur/pkg/count/service"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"net"
 
 	"github.com/Avi18971911/Augur/pkg/cache"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -28,7 +31,7 @@ func main() {
 		logger.Error("Failed to create elasticsearch client", zap.Error(err))
 	}
 
-	bs := augurElasticsearch.NewBootstrapper(es, logger)
+	bs := bootstrapper.NewBootstrapper(es, logger)
 	err = bs.BootstrapElasticsearch()
 	if err != nil {
 		logger.Error("Failed to bootstrap elasticsearch", zap.Error(err))
@@ -39,9 +42,10 @@ func main() {
 		logger.Error("Failed to listen: %v", zap.Error(err))
 	}
 
-	ac := augurElasticsearch.NewAugurClientImpl(es, augurElasticsearch.Wait)
+	ac := client.NewAugurClientImpl(es, client.Wait)
 	logProcessorService := service.NewLogProcessorService(ac, logger)
-	countService := service.NewCountService(ac, logger)
+	spanClusterService := spanService.NewSpanClusterService(ac, logger)
+	countService := count.NewCountService(ac, logger)
 
 	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
 		NumCounters: 10,
@@ -64,13 +68,13 @@ func main() {
 	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
 		ristrettoTraceCache,
 		ac,
-		augurElasticsearch.SpanIndexName,
+		bootstrapper.SpanIndexName,
 		logger,
 	)
 	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](
 		ristrettoLogCache,
 		ac,
-		augurElasticsearch.LogIndexName,
+		bootstrapper.LogIndexName,
 		logger,
 	)
 
@@ -78,6 +82,8 @@ func main() {
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
 		writeBehindTraceCache,
+		spanClusterService,
+		countService,
 	)
 	logServiceServer := logsServer.NewLogServiceServerImpl(
 		logger,

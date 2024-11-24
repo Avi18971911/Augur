@@ -2,7 +2,7 @@ package elasticsearch
 
 import (
 	"context"
-	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch"
+	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"
 	"log"

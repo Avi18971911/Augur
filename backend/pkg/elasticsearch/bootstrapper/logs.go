@@ -1,4 +1,4 @@
-package elasticsearch
+package bootstrapper
 
 const LogIndexName = "log_index"
 
@@ -9,6 +9,9 @@ var logIndex = map[string]interface{}{
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"type": "date",
+			},
 			"timestamp": map[string]interface{}{
 				"type": "date",
 			},

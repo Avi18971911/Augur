@@ -1,4 +1,4 @@
-package elasticsearch
+package bootstrapper
 
 import (
 	"encoding/json"
