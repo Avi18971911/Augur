@@ -5,7 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
+	countModel "github.com/Avi18971911/Augur/pkg/count/model"
+	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logService "github.com/Avi18971911/Augur/pkg/log/service"
@@ -78,65 +79,71 @@ func groupDataByClusterId(data []map[string]interface{}) (map[string][]map[strin
 
 func processLog(
 	untypedLog map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	countService *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
-) error {
+) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
 	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
 	if err != nil {
 		logger.Error("Failed to convert log to log documents", zap.Error(err))
-		return err
+		return nil, err
 	}
 	typedLog := typedLogs[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	err = countService.CountAndUpdateOccurrences(csCtx, typedLog.ClusterId, count.TimeInfo{
-		LogInfo: &count.LogInfo{
-			Timestamp: typedLog.Timestamp,
+	result, err := countService.GetCountAndUpdateOccurrencesQueryConstituents(
+		csCtx,
+		typedLog.ClusterId,
+		countModel.TimeInfo{
+			LogInfo: &countModel.LogInfo{
+				Timestamp: typedLog.Timestamp,
+			},
 		},
-	}, buckets)
+		buckets,
+	)
 	if err != nil {
 		logger.Error("Failed to count and update occurrences for logs", zap.Error(err))
-		return err
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
 func processSpan(
 	untypedSpan map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	countService *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
-) error {
+) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
 	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
 	if err != nil {
 		logger.Error("Failed to convert span to span documents", zap.Error(err))
-		return err
+		return nil, err
 	}
 	typedSpan := typedSpans[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	err = countService.CountAndUpdateOccurrences(
+	result, err := countService.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
 		typedSpan.ClusterId,
-		count.TimeInfo{
-			SpanInfo: &count.SpanInfo{
+		countModel.TimeInfo{
+			SpanInfo: &countModel.SpanInfo{
 				FromTime: typedSpan.StartTime,
 				ToTime:   typedSpan.EndTime,
 			},
-		}, buckets,
+		},
+		buckets,
 	)
 	if err != nil {
 		logger.Error("Failed to count and update occurrences for spans", zap.Error(err))
-		return err
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
 func processData(
 	dataByClusterId map[string][]map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	countService *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
 ) {
 	const workerCount = 50
@@ -157,12 +164,12 @@ func processData(
 					dataType := detectDataType(untypedItem)
 					switch dataType {
 					case Log:
-						err := processLog(untypedItem, countService, buckets, logger)
+						res, err := processLog(untypedItem, countService, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process log", zap.Error(err))
 						}
 					case Span:
-						err := processSpan(untypedItem, countService, buckets, logger)
+						res, err := processSpan(untypedItem, countService, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process span", zap.Error(err))
 						}
@@ -187,10 +194,10 @@ func main() {
 
 	err = deleteAllDocuments(es)
 	ac := client.NewAugurClientImpl(es, client.Async)
-	countService := count.NewCountService(ac, logger)
+	cs := countService.NewCountService(ac, logger)
 	queryMap := getAllDocumentsQuery()
 	querySize := 1000
-	buckets := []count.Bucket{100}
+	buckets := []countService.Bucket{100}
 	searchCtx, searchCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer searchCancel()
 	resultChannel := ac.SearchAfter(
@@ -210,7 +217,7 @@ func main() {
 			if err != nil {
 				logger.Fatal("Failed to group data by cluster id", zap.Error(err))
 			}
-			processData(dataByClusterId, countService, buckets, logger)
+			processData(dataByClusterId, cs, buckets, logger)
 		}
 	}
 

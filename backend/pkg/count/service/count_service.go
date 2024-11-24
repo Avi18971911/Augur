@@ -15,25 +15,6 @@ const csTimeOut = 2 * time.Second
 
 var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
-type LogInfo struct {
-	Timestamp time.Time
-}
-
-type SpanInfo struct {
-	FromTime time.Time
-	ToTime   time.Time
-}
-
-type CalculatedTimeInfo struct {
-	FromTime time.Time
-	ToTime   time.Time
-}
-
-type TimeInfo struct {
-	SpanInfo *SpanInfo
-	LogInfo  *LogInfo
-}
-
 type CountService struct {
 	ac     client.AugurClient
 	logger *zap.Logger
@@ -52,22 +33,24 @@ func getTimeRange(timestamp time.Time, bucket Bucket) (time.Time, time.Time) {
 	return fromTime, toTime
 }
 
-func (cs *CountService) CountAndUpdateOccurrences(
+func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	ctx context.Context,
 	clusterId string,
-	timeInfo TimeInfo,
+	timeInfo model.TimeInfo,
 	buckets []Bucket,
-) ([]string, error) {
+) (*model.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
 	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeInfo, buckets)
 	if err != nil {
 		return nil, err
 	}
-	err = cs.updateCoOccurrences(ctx, clusterId, countMap)
-	if err != nil {
-		cs.logger.Error("Failed to update co-occurrences", zap.Error(err))
-		return nil, err
+	metaMapList, documentMapList := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, countMap)
+	clusterIds := convertCountMapToList(countMap)
+	result := &model.GetCountAndUpdateOccurrencesQueryConstituentsResult{
+		ClusterIds:      clusterIds,
+		MetaMapList:     metaMapList,
+		DocumentMapList: documentMapList,
 	}
-	return convertCountMapToList(countMap), nil
+	return result, nil
 }
 
 func convertCountMapToList(countMap map[string]CountInfo) []string {
@@ -80,13 +63,12 @@ func convertCountMapToList(countMap map[string]CountInfo) []string {
 	return clusterIds
 }
 
-func (cs *CountService) updateCoOccurrences(
-	ctx context.Context,
+func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
 	countMap map[string]CountInfo,
-) error {
-	metaMap := make([]map[string]interface{}, len(countMap))
-	updateMap := make([]map[string]interface{}, len(countMap))
+) ([]model.MetaMap, []model.DocumentMap) {
+	metaMap := make([]model.MetaMap, len(countMap))
+	updateMap := make([]model.DocumentMap, len(countMap))
 	i := 0
 	for otherClusterId, countInfo := range countMap {
 		compositeId := getIDFromConstituents(clusterId, otherClusterId)
@@ -95,18 +77,13 @@ func (cs *CountService) updateCoOccurrences(
 		updateMap[i] = update
 		i++
 	}
-	if len(updateMap) == 0 {
-		return nil
-	}
-	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
-	defer cancel()
-	return cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
+	return metaMap, updateMap
 }
 
 func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 	ctx context.Context,
 	clusterId string,
-	timeInfo TimeInfo,
+	timeInfo model.TimeInfo,
 	buckets []Bucket,
 ) (map[string]CountInfo, error) {
 	var countMap = make(map[string]CountInfo)
@@ -187,25 +164,22 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) IncreaseOccurrencesForMisses(
+func (cs *CountService) GetIncreaseOccurrencesForMissesQueryConstituents(
 	ctx context.Context,
 	clusterId string,
 	coOccurringClustersByCount map[string]CountInfo,
-) error {
+) ([]model.MetaMap, []model.DocumentMap, error) {
 	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
 	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
 	if err != nil {
-		return err
+		return []model.MetaMap{}, []model.DocumentMap{}, err
 	}
 	if len(clusterIds) == 0 {
-		return nil
+		return []model.MetaMap{}, []model.DocumentMap{}, nil
 	}
 
-	err = cs.updateOccurrencesForMisses(ctx, clusterId, clusterIds)
-	if err != nil {
-		return err
-	}
-	return nil
+	metaMapList, documentMapList := cs.getUpdateOccurrencesForMissesQueryConstituents(clusterId, clusterIds)
+	return metaMapList, documentMapList, nil
 }
 
 func (cs *CountService) getNonMatchingClusterIds(
@@ -242,13 +216,12 @@ func (cs *CountService) getNonMatchingClusterIds(
 	return nonMatchingClusters, nil
 }
 
-func (cs *CountService) updateOccurrencesForMisses(
-	ctx context.Context,
+func (cs *CountService) getUpdateOccurrencesForMissesQueryConstituents(
 	coClusterId string,
 	clusterIds []model.Cluster,
-) error {
-	metaMap := make([]map[string]interface{}, len(clusterIds))
-	updateMap := make([]map[string]interface{}, len(clusterIds))
+) ([]model.MetaMap, []model.DocumentMap) {
+	metaMap := make([]model.MetaMap, len(clusterIds))
+	updateMap := make([]model.DocumentMap, len(clusterIds))
 	for i, clusterId := range clusterIds {
 		compositeKey := getIDFromConstituents(clusterId.ClusterId, coClusterId)
 		meta, update := buildUpdateNonMatchedClusterIdsQuery(compositeKey)
@@ -256,15 +229,9 @@ func (cs *CountService) updateOccurrencesForMisses(
 		updateMap[i] = update
 	}
 	if len(updateMap) == 0 {
-		return nil
+		return []model.MetaMap{}, []model.DocumentMap{}
 	}
-	updateCtx, cancel := context.WithTimeout(ctx, csTimeOut)
-	defer cancel()
-	err := cs.ac.BulkIndex(updateCtx, updateMap, metaMap, bootstrapper.CountIndexName)
-	if err != nil {
-		cs.logger.Error("Failed to update occurrences for misses", zap.Error(err))
-	}
-	return err
+	return metaMap, updateMap
 }
 
 func getListOfCoOccurringClusters(coOccurringClustersByCount map[string]CountInfo) []string {
@@ -306,20 +273,20 @@ func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error
 	return clusters, nil
 }
 
-func getTimeRangeForBucket(timeInfo TimeInfo, bucket Bucket) (CalculatedTimeInfo, error) {
+func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket Bucket) (model.CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
-		return CalculatedTimeInfo{
+		return model.CalculatedTimeInfo{
 			FromTime: timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket/2)),
 			ToTime:   timeInfo.SpanInfo.ToTime.Add(time.Millisecond * time.Duration(bucket/2)),
 		}, nil
 	} else if timeInfo.LogInfo != nil {
 		startTime, endTime := getTimeRange(timeInfo.LogInfo.Timestamp, bucket)
-		return CalculatedTimeInfo{
+		return model.CalculatedTimeInfo{
 			FromTime: startTime,
 			ToTime:   endTime,
 		}, nil
 	} else {
-		return CalculatedTimeInfo{}, fmt.Errorf("timeInfo.spanInfo or timeInfo.logInfo is required")
+		return model.CalculatedTimeInfo{}, fmt.Errorf("timeInfo.spanInfo or timeInfo.logInfo is required")
 	}
 }
 

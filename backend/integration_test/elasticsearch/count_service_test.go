@@ -97,7 +97,7 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
@@ -143,7 +143,7 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
@@ -152,7 +152,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
@@ -208,7 +208,7 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		firstCtx, firstCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer firstCancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			firstCtx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
@@ -219,7 +219,7 @@ func TestLogCount(t *testing.T) {
 		}
 		secondCtx, secondCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer secondCancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			secondCtx,
 			logsOfDifferentTime[0].ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
@@ -277,7 +277,7 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer missCancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			missCtx,
 			logsOfDifferentTime[0].ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
@@ -288,7 +288,7 @@ func TestLogCount(t *testing.T) {
 		}
 		hitCtx, hitCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer hitCancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			hitCtx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
@@ -462,7 +462,7 @@ func TestSpanCount(t *testing.T) {
 		buckets := []countService.Bucket{1000}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newSpan.ClusterId,
 			countService.TimeInfo{
@@ -475,7 +475,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newSpan.ClusterId,
 			countService.TimeInfo{
@@ -536,7 +536,7 @@ func TestAlgorithm(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.CountAndUpdateOccurrences(
+		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
 			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},

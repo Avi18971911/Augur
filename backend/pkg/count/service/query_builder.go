@@ -82,7 +82,7 @@ func buildGetNonMatchedClusterIdsQuery(
 
 func buildUpdateNonMatchedClusterIdsQuery(
 	id string,
-) (map[string]interface{}, map[string]interface{}) {
+) (MetaMap, DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.increment",
@@ -106,7 +106,7 @@ func buildUpdateClusterCountsQuery(
 	clusterId string,
 	otherClusterId string,
 	countInfo CountInfo,
-) (map[string]interface{}, map[string]interface{}) {
+) (MetaMap, DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
