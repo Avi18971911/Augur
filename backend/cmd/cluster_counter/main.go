@@ -141,37 +141,49 @@ func processSpan(
 }
 
 func processData(
+	ac client.AugurClient,
 	dataByClusterId map[string][]map[string]interface{},
 	countService *countService.CountService,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
 ) {
 	const workerCount = 50
-	dataChannel := make(chan []map[string]interface{}, len(dataByClusterId))
+	inputChannel := make(chan []map[string]interface{}, len(dataByClusterId))
 	for _, data := range dataByClusterId {
-		dataChannel <- data
+		inputChannel <- data
 	}
-	close(dataChannel)
+	close(inputChannel)
 
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
+	resultChannel := make(chan *countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult)
+	clusterIdList := make([]string, 0, len(dataByClusterId))
+	metaMapList := make([]client.MetaMap, 0, len(dataByClusterId))
+	documentMapList := make([]client.DocumentMap, 0, len(dataByClusterId))
+
 	for i := 0; i < workerCount; i++ {
 		go func() {
+			logger.Info("Worker started processing data", zap.Int("workerId", i))
 			defer wg.Done()
-			for untypedData := range dataChannel {
+			for untypedData := range inputChannel {
 				for _, untypedItem := range untypedData {
+					logger.Debug("Processing data", zap.Any("data", untypedItem))
 					dataType := detectDataType(untypedItem)
 					switch dataType {
 					case Log:
 						res, err := processLog(untypedItem, countService, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process log", zap.Error(err))
+						} else {
+							resultChannel <- res
 						}
 					case Span:
 						res, err := processSpan(untypedItem, countService, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process span", zap.Error(err))
+						} else {
+							resultChannel <- res
 						}
 					case Unknown:
 						logger.Error("Unknown data type", zap.Any("data", untypedItem))
@@ -180,7 +192,38 @@ func processData(
 			}
 		}()
 	}
+
 	wg.Wait()
+	close(resultChannel)
+	logger.Info("All workers have finished processing data")
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		if result.ClusterIds != nil && len(result.ClusterIds) > 0 {
+			clusterIdList = append(clusterIdList, result.ClusterIds...)
+		}
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				logger.Fatal("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
+
+	logger.Info("Successfully processed data",
+		zap.Int("clusterIdList", len(clusterIdList)),
+		zap.Int("metaMapList", len(metaMapList)),
+		zap.Int("documentMapList", len(documentMapList)),
+	)
+
+	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer updateCancel()
+	err := ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	if err != nil {
+		logger.Fatal("Failed to bulk index", zap.Error(err))
+	}
 }
 
 func main() {
@@ -217,7 +260,7 @@ func main() {
 			if err != nil {
 				logger.Fatal("Failed to group data by cluster id", zap.Error(err))
 			}
-			processData(dataByClusterId, cs, buckets, logger)
+			processData(ac, dataByClusterId, cs, buckets, logger)
 		}
 	}
 

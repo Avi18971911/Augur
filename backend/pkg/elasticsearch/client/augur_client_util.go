@@ -7,9 +7,12 @@ import (
 	"time"
 )
 
-func ToMetaAndDataMap[T any](values []T) ([]map[string]interface{}, []map[string]interface{}, error) {
-	dataMap := make([]map[string]interface{}, len(values))
-	metaMap := make([]map[string]interface{}, len(values))
+type MetaMap map[string]interface{}
+type DocumentMap map[string]interface{}
+
+func ToMetaAndDataMap[T any](values []T) ([]MetaMap, []DocumentMap, error) {
+	dataMap := make([]DocumentMap, len(values))
+	metaMap := make([]MetaMap, len(values))
 	for i, v := range values {
 		data, err := json.Marshal(v)
 		if err != nil {

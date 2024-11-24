@@ -101,8 +101,8 @@ func (wbc *WriteBehindCacheImpl[ValueType]) flushToElasticsearch(ctx context.Con
 	}
 	err = wbc.ac.BulkIndex(
 		bulkCtx,
-		dataMap,
 		metaMap,
+		dataMap,
 		wbc.esIndexName,
 	)
 	wbc.writeQueue = []ValueType{}

@@ -21,10 +21,10 @@ const (
 type AugurClient interface {
 	// BulkIndex indexes (inserts) multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkIndex(ctx context.Context, data []map[string]interface{}, metaInfo []map[string]interface{}, index string) error
+	BulkIndex(ctx context.Context, metaInfo []MetaMap, documentInfo []DocumentMap, index string) error
 	// Index indexes (inserts) a single document in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
-	Index(ctx context.Context, data map[string]interface{}, metaInfo map[string]interface{}, index string) error
+	Index(ctx context.Context, metaInfo MetaMap, documentInfo DocumentMap, index string) error
 	// Search searches for documents in the index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 	// queryResultSize is the number of results to return, -1 for default

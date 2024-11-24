@@ -1,10 +1,9 @@
 package model
 
-type MetaMap map[string]interface{}
-type DocumentMap map[string]interface{}
+import "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 
 type GetCountAndUpdateOccurrencesQueryConstituentsResult struct {
 	ClusterIds      []string
-	MetaMapList     []MetaMap
-	DocumentMapList []DocumentMap
+	MetaMapList     []client.MetaMap
+	DocumentMapList []client.DocumentMap
 }

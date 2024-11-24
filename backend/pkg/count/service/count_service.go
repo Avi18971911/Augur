@@ -66,9 +66,9 @@ func convertCountMapToList(countMap map[string]CountInfo) []string {
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
 	countMap map[string]CountInfo,
-) ([]model.MetaMap, []model.DocumentMap) {
-	metaMap := make([]model.MetaMap, len(countMap))
-	updateMap := make([]model.DocumentMap, len(countMap))
+) ([]client.MetaMap, []client.DocumentMap) {
+	metaMap := make([]client.MetaMap, len(countMap))
+	updateMap := make([]client.DocumentMap, len(countMap))
 	i := 0
 	for otherClusterId, countInfo := range countMap {
 		compositeId := getIDFromConstituents(clusterId, otherClusterId)
@@ -164,22 +164,21 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) GetIncreaseOccurrencesForMissesQueryConstituents(
+func (cs *CountService) IncreaseOccurrencesForMisses(
 	ctx context.Context,
 	clusterId string,
 	coOccurringClustersByCount map[string]CountInfo,
-) ([]model.MetaMap, []model.DocumentMap, error) {
+) error {
 	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
 	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
 	if err != nil {
-		return []model.MetaMap{}, []model.DocumentMap{}, err
+		return err
 	}
 	if len(clusterIds) == 0 {
-		return []model.MetaMap{}, []model.DocumentMap{}, nil
+		return nil
 	}
 
-	metaMapList, documentMapList := cs.getUpdateOccurrencesForMissesQueryConstituents(clusterId, clusterIds)
-	return metaMapList, documentMapList, nil
+	return cs.updateOccurrencesForMisses(ctx, clusterId, clusterIds)
 }
 
 func (cs *CountService) getNonMatchingClusterIds(
@@ -216,12 +215,13 @@ func (cs *CountService) getNonMatchingClusterIds(
 	return nonMatchingClusters, nil
 }
 
-func (cs *CountService) getUpdateOccurrencesForMissesQueryConstituents(
+func (cs *CountService) updateOccurrencesForMisses(
+	ctx context.Context,
 	coClusterId string,
 	clusterIds []model.Cluster,
-) ([]model.MetaMap, []model.DocumentMap) {
-	metaMap := make([]model.MetaMap, len(clusterIds))
-	updateMap := make([]model.DocumentMap, len(clusterIds))
+) error {
+	metaMap := make([]client.MetaMap, len(clusterIds))
+	updateMap := make([]client.DocumentMap, len(clusterIds))
 	for i, clusterId := range clusterIds {
 		compositeKey := getIDFromConstituents(clusterId.ClusterId, coClusterId)
 		meta, update := buildUpdateNonMatchedClusterIdsQuery(compositeKey)
@@ -229,9 +229,11 @@ func (cs *CountService) getUpdateOccurrencesForMissesQueryConstituents(
 		updateMap[i] = update
 	}
 	if len(updateMap) == 0 {
-		return []model.MetaMap{}, []model.DocumentMap{}
+		return nil
 	}
-	return metaMap, updateMap
+	updateCtx, updateCancel := context.WithTimeout(ctx, csTimeOut)
+	defer updateCancel()
+	return cs.ac.BulkIndex(updateCtx, metaMap, updateMap, bootstrapper.CountIndexName)
 }
 
 func getListOfCoOccurringClusters(coOccurringClustersByCount map[string]CountInfo) []string {

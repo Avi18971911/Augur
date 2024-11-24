@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"time"
 )
 
@@ -82,7 +83,7 @@ func buildGetNonMatchedClusterIdsQuery(
 
 func buildUpdateNonMatchedClusterIdsQuery(
 	id string,
-) (MetaMap, DocumentMap) {
+) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.increment",
@@ -106,7 +107,7 @@ func buildUpdateClusterCountsQuery(
 	clusterId string,
 	otherClusterId string,
 	countInfo CountInfo,
-) (MetaMap, DocumentMap) {
+) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
