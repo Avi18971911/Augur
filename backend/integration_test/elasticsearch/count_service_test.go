@@ -318,7 +318,7 @@ func TestSpanCount(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 
-	ac := client.NewAugurClientImpl(es, client.Wait)
+	ac := client.NewAugurClientImpl(es, client.Immediate)
 	cs := countService.NewCountService(ac, logger)
 	t.Run("should be able to count co-occurrences of logs within the same timespan", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -501,6 +501,63 @@ func TestSpanCount(t *testing.T) {
 		countEntry := countEntries[0]
 		assert.Equal(t, int64(len(overlappingSpans)*2), countEntry.Occurrences)
 		assert.Equal(t, int64(len(overlappingSpans)*2), countEntry.CoOccurrences)
+	})
+}
+
+func TestAlgorithm(t *testing.T) {
+	if es == nil {
+		t.Error("es is uninitialized or otherwise nil")
+	}
+
+	ac := client.NewAugurClientImpl(es, client.Wait)
+	cs := countService.NewCountService(ac, logger)
+	t.Run("should insert two different matches into the database", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		newLog := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: initialTime,
+		}
+		logWithClusterId1 := model.LogEntry{
+			ClusterId: "clusterId1",
+			Timestamp: initialTime.Add(time.Second),
+		}
+		logWithClusterId2 := model.LogEntry{
+			ClusterId: "clusterId2",
+			Timestamp: initialTime.Add(time.Second),
+		}
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog, logWithClusterId1, logWithClusterId2})
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		buckets := []countService.Bucket{2500}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err = cs.CountAndUpdateOccurrences(
+			ctx,
+			newLog.ClusterId,
+			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		searchQueryBody := countQuery(newLog.ClusterId)
+		var querySize = 100
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+		assert.Equal(t, 2, len(countEntries))
+		coClusters := []string{countEntries[0].CoClusterId, countEntries[1].CoClusterId}
+		assert.EqualValues(t, []string{logWithClusterId1.ClusterId, logWithClusterId2.ClusterId}, coClusters)
 	})
 }
 
