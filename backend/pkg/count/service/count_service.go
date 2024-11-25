@@ -233,7 +233,7 @@ func (cs *CountService) getIncrementMissesDetails(
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
 	for i, missingCoClusterId := range missingCoClusterIds {
-		compositeKey := getIDFromConstituents(clusterId, missingCoClusterId.ClusterId)
+		compositeKey := getIDFromConstituents(clusterId, missingCoClusterId.CoClusterId)
 		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update

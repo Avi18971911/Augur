@@ -308,7 +308,7 @@ func main() {
 	resultChannel := ac.SearchAfter(
 		searchCtx,
 		queryMap,
-		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
+		[]string{bootstrapper.SpanIndexName},
 		nil,
 		&querySize,
 	)

@@ -9,6 +9,8 @@
 .nb-gradle-properties
 .swp
 .DS_Store
+*.json
+*.sh
 \#*\#
 
 docker-compose.override.yml

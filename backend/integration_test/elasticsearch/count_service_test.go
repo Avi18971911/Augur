@@ -11,6 +11,7 @@ import (
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
+	"slices"
 	"testing"
 	"time"
 )
@@ -59,7 +60,7 @@ func TestLogCount(t *testing.T) {
 		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
 			ctx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
@@ -97,14 +98,18 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
 		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
@@ -141,25 +146,33 @@ func TestLogCount(t *testing.T) {
 			t.Error("Failed to load logs into elasticsearch")
 		}
 		buckets := []countService.Bucket{2500}
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+		res, err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
 		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
@@ -208,25 +221,35 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		firstCtx, firstCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer firstCancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			firstCtx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
 		}
+		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
 		secondCtx, secondCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer secondCancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		fakeInput := countModel.IncreaseMissesInput{
+			ClusterId:    newLog.ClusterId,
+			CoClusterIds: []string{},
+		}
+		missesRes, err := cs.GetIncrementMissesQueryInfo(
 			secondCtx,
-			logsOfDifferentTime[0].ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
-			buckets,
+			fakeInput,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for misses: %v", err)
+		}
+		err = ac.BulkIndex(secondCtx, missesRes.MetaMapList, missesRes.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
 		}
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
@@ -277,25 +300,35 @@ func TestLogCount(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer missCancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			missCtx,
 			logsOfDifferentTime[0].ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for misses: %v", err)
 		}
+		insertCtx, insertCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer insertCancel()
+		err = ac.BulkIndex(insertCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
 		hitCtx, hitCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer hitCancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			hitCtx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
+		}
+		err = ac.BulkIndex(insertCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
 		}
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
@@ -357,8 +390,8 @@ func TestSpanCount(t *testing.T) {
 		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
 			ctx,
 			newSpan.ClusterId,
-			countService.TimeInfo{
-				SpanInfo: &countService.SpanInfo{
+			countModel.TimeInfo{
+				SpanInfo: &countModel.SpanInfo{
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
@@ -411,8 +444,8 @@ func TestSpanCount(t *testing.T) {
 		countInfo, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(
 			ctx,
 			newSpan.ClusterId,
-			countService.TimeInfo{
-				SpanInfo: &countService.SpanInfo{
+			countModel.TimeInfo{
+				SpanInfo: &countModel.SpanInfo{
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
@@ -462,11 +495,11 @@ func TestSpanCount(t *testing.T) {
 		buckets := []countService.Bucket{1000}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newSpan.ClusterId,
-			countService.TimeInfo{
-				SpanInfo: &countService.SpanInfo{
+			countModel.TimeInfo{
+				SpanInfo: &countModel.SpanInfo{
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
@@ -475,16 +508,24 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+		res, err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newSpan.ClusterId,
-			countService.TimeInfo{
-				SpanInfo: &countService.SpanInfo{
+			countModel.TimeInfo{
+				SpanInfo: &countModel.SpanInfo{
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
 			buckets,
 		)
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
@@ -536,14 +577,18 @@ func TestAlgorithm(t *testing.T) {
 		buckets := []countService.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
 			newLog.ClusterId,
-			countService.TimeInfo{LogInfo: &countService.LogInfo{Timestamp: newLog.Timestamp}},
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			buckets,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
 		var querySize = 100
@@ -557,7 +602,10 @@ func TestAlgorithm(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(countEntries))
 		coClusters := []string{countEntries[0].CoClusterId, countEntries[1].CoClusterId}
-		assert.EqualValues(t, []string{logWithClusterId1.ClusterId, logWithClusterId2.ClusterId}, coClusters)
+		slices.Sort(coClusters)
+		expectedResult := []string{"clusterId1", "clusterId2"}
+		slices.Sort(expectedResult)
+		assert.EqualValues(t, expectedResult, coClusters)
 	})
 }
 
@@ -568,7 +616,7 @@ func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = ac.BulkIndex(ctx, dataMap, metaMap, bootstrapper.LogIndexName)
+	err = ac.BulkIndex(ctx, metaMap, dataMap, bootstrapper.LogIndexName)
 	if err != nil {
 		return err
 	}
