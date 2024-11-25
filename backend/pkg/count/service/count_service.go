@@ -64,8 +64,8 @@ func getIncrementOccurrencesForMissesInput(
 		i++
 	}
 	return model.IncreaseMissesInput{
-		ClusterId:    clusterId,
-		CoClusterIds: clusterIds,
+		ClusterId:             clusterId,
+		CoClusterIdsToExclude: clusterIds,
 	}
 }
 
@@ -174,7 +174,7 @@ func (cs *CountService) GetIncrementMissesQueryInfo(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
 ) (*model.GetMetaAndDocumentInfoForIncrementMissesQueryResult, error) {
-	missingCoClusterIds, err := cs.getNonMatchingCoClusterIds(ctx, input.ClusterId, input.CoClusterIds)
+	missingCoClusterIds, err := cs.getNonMatchingCoClusterIds(ctx, input.ClusterId, input.CoClusterIdsToExclude)
 	if err != nil {
 		return nil, err
 	}

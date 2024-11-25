@@ -237,8 +237,8 @@ func TestLogCount(t *testing.T) {
 		secondCtx, secondCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer secondCancel()
 		fakeInput := countModel.IncreaseMissesInput{
-			ClusterId:    newLog.ClusterId,
-			CoClusterIds: []string{},
+			ClusterId:             newLog.ClusterId,
+			CoClusterIdsToExclude: []string{},
 		}
 		missesRes, err := cs.GetIncrementMissesQueryInfo(
 			secondCtx,
@@ -300,8 +300,8 @@ func TestLogCount(t *testing.T) {
 		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer missCancel()
 		fakeInput := countModel.IncreaseMissesInput{
-			ClusterId:    newLog.ClusterId,
-			CoClusterIds: []string{},
+			ClusterId:             newLog.ClusterId,
+			CoClusterIdsToExclude: []string{},
 		}
 		missRes, err := cs.GetIncrementMissesQueryInfo(
 			missCtx,

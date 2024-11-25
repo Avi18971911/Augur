@@ -199,9 +199,7 @@ func processData(
 		if result == nil {
 			continue
 		}
-		if len(result.IncreaseIncrementForMissesInput.CoClusterIds) > 0 {
-			increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
-		}
+		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
 		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
 			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
 				logger.Fatal("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
