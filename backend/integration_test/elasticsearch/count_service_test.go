@@ -297,52 +297,20 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countService.Bucket{2500}
 		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer missCancel()
-		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		fakeInput := countModel.IncreaseMissesInput{
+			ClusterId:    newLog.ClusterId,
+			CoClusterIds: []string{},
+		}
+		missRes, err := cs.GetIncrementMissesQueryInfo(
 			missCtx,
-			logsOfDifferentTime[0].ClusterId,
-			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logsOfDifferentTime[0].Timestamp}},
-			buckets,
+			fakeInput,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for misses: %v", err)
 		}
-		insertCtx, insertCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer insertCancel()
-		err = ac.BulkIndex(insertCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
-		if err != nil {
-			t.Errorf("Failed to insert records: %v", err)
-		}
-		hitCtx, hitCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer hitCancel()
-		res, err = cs.GetCountAndUpdateOccurrencesQueryConstituents(
-			hitCtx,
-			newLog.ClusterId,
-			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
-			buckets,
-		)
-		if err != nil {
-			t.Errorf("Failed to count occurrences for successes: %v", err)
-		}
-		err = ac.BulkIndex(insertCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
-		if err != nil {
-			t.Errorf("Failed to insert records: %v", err)
-		}
-		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer queryCancel()
-		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
-		if err != nil {
-			t.Errorf("Failed to search for count: %v", err)
-		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
-		if err != nil {
-			t.Errorf("Failed to convert count docs to count entries: %v", err)
-		}
-		countEntry := countEntries[0]
-		assert.Equal(t, int64(len(logsOfSameTime)), countEntry.Occurrences)
+		assert.Nil(t, missRes)
 	})
 }
 
