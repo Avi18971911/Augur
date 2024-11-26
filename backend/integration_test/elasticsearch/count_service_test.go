@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var indices = []string{bootstrapper.LogIndexName, bootstrapper.CountIndexName}
+
 func TestLogCount(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
@@ -52,6 +54,7 @@ func TestLogCount(t *testing.T) {
 			ctx,
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+			indices,
 			buckets,
 		)
 		if err != nil {
@@ -65,6 +68,7 @@ func TestLogCount(t *testing.T) {
 			ctx,
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+			indices,
 			buckets,
 		)
 		if err != nil {
@@ -125,6 +129,7 @@ func TestLogCount(t *testing.T) {
 			firstCtx,
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+			indices,
 			buckets,
 		)
 		if err != nil {
@@ -266,6 +271,7 @@ func TestSpanCount(t *testing.T) {
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
+			indices,
 			buckets,
 		)
 		if err != nil {
@@ -283,6 +289,7 @@ func TestSpanCount(t *testing.T) {
 					FromTime: newSpan.StartTime, ToTime: newSpan.EndTime,
 				},
 			},
+			indices,
 			buckets,
 		)
 		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
@@ -344,6 +351,7 @@ func TestAlgorithm(t *testing.T) {
 			ctx,
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+			indices,
 			buckets,
 		)
 		if err != nil {
