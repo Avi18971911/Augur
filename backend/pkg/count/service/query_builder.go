@@ -50,6 +50,9 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 				"minimum_should_match": 1,
 			},
 		},
+		"collapse": map[string]interface{}{
+			"field": "cluster_id", // Collapse results by unique cluster_id
+		},
 		"_source": []string{"cluster_id"}, // Retrieve only the cluster IDs
 	}
 }
@@ -106,22 +109,20 @@ func buildUpdateClusterCountsQuery(
 	id string,
 	clusterId string,
 	otherClusterId string,
-	countInfo CountInfo,
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
+			"source": "ctx._source.occurrences += params.increment; ctx._source.co_occurrences += params.increment",
 			"params": map[string]interface{}{
-				"occurrences":    countInfo.Occurrences,
-				"co_occurrences": countInfo.CoOccurrences,
+				"increment": 1,
 			},
 		},
 		"upsert": map[string]interface{}{
 			"created_at":     time.Now().UTC(),
 			"cluster_id":     clusterId,
 			"co_cluster_id":  otherClusterId,
-			"occurrences":    countInfo.Occurrences,
-			"co_occurrences": countInfo.CoOccurrences,
+			"occurrences":    1,
+			"co_occurrences": 1,
 		},
 	}
 

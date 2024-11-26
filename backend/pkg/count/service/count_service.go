@@ -39,7 +39,7 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	timeInfo model.TimeInfo,
 	buckets []Bucket,
 ) (*model.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
-	countMap, err := cs.CountOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeInfo, buckets)
+	countMap, err := cs.countOccurrencesAndCoOccurrencesByCoClusterId(ctx, clusterId, timeInfo, buckets)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 
 func getIncrementOccurrencesForMissesInput(
 	clusterId string,
-	countMap map[string]CountInfo,
+	countMap map[string]struct{},
 ) model.IncreaseMissesInput {
 	clusterIds := make([]string, len(countMap))
 	i := 0
@@ -71,14 +71,14 @@ func getIncrementOccurrencesForMissesInput(
 
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
-	countMap map[string]CountInfo,
+	countMap map[string]struct{},
 ) ([]client.MetaMap, []client.DocumentMap) {
 	metaMap := make([]client.MetaMap, len(countMap))
 	updateMap := make([]client.DocumentMap, len(countMap))
 	i := 0
-	for otherClusterId, countInfo := range countMap {
+	for otherClusterId, _ := range countMap {
 		compositeId := getIDFromConstituents(clusterId, otherClusterId)
-		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, countInfo)
+		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId)
 		metaMap[i] = meta
 		updateMap[i] = update
 		i++
@@ -86,13 +86,13 @@ func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	return metaMap, updateMap
 }
 
-func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
+func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 	ctx context.Context,
 	clusterId string,
 	timeInfo model.TimeInfo,
 	buckets []Bucket,
-) (map[string]CountInfo, error) {
-	var countMap = make(map[string]CountInfo)
+) (map[string]struct{}, error) {
+	var coOccurringClustersByClusterId map[string]struct{}
 	for _, bucket := range buckets {
 		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
 		if err != nil {
@@ -113,22 +113,13 @@ func (cs *CountService) CountOccurrencesAndCoOccurrencesByCoClusterId(
 			)
 			return nil, err
 		}
-		coOccurringClustersByClusterId := groupCoOccurringClustersByClusterId(coOccurringClusters)
-		for coOccurringClusterId, groupedCoOccurringClusters := range coOccurringClustersByClusterId {
-			if _, ok := countMap[coOccurringClusterId]; !ok {
-				countMap[coOccurringClusterId] = CountInfo{
-					CoOccurrences: int64(len(groupedCoOccurringClusters)),
-					Occurrences:   int64(len(groupedCoOccurringClusters)),
-				}
-			} else {
-				countMap[coOccurringClusterId] = CountInfo{
-					CoOccurrences: int64(len(groupedCoOccurringClusters)) + countMap[coOccurringClusterId].CoOccurrences,
-					Occurrences:   int64(len(groupedCoOccurringClusters)) + countMap[coOccurringClusterId].Occurrences,
-				}
-			}
+		coOccurringClustersByClusterId = groupCoOccurringClustersByClusterId(coOccurringClusters)
+		// TODO: Just return a list of strings after testing
+		if len(coOccurringClustersByClusterId) != len(coOccurringClusters) {
+			cs.logger.Fatal("Duplicate co-occurring clusters found")
 		}
 	}
-	return countMap, nil
+	return coOccurringClustersByClusterId, nil
 }
 
 func (cs *CountService) getCoOccurringCluster(
@@ -244,16 +235,11 @@ func (cs *CountService) getIncrementMissesDetails(
 	return metaMap, updateMap
 }
 
-func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string][]model.Cluster {
-	coOccurringClustersByClusterId := make(map[string][]model.Cluster)
+func groupCoOccurringClustersByClusterId(clusters []model.Cluster) map[string]struct{} {
+	coOccurringClustersByClusterId := make(map[string]struct{})
 	for _, cluster := range clusters {
 		if _, ok := coOccurringClustersByClusterId[cluster.ClusterId]; !ok {
-			coOccurringClustersByClusterId[cluster.ClusterId] = []model.Cluster{cluster}
-		} else {
-			coOccurringClustersByClusterId[cluster.ClusterId] = append(
-				coOccurringClustersByClusterId[cluster.ClusterId],
-				cluster,
-			)
+			coOccurringClustersByClusterId[cluster.ClusterId] = struct{}{}
 		}
 	}
 	return coOccurringClustersByClusterId
