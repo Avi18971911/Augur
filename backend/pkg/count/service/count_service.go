@@ -84,7 +84,8 @@ func (cs *CountService) updateCoOccurrences(
 	updateMap := make([]map[string]interface{}, len(countMap))
 	i := 0
 	for otherClusterId, countInfo := range countMap {
-		meta, update := buildUpdateClusterCountsQuery(clusterId, otherClusterId, countInfo)
+		compositeId := getIDFromConstituents(clusterId, otherClusterId)
+		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, countInfo)
 		metaMap[i] = meta
 		updateMap[i] = update
 		i++
@@ -187,7 +188,6 @@ func (cs *CountService) increaseOccurrencesForMisses(
 	coOccurringClustersByCount map[string]CountInfo,
 ) error {
 	listOfCoOccurringClusters := getListOfCoOccurringClusters(coOccurringClustersByCount)
-
 	clusterIds, err := cs.getNonMatchingClusterIds(ctx, clusterId, listOfCoOccurringClusters)
 	if err != nil {
 		return err
@@ -196,7 +196,7 @@ func (cs *CountService) increaseOccurrencesForMisses(
 		return nil
 	}
 
-	err = cs.updateOccurrencesForMisses(ctx, clusterIds)
+	err = cs.updateOccurrencesForMisses(ctx, clusterId, clusterIds)
 	if err != nil {
 		return err
 	}
@@ -239,12 +239,14 @@ func (cs *CountService) getNonMatchingClusterIds(
 
 func (cs *CountService) updateOccurrencesForMisses(
 	ctx context.Context,
+	coClusterId string,
 	clusterIds []model.Cluster,
 ) error {
 	metaMap := make([]map[string]interface{}, len(clusterIds))
 	updateMap := make([]map[string]interface{}, len(clusterIds))
 	for i, clusterId := range clusterIds {
-		meta, update := buildUpdateNonMatchedClusterIdsQuery(clusterId.ClusterId)
+		compositeKey := getIDFromConstituents(clusterId.ClusterId, coClusterId)
+		meta, update := buildUpdateNonMatchedClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
 	}
@@ -314,4 +316,8 @@ func getTimeRangeForBucket(timeInfo TimeInfo, bucket Bucket) (CalculatedTimeInfo
 	} else {
 		return CalculatedTimeInfo{}, fmt.Errorf("timeInfo.spanInfo or timeInfo.logInfo is required")
 	}
+}
+
+func getIDFromConstituents(clusterId, coClusterId string) string {
+	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
 }
