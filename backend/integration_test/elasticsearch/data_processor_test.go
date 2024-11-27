@@ -25,6 +25,10 @@ func TestDataProcessor(t *testing.T) {
 	dp := service.NewDataProcessorService(ac, cs, logger)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
 		clusterA := "clusterA"
 		clusterB := "clusterB"
 		firstTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -109,6 +113,10 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
 		clusterA := "clusterA"
 		clusterB := "clusterB"
 
@@ -187,7 +195,7 @@ func TestDataProcessor(t *testing.T) {
 
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
-		
+
 		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
 		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
 	})
