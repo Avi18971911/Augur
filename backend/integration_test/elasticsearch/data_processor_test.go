@@ -22,9 +22,9 @@ func TestDataProcessor(t *testing.T) {
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
 	cs := countService.NewCountService(ac, logger)
-	dp := service.NewDataProcessorService(ac, cs, logger)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
+		dp := service.NewDataProcessorService(ac, cs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -113,6 +113,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
+		dp := service.NewDataProcessorService(ac, cs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
