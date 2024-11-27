@@ -5,7 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
+	countModel "github.com/Avi18971911/Augur/pkg/count/model"
+	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logService "github.com/Avi18971911/Augur/pkg/log/service"
@@ -78,93 +79,109 @@ func groupDataByClusterId(data []map[string]interface{}) (map[string][]map[strin
 
 func processLog(
 	untypedLog map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	cs *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
-) error {
+) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
 	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
 	if err != nil {
 		logger.Error("Failed to convert log to log documents", zap.Error(err))
-		return err
+		return nil, err
 	}
 	typedLog := typedLogs[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	err = countService.CountAndUpdateOccurrences(csCtx, typedLog.ClusterId, count.TimeInfo{
-		LogInfo: &count.LogInfo{
-			Timestamp: typedLog.Timestamp,
+	result, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+		csCtx,
+		typedLog.ClusterId,
+		countModel.TimeInfo{
+			LogInfo: &countModel.LogInfo{
+				Timestamp: typedLog.Timestamp,
+			},
 		},
-	}, buckets)
+		buckets,
+	)
 	if err != nil {
 		logger.Error("Failed to count and update occurrences for logs", zap.Error(err))
-		return err
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
 func processSpan(
 	untypedSpan map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	cs *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
-) error {
+) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
 	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
 	if err != nil {
 		logger.Error("Failed to convert span to span documents", zap.Error(err))
-		return err
+		return nil, err
 	}
 	typedSpan := typedSpans[0]
 	csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer csCancel()
-	err = countService.CountAndUpdateOccurrences(
+	result, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
 		typedSpan.ClusterId,
-		count.TimeInfo{
-			SpanInfo: &count.SpanInfo{
+		countModel.TimeInfo{
+			SpanInfo: &countModel.SpanInfo{
 				FromTime: typedSpan.StartTime,
 				ToTime:   typedSpan.EndTime,
 			},
-		}, buckets,
+		},
+		buckets,
 	)
 	if err != nil {
 		logger.Error("Failed to count and update occurrences for spans", zap.Error(err))
-		return err
+		return nil, err
 	}
-	return nil
+	return result, nil
 }
 
 func processData(
+	ac client.AugurClient,
 	dataByClusterId map[string][]map[string]interface{},
-	countService *count.CountService,
-	buckets []count.Bucket,
+	cs *countService.CountService,
+	buckets []countService.Bucket,
 	logger *zap.Logger,
-) {
+) []countModel.IncreaseMissesInput {
 	const workerCount = 50
-	dataChannel := make(chan []map[string]interface{}, len(dataByClusterId))
+	inputChannel := make(chan []map[string]interface{}, len(dataByClusterId))
 	for _, data := range dataByClusterId {
-		dataChannel <- data
+		inputChannel <- data
 	}
-	close(dataChannel)
+	close(inputChannel)
 
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
+	resultChannel := make(chan *countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, len(dataByClusterId))
+	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, len(dataByClusterId))
+	metaMapList := make([]client.MetaMap, 0, len(dataByClusterId))
+	documentMapList := make([]client.DocumentMap, 0, len(dataByClusterId))
+
 	for i := 0; i < workerCount; i++ {
 		go func() {
 			defer wg.Done()
-			for untypedData := range dataChannel {
+			for untypedData := range inputChannel {
 				for _, untypedItem := range untypedData {
 					dataType := detectDataType(untypedItem)
 					switch dataType {
 					case Log:
-						err := processLog(untypedItem, countService, buckets, logger)
+						res, err := processLog(untypedItem, cs, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process log", zap.Error(err))
+						} else {
+							resultChannel <- res
 						}
 					case Span:
-						err := processSpan(untypedItem, countService, buckets, logger)
+						res, err := processSpan(untypedItem, cs, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process span", zap.Error(err))
+						} else {
+							resultChannel <- res
 						}
 					case Unknown:
 						logger.Error("Unknown data type", zap.Any("data", untypedItem))
@@ -173,7 +190,98 @@ func processData(
 			}
 		}()
 	}
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(resultChannel)
+	}()
+
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				logger.Fatal("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
+
+	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer updateCancel()
+	err := ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	if err != nil {
+		logger.Fatal("Failed to bulk index", zap.Error(err))
+	}
+	return increaseMissesList
+}
+
+func processMisses(
+	ac client.AugurClient,
+	increaseMissesInput []countModel.IncreaseMissesInput,
+	cs *countService.CountService,
+	logger *zap.Logger,
+) {
+	const workerCount = 50
+	inputChannel := make(chan countModel.IncreaseMissesInput, len(increaseMissesInput))
+	for _, input := range increaseMissesInput {
+		inputChannel <- input
+	}
+	close(inputChannel)
+
+	var wg sync.WaitGroup
+	wg.Add(workerCount)
+
+	resultChannel := make(
+		chan *countModel.GetMetaAndDocumentInfoForIncrementMissesQueryResult,
+		len(increaseMissesInput),
+	)
+	metaMapList := make([]client.MetaMap, 0, len(increaseMissesInput))
+	documentMapList := make([]client.DocumentMap, 0, len(increaseMissesInput))
+
+	for i := 0; i < workerCount; i++ {
+		go func() {
+			defer wg.Done()
+			for input := range inputChannel {
+				csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
+				result, err := cs.GetIncrementMissesQueryInfo(csCtx, input)
+				if err != nil {
+					logger.Error("Failed to increment occurrences for misses", zap.Error(err))
+				} else {
+					resultChannel <- result
+				}
+				csCancel()
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChannel)
+	}()
+
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				logger.Fatal("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
+
+	logger.Info("Bulk indexing misses", zap.Int("count", len(metaMapList)), zap.Int("document_count", len(documentMapList)))
+	updateCtx, updateCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer updateCancel()
+	err := ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	if err != nil {
+		logger.Fatal("Failed to bulk index", zap.Error(err))
+	}
 }
 
 func main() {
@@ -186,17 +294,19 @@ func main() {
 	}
 
 	err = deleteAllDocuments(es)
-	ac := client.NewAugurClientImpl(es, client.Async)
-	countService := count.NewCountService(ac, logger)
+	ac := client.NewAugurClientImpl(es, client.Wait)
+	cs := countService.NewCountService(ac, logger)
 	queryMap := getAllDocumentsQuery()
 	querySize := 1000
-	buckets := []count.Bucket{100}
+	buckets := []countService.Bucket{100}
 	searchCtx, searchCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer searchCancel()
+
+	start := time.Now()
 	resultChannel := ac.SearchAfter(
 		searchCtx,
 		queryMap,
-		[]string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName},
+		[]string{bootstrapper.SpanIndexName},
 		nil,
 		&querySize,
 	)
@@ -210,9 +320,12 @@ func main() {
 			if err != nil {
 				logger.Fatal("Failed to group data by cluster id", zap.Error(err))
 			}
-			processData(dataByClusterId, countService, buckets, logger)
+			increaseMissesInput := processData(ac, dataByClusterId, cs, buckets, logger)
+			if len(increaseMissesInput) > 0 {
+				processMisses(ac, increaseMissesInput, cs, logger)
+			}
 		}
 	}
-
-	logger.Info("Successfully counted and updated occurrences")
+	end := time.Now()
+	logger.Info("Successfully counted and updated occurrences", zap.Duration("duration", end.Sub(start)))
 }
