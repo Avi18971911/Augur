@@ -16,6 +16,7 @@ import (
 )
 
 const timeout = 2 * time.Second
+const workerCount = 50
 
 var querySize = 10000
 var buckets = []countService.Bucket{100}
@@ -67,13 +68,8 @@ func (dps *DataProcessorService) processCounts(
 		} else if result.Success == nil {
 			dps.logger.Error("Result is nil")
 		} else {
-			dataByClusterId, err := groupDataByClusterId(result.Success.Result)
-			if err != nil {
-				dps.logger.Error("Failed to group data by cluster id", zap.Error(err))
-				continue
-			}
 			go func() {
-				err := dps.increaseCountForOverlapsAndMisses(ctx, dataByClusterId, indices)
+				err := dps.increaseCountForOverlapsAndMisses(ctx, result.Success.Result, indices)
 				if err != nil {
 					dps.logger.Error(
 						"Failed to increase count for overlaps and misses for the given parameters",
@@ -90,10 +86,10 @@ func (dps *DataProcessorService) processCounts(
 
 func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 	ctx context.Context,
-	dataByClusterId map[string][]map[string]interface{},
+	clusterOrLogData []map[string]interface{},
 	indices []string,
 ) error {
-	increaseMissesInput, err := dps.processCountsForOverlaps(ctx, dataByClusterId, indices)
+	increaseMissesInput, err := dps.processCountsForOverlaps(ctx, clusterOrLogData, indices)
 	if err != nil {
 		return fmt.Errorf("failed to process clusters: %w", err)
 	}
@@ -109,70 +105,48 @@ func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 
 func (dps *DataProcessorService) processCountsForOverlaps(
 	ctx context.Context,
-	dataByClusterId map[string][]map[string]interface{},
+	clusterOrLogData []map[string]interface{},
 	indices []string,
 ) ([]countModel.IncreaseMissesInput, error) {
-	const workerCount = 50
-	inputChannel := make(chan []map[string]interface{}, len(dataByClusterId))
-	for _, data := range dataByClusterId {
-		inputChannel <- data
-	}
-	close(inputChannel)
+	const logErrorMsg = "Failed to process log"
+	const spanErrorMsg = "Failed to process span"
+	const unknownErrorMsg = "Failed to process unknown data type"
 
-	var wg sync.WaitGroup
-	wg.Add(workerCount)
-
-	resultChannel := make(chan *countModel.GetCountAndUpdateQueryDetails, len(dataByClusterId))
-	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, len(dataByClusterId))
-	metaMapList := make([]client.MetaMap, 0, len(dataByClusterId))
-	documentMapList := make([]client.DocumentMap, 0, len(dataByClusterId))
-
-	for i := 0; i < workerCount; i++ {
-		go func() {
-			defer wg.Done()
-			for untypedData := range inputChannel {
-				for _, untypedItem := range untypedData {
-					dataType := detectDataType(untypedItem)
-					switch dataType {
-					case model.Log:
-						res, err := dps.processLog(ctx, untypedItem, indices)
-						if err != nil {
-							dps.logger.Error("Failed to process log", zap.Error(err))
-						} else {
-							resultChannel <- res
-						}
-					case model.Span:
-						res, err := dps.processSpan(ctx, untypedItem, indices)
-						if err != nil {
-							dps.logger.Error("Failed to process span", zap.Error(err))
-						} else {
-							resultChannel <- res
-						}
-					case model.Unknown:
-						dps.logger.Error("Unknown data type", zap.Any("data", untypedItem))
-					}
+	resultChannel := splitAndWeave[
+		map[string]interface{},
+		*countModel.GetCountAndUpdateQueryDetails,
+	](
+		ctx,
+		clusterOrLogData,
+		func(
+			ctx context.Context,
+			data map[string]interface{},
+		) (*countModel.GetCountAndUpdateQueryDetails, string, error) {
+			dataType := detectDataType(data)
+			switch dataType {
+			case model.Log:
+				res, err := dps.processLog(ctx, data, indices)
+				if err != nil {
+					return nil, logErrorMsg, err
+				} else {
+					return res, "", nil
 				}
+			case model.Span:
+				res, err := dps.processSpan(ctx, data, indices)
+				if err != nil {
+					return nil, spanErrorMsg, err
+				} else {
+					return res, "", nil
+				}
+			default:
+				return nil, unknownErrorMsg, nil
 			}
-		}()
-	}
-	go func() {
-		wg.Wait()
-		close(resultChannel)
-	}()
+		},
+		workerCount,
+		dps.logger,
+	)
 
-	for result := range resultChannel {
-		if result == nil {
-			continue
-		}
-		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
-		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
-			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
-				return nil, fmt.Errorf("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
-			}
-			metaMapList = append(metaMapList, result.MetaMapList...)
-			documentMapList = append(documentMapList, result.DocumentMapList...)
-		}
-	}
+	increaseMissesList, metaMapList, documentMapList := dps.unpackCoClusterResults(resultChannel, len(clusterOrLogData))
 
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
@@ -250,10 +224,103 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 	ctx context.Context,
 	increaseMissesInput []countModel.IncreaseMissesInput,
 ) error {
-	const workerCount = 50
-	inputChannel := make(chan countModel.IncreaseMissesInput, len(increaseMissesInput))
-	for _, input := range increaseMissesInput {
-		inputChannel <- input
+	const errorMsg = "Failed to process increments for misses"
+	resultChannel := splitAndWeave[
+		countModel.IncreaseMissesInput,
+		*countModel.GetIncrementMissesQueryDetails,
+	](
+		ctx,
+		increaseMissesInput,
+		func(
+			ctx context.Context,
+			input countModel.IncreaseMissesInput,
+		) (*countModel.GetIncrementMissesQueryDetails, string, error) {
+			csCtx, csCancel := context.WithTimeout(ctx, timeout)
+			defer csCancel()
+			res, err := dps.cs.GetIncrementMissesQueryInfo(csCtx, input)
+			if err != nil {
+				return nil, errorMsg, err
+			} else {
+				return res, "", nil
+			}
+		},
+		workerCount,
+		dps.logger,
+	)
+
+	metaMapList, documentMapList := dps.unpackMissResults(resultChannel, len(increaseMissesInput))
+	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
+	defer updateCancel()
+	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	if err != nil {
+		dps.logger.Error("Failed to bulk index when incrementing misses", zap.Error(err))
+	}
+	return nil
+}
+
+func (dps *DataProcessorService) unpackCoClusterResults(
+	resultChannel chan *countModel.GetCountAndUpdateQueryDetails,
+	startingLength int,
+) ([]countModel.IncreaseMissesInput, []client.MetaMap, []client.DocumentMap) {
+	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, startingLength)
+	metaMapList := make([]client.MetaMap, 0, startingLength)
+	documentMapList := make([]client.DocumentMap, 0, startingLength)
+
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				dps.logger.Fatal(
+					"DocumentMapList is nil or empty, despite MetaMapList being non-empty when co-clustering",
+				)
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
+	return increaseMissesList, metaMapList, documentMapList
+}
+
+func (dps *DataProcessorService) unpackMissResults(
+	resultChannel chan *countModel.GetIncrementMissesQueryDetails,
+	startingLength int,
+) ([]client.MetaMap, []client.DocumentMap) {
+	metaMapList := make([]client.MetaMap, 0, startingLength)
+	documentMapList := make([]client.DocumentMap, 0, startingLength)
+	for result := range resultChannel {
+		if result == nil {
+			continue
+		}
+		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
+			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+				dps.logger.Error(
+					"DocumentMapList is nil or empty, despite MetaMapList being non-empty " +
+						"when incrementing misses",
+				)
+			}
+			metaMapList = append(metaMapList, result.MetaMapList...)
+			documentMapList = append(documentMapList, result.DocumentMapList...)
+		}
+	}
+	return metaMapList, documentMapList
+}
+
+func splitAndWeave[
+	inputType any,
+	outputType any,
+](
+	ctx context.Context,
+	input []inputType,
+	inputFunction func(ctx context.Context, input inputType) (outputType, string, error),
+	workerCount int,
+	logger *zap.Logger,
+) chan outputType {
+	inputChannel := make(chan inputType, len(input))
+	for _, item := range input {
+		inputChannel <- item
 	}
 	close(inputChannel)
 
@@ -261,20 +328,18 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 	wg.Add(workerCount)
 
 	resultChannel := make(
-		chan *countModel.GetIncrementMissesQueryDetails,
-		len(increaseMissesInput),
+		chan outputType,
+		len(input),
 	)
-	metaMapList := make([]client.MetaMap, 0, len(increaseMissesInput))
-	documentMapList := make([]client.DocumentMap, 0, len(increaseMissesInput))
 
 	for i := 0; i < workerCount; i++ {
 		go func() {
 			defer wg.Done()
 			for input := range inputChannel {
-				csCtx, csCancel := context.WithTimeout(context.Background(), 10*time.Second)
-				result, err := dps.cs.GetIncrementMissesQueryInfo(csCtx, input)
+				csCtx, csCancel := context.WithTimeout(ctx, timeout)
+				result, errorMsg, err := inputFunction(csCtx, input)
 				if err != nil {
-					dps.logger.Error("Failed to increment occurrences for misses", zap.Error(err))
+					logger.Error(errorMsg, zap.Error(err))
 				} else {
 					resultChannel <- result
 				}
@@ -288,41 +353,9 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 		close(resultChannel)
 	}()
 
-	for result := range resultChannel {
-		if result == nil {
-			continue
-		}
-		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
-			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
-				return fmt.Errorf("DocumentMapList is nil or empty, despite MetaMapList being non-empty")
-			}
-			metaMapList = append(metaMapList, result.MetaMapList...)
-			documentMapList = append(documentMapList, result.DocumentMapList...)
-		}
-	}
-
-	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
-	defer updateCancel()
-	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
-	if err != nil {
-		return fmt.Errorf("failed to bulk index when incrementing misses: %w", err)
-	}
-	return nil
+	return resultChannel
 }
 
-func groupDataByClusterId(data []map[string]interface{}) (map[string][]map[string]interface{}, error) {
-	groupedData := make(map[string][]map[string]interface{})
-	for _, item := range data {
-		if clusterId, ok := item["cluster_id"].(string); !ok {
-			return nil, fmt.Errorf("failed to convert cluster_id to string %v", item["cluster_id"])
-		} else {
-			groupedData[clusterId] = append(groupedData[clusterId], item)
-		}
-	}
-	return groupedData, nil
-}
-
-// TODO: Move to AugurClient
 func detectDataType(data map[string]interface{}) model.DataType {
 	if _, ok := data["start_time"]; ok && data["end_time"] != nil {
 		return model.Span
