@@ -1,0 +1,46 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+  # Receiver for reading logs from stdout
+  filelog:
+    include:
+      - /var/log/otel-logs/*.log  # Log files being written to stdout or any specific log file
+    start_at: beginning
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317"  # Point to Jaeger's OTLP gRPC endpoint
+    tls:
+      insecure: true
+
+  otlphttp:
+    endpoint: http://localhost:3100/otlp  # Endpoint for Loki or other log receivers
+
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 10s
+  attributes:
+    actions:
+      - action: insert
+        key: service.name
+        value: fake-service
+
+extensions:
+  health_check:
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp] 
+
+    logs:
+      receivers: [filelog]
+      processors: [batch, attributes]
+      exporters: [otlphttp] 
