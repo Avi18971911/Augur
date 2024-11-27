@@ -80,9 +80,10 @@ func groupDataByClusterId(data []map[string]interface{}) (map[string][]map[strin
 func processLog(
 	untypedLog map[string]interface{},
 	cs *countService.CountService,
+	indices []string,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
-) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
+) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
 	if err != nil {
 		logger.Error("Failed to convert log to log documents", zap.Error(err))
@@ -99,6 +100,7 @@ func processLog(
 				Timestamp: typedLog.Timestamp,
 			},
 		},
+		indices,
 		buckets,
 	)
 	if err != nil {
@@ -111,9 +113,10 @@ func processLog(
 func processSpan(
 	untypedSpan map[string]interface{},
 	cs *countService.CountService,
+	indices []string,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
-) (*countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, error) {
+) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
 	if err != nil {
 		logger.Error("Failed to convert span to span documents", zap.Error(err))
@@ -131,6 +134,7 @@ func processSpan(
 				ToTime:   typedSpan.EndTime,
 			},
 		},
+		indices,
 		buckets,
 	)
 	if err != nil {
@@ -144,6 +148,7 @@ func processData(
 	ac client.AugurClient,
 	dataByClusterId map[string][]map[string]interface{},
 	cs *countService.CountService,
+	indices []string,
 	buckets []countService.Bucket,
 	logger *zap.Logger,
 ) []countModel.IncreaseMissesInput {
@@ -157,7 +162,7 @@ func processData(
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
-	resultChannel := make(chan *countModel.GetCountAndUpdateOccurrencesQueryConstituentsResult, len(dataByClusterId))
+	resultChannel := make(chan *countModel.GetCountAndUpdateQueryDetails, len(dataByClusterId))
 	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, len(dataByClusterId))
 	metaMapList := make([]client.MetaMap, 0, len(dataByClusterId))
 	documentMapList := make([]client.DocumentMap, 0, len(dataByClusterId))
@@ -170,14 +175,14 @@ func processData(
 					dataType := detectDataType(untypedItem)
 					switch dataType {
 					case Log:
-						res, err := processLog(untypedItem, cs, buckets, logger)
+						res, err := processLog(untypedItem, cs, indices, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process log", zap.Error(err))
 						} else {
 							resultChannel <- res
 						}
 					case Span:
-						res, err := processSpan(untypedItem, cs, buckets, logger)
+						res, err := processSpan(untypedItem, cs, indices, buckets, logger)
 						if err != nil {
 							logger.Error("Failed to process span", zap.Error(err))
 						} else {
@@ -235,7 +240,7 @@ func processMisses(
 	wg.Add(workerCount)
 
 	resultChannel := make(
-		chan *countModel.GetMetaAndDocumentInfoForIncrementMissesQueryResult,
+		chan *countModel.GetIncrementMissesQueryDetails,
 		len(increaseMissesInput),
 	)
 	metaMapList := make([]client.MetaMap, 0, len(increaseMissesInput))
@@ -299,6 +304,7 @@ func main() {
 	queryMap := getAllDocumentsQuery()
 	querySize := 1000
 	buckets := []countService.Bucket{100}
+	indices := []string{bootstrapper.SpanIndexName}
 	searchCtx, searchCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer searchCancel()
 
@@ -306,7 +312,7 @@ func main() {
 	resultChannel := ac.SearchAfter(
 		searchCtx,
 		queryMap,
-		[]string{bootstrapper.SpanIndexName},
+		indices,
 		nil,
 		&querySize,
 	)
@@ -320,7 +326,7 @@ func main() {
 			if err != nil {
 				logger.Fatal("Failed to group data by cluster id", zap.Error(err))
 			}
-			increaseMissesInput := processData(ac, dataByClusterId, cs, buckets, logger)
+			increaseMissesInput := processData(ac, dataByClusterId, cs, indices, buckets, logger)
 			if len(increaseMissesInput) > 0 {
 				processMisses(ac, increaseMissesInput, cs, logger)
 			}

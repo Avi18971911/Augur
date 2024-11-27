@@ -7,13 +7,13 @@ type IncreaseMissesInput struct {
 	CoClusterIdsToExclude []string
 }
 
-type GetCountAndUpdateOccurrencesQueryConstituentsResult struct {
+type GetCountAndUpdateQueryDetails struct {
 	IncreaseIncrementForMissesInput IncreaseMissesInput
 	MetaMapList                     []client.MetaMap
 	DocumentMapList                 []client.DocumentMap
 }
 
-type GetMetaAndDocumentInfoForIncrementMissesQueryResult struct {
+type GetIncrementMissesQueryDetails struct {
 	MetaMapList     []client.MetaMap
 	DocumentMapList []client.DocumentMap
 }
