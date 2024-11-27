@@ -82,6 +82,7 @@ func (dps *DataProcessorService) processCounts(
 					zap.Int("page", i),
 				)
 			}
+			dps.searchParams = &result.Success.ContinueParams
 		}
 		i++
 	}
