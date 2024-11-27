@@ -19,7 +19,6 @@ const timeout = 2 * time.Second
 const workerCount = 50
 
 var querySize = 10000
-var buckets = []countService.Bucket{100}
 
 type DataProcessorService struct {
 	ac           client.AugurClient
@@ -41,14 +40,15 @@ func NewDataProcessorService(
 	}
 }
 
-func (dps *DataProcessorService) ProcessData(ctx context.Context, indices []string) {
+func (dps *DataProcessorService) ProcessData(ctx context.Context, buckets []countService.Bucket, indices []string) {
 	// TODO: Add the Clustering Code here as well
 
-	dps.processCounts(ctx, indices)
+	dps.processCounts(ctx, buckets, indices)
 }
 
 func (dps *DataProcessorService) processCounts(
 	ctx context.Context,
+	buckets []countService.Bucket,
 	indices []string,
 ) {
 	searchCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -69,7 +69,12 @@ func (dps *DataProcessorService) processCounts(
 			dps.logger.Error("Result is nil")
 		} else {
 			go func() {
-				err := dps.increaseCountForOverlapsAndMisses(ctx, result.Success.Result, indices)
+				err := dps.increaseCountForOverlapsAndMisses(
+					ctx,
+					result.Success.Result,
+					buckets,
+					indices,
+				)
 				if err != nil {
 					dps.logger.Error(
 						"Failed to increase count for overlaps and misses for the given parameters",
@@ -87,9 +92,15 @@ func (dps *DataProcessorService) processCounts(
 func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
+	buckets []countService.Bucket,
 	indices []string,
 ) error {
-	increaseMissesInput, err := dps.processCountsForOverlaps(ctx, clusterOrLogData, indices)
+	increaseMissesInput, err := dps.processCountsForOverlaps(
+		ctx,
+		clusterOrLogData,
+		buckets,
+		indices,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to process clusters: %w", err)
 	}
@@ -106,13 +117,14 @@ func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 func (dps *DataProcessorService) processCountsForOverlaps(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
+	buckets []countService.Bucket,
 	indices []string,
 ) ([]countModel.IncreaseMissesInput, error) {
 	const logErrorMsg = "Failed to process log"
 	const spanErrorMsg = "Failed to process span"
 	const unknownErrorMsg = "Failed to process unknown data type"
 
-	resultChannel := splitAndWeave[
+	resultChannel := getResultsWithWorkers[
 		map[string]interface{},
 		*countModel.GetCountAndUpdateQueryDetails,
 	](
@@ -125,14 +137,14 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 			dataType := detectDataType(data)
 			switch dataType {
 			case model.Log:
-				res, err := dps.processLog(ctx, data, indices)
+				res, err := dps.processLog(ctx, data, buckets, indices)
 				if err != nil {
 					return nil, logErrorMsg, err
 				} else {
 					return res, "", nil
 				}
 			case model.Span:
-				res, err := dps.processSpan(ctx, data, indices)
+				res, err := dps.processSpan(ctx, data, buckets, indices)
 				if err != nil {
 					return nil, spanErrorMsg, err
 				} else {
@@ -160,6 +172,7 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 func (dps *DataProcessorService) processLog(
 	ctx context.Context,
 	untypedLog map[string]interface{},
+	buckets []countService.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
@@ -191,6 +204,7 @@ func (dps *DataProcessorService) processLog(
 func (dps *DataProcessorService) processSpan(
 	ctx context.Context,
 	untypedSpan map[string]interface{},
+	buckets []countService.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
@@ -225,7 +239,7 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 	increaseMissesInput []countModel.IncreaseMissesInput,
 ) error {
 	const errorMsg = "Failed to process increments for misses"
-	resultChannel := splitAndWeave[
+	resultChannel := getResultsWithWorkers[
 		countModel.IncreaseMissesInput,
 		*countModel.GetIncrementMissesQueryDetails,
 	](
@@ -273,7 +287,7 @@ func (dps *DataProcessorService) unpackCoClusterResults(
 		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
 		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
 			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
-				dps.logger.Fatal(
+				dps.logger.Error(
 					"DocumentMapList is nil or empty, despite MetaMapList being non-empty when co-clustering",
 				)
 			}
@@ -308,7 +322,7 @@ func (dps *DataProcessorService) unpackMissResults(
 	return metaMapList, documentMapList
 }
 
-func splitAndWeave[
+func getResultsWithWorkers[
 	inputType any,
 	outputType any,
 ](
