@@ -43,7 +43,7 @@ func TestSearchAfter(t *testing.T) {
 		var results []map[string]interface{}
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -88,7 +88,7 @@ func TestSearchAfter(t *testing.T) {
 		var results []map[string]interface{}
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -110,7 +110,7 @@ func TestSearchAfter(t *testing.T) {
 		channel = ac.SearchAfter(searchCtx, getAllQuery(), indices, newSearchParams, &querySize)
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -128,12 +128,4 @@ func TestSearchAfter(t *testing.T) {
 		}
 	})
 
-}
-
-func getAllQuery() map[string]interface{} {
-	return map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_all": map[string]interface{}{},
-		},
-	}
 }

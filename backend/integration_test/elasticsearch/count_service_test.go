@@ -380,20 +380,6 @@ func TestAlgorithm(t *testing.T) {
 	})
 }
 
-func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) error {
-	metaMap, dataMap, err := client.ToMetaAndDataMap(data)
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = ac.BulkIndex(ctx, metaMap, dataMap, bootstrapper.LogIndexName)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {
 	logs := make([]model.LogEntry, numberOfLogs)
 	for i := 0; i < numberOfLogs; i++ {

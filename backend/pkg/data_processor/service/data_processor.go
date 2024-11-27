@@ -68,22 +68,20 @@ func (dps *DataProcessorService) processCounts(
 		} else if result.Success == nil {
 			dps.logger.Error("Result is nil")
 		} else {
-			go func() {
-				err := dps.increaseCountForOverlapsAndMisses(
-					ctx,
-					result.Success.Result,
-					buckets,
-					indices,
+			err := dps.increaseCountForOverlapsAndMisses(
+				ctx,
+				result.Success.Result,
+				buckets,
+				indices,
+			)
+			if err != nil {
+				dps.logger.Error(
+					"Failed to increase count for overlaps and misses for the given parameters",
+					zap.Error(err),
+					zap.Time("searchParams", dps.searchParams.CreatedAt),
+					zap.Int("page", i),
 				)
-				if err != nil {
-					dps.logger.Error(
-						"Failed to increase count for overlaps and misses for the given parameters",
-						zap.Error(err),
-						zap.Time("searchParams", dps.searchParams.CreatedAt),
-						zap.Int("page", i),
-					)
-				}
-			}()
+			}
 		}
 		i++
 	}
