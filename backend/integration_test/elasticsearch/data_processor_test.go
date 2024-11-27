@@ -69,7 +69,7 @@ func TestDataProcessor(t *testing.T) {
 			},
 		}
 
-		err := loadDataIntoElasticsearch(ac, coOccurringLogs)
+		err = loadDataIntoElasticsearch(ac, coOccurringLogs)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
@@ -157,7 +157,7 @@ func TestDataProcessor(t *testing.T) {
 			},
 		}
 
-		err := loadDataIntoElasticsearch(ac, coOccurringLogs)
+		err = loadDataIntoElasticsearch(ac, coOccurringLogs)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
