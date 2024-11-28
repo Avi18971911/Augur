@@ -3,12 +3,14 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
+	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -242,4 +244,74 @@ func TestDataProcessor(t *testing.T) {
 		// except for the first and last log
 		assert.Equal(t, int64(logSize*2-2), count)
 	})
+
+	t.Run(
+		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
+			dp := service.NewDataProcessorService(ac, cs, logger)
+			err := deleteAllDocuments(es)
+			if err != nil {
+				t.Errorf("Failed to delete all documents: %v", err)
+			}
+			beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
+			spanSize := 100
+			spans := CreateSpans(beginTime, time.Millisecond*50, spanSize)
+			overlapSize := 2
+
+			err = loadDataIntoElasticsearch(ac, spans)
+			if err != nil {
+				t.Errorf("Failed to load data into Elasticsearch: %v", err)
+			}
+			buckets := []countService.Bucket{countService.Bucket(overlapSize)}
+			dp.ProcessData(context.Background(), buckets, dpIndices)
+
+			stringQuery, err := json.Marshal(getAllQuery())
+			if err != nil {
+				t.Errorf("failed to marshal query: %v", err)
+			}
+
+			searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
+			if err != nil {
+				t.Errorf("Failed to count: %v", err)
+			}
+			assert.Equal(t, int64(0), count)
+		},
+	)
+}
+
+func CreateSpans(
+	baseTime time.Time,
+	interval time.Duration,
+	numSpans int,
+) []spanModel.Span {
+	spans := make([]spanModel.Span, numSpans)
+	for i := 0; i < numSpans; i++ {
+		startTime := baseTime.Add(time.Duration(i) * interval)
+		endTime := startTime.Add(interval / 2)
+
+		span := spanModel.Span{
+			Id:           fmt.Sprintf("span-%d", i+1),
+			CreatedAt:    startTime,
+			SpanID:       fmt.Sprintf("span-%d", i+1),
+			ParentSpanID: fmt.Sprintf("span-%d", i),
+			TraceID:      "trace-12345",
+			ServiceName:  "serviceName",
+			StartTime:    startTime,
+			EndTime:      endTime,
+			ActionName:   "actionName",
+			SpanKind:     "spanKind",
+			ClusterEvent: fmt.Sprintf(
+				"service=%s,operation=%s,kind=%s", "serviceName", "actionName", "spanKind",
+			),
+			ClusterId: fmt.Sprintf("cluster-%d", i+1),
+			Attributes: map[string]string{
+				"http.method": "GET",
+				"user.id":     fmt.Sprintf("user-%d", i+1),
+			},
+			Events: []spanModel.SpanEvent{},
+		}
+		spans[i] = span
+	}
+	return spans
 }
