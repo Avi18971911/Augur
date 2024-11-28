@@ -68,6 +68,9 @@ func (dps *DataProcessorService) processCounts(
 		} else if result.Success == nil {
 			dps.logger.Error("Result is nil")
 		} else {
+			if len(result.Success.Result) == 0 {
+				break
+			}
 			err := dps.increaseCountForOverlapsAndMisses(
 				ctx,
 				result.Success.Result,
@@ -78,7 +81,6 @@ func (dps *DataProcessorService) processCounts(
 				dps.logger.Error(
 					"Failed to increase count for overlaps and misses for the given parameters",
 					zap.Error(err),
-					zap.Time("searchParams", dps.searchParams.CreatedAt),
 					zap.Int("page", i),
 				)
 			}
