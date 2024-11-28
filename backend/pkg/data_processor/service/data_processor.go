@@ -16,6 +16,7 @@ import (
 )
 
 const timeout = 2 * time.Second
+const searchAfterTimeout = 30 * time.Second
 const workerCount = 50
 
 var querySize = 10000
@@ -51,7 +52,7 @@ func (dps *DataProcessorService) processCounts(
 	buckets []countService.Bucket,
 	indices []string,
 ) {
-	searchCtx, cancel := context.WithTimeout(ctx, timeout)
+	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
 	defer cancel()
 
 	resultChannel := dps.ac.SearchAfter(
@@ -106,11 +107,13 @@ func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 		return fmt.Errorf("failed to process clusters: %w", err)
 	}
 
-	if len(increaseMissesInput) > 0 {
+	if increaseMissesInput != nil && len(increaseMissesInput) > 0 {
 		err = dps.processIncrementsForMisses(ctx, increaseMissesInput)
 		if err != nil {
 			return fmt.Errorf("failed to process increments for misses: %w", err)
 		}
+	} else {
+		dps.logger.Info("No misses to increment")
 	}
 	return nil
 }
@@ -161,11 +164,17 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 
 	increaseMissesList, metaMapList, documentMapList := dps.unpackCoClusterResults(resultChannel, len(clusterOrLogData))
 
+	if metaMapList == nil || len(metaMapList) == 0 {
+		dps.logger.Info("No co-clusters to increment")
+		return nil, nil
+	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
 	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to bulk index count increments: %w", err)
+		return nil, fmt.Errorf(
+			"failed to bulk index count increments: %w for documentMapList %s", err, documentMapList,
+		)
 	}
 	return increaseMissesList, nil
 }
@@ -264,6 +273,10 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 	)
 
 	metaMapList, documentMapList := dps.unpackMissResults(resultChannel, len(increaseMissesInput))
+	if metaMapList == nil || len(metaMapList) == 0 {
+		dps.logger.Info("No misses to increment after searching")
+		return nil
+	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
 	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
@@ -291,6 +304,7 @@ func (dps *DataProcessorService) unpackCoClusterResults(
 				dps.logger.Error(
 					"DocumentMapList is nil or empty, despite MetaMapList being non-empty when co-clustering",
 				)
+				continue
 			}
 			metaMapList = append(metaMapList, result.MetaMapList...)
 			documentMapList = append(documentMapList, result.DocumentMapList...)
@@ -315,6 +329,7 @@ func (dps *DataProcessorService) unpackMissResults(
 					"DocumentMapList is nil or empty, despite MetaMapList being non-empty " +
 						"when incrementing misses",
 				)
+				continue
 			}
 			metaMapList = append(metaMapList, result.MetaMapList...)
 			documentMapList = append(documentMapList, result.DocumentMapList...)

@@ -10,6 +10,7 @@ import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -199,5 +200,46 @@ func TestDataProcessor(t *testing.T) {
 
 		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
 		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+	})
+
+	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
+		dp := service.NewDataProcessorService(ac, cs, logger)
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		logSize := 30000
+		logs := make([]logModel.LogEntry, logSize)
+		overlapSize := 50
+		beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
+		for i := 0; i < logSize; i++ {
+			clusterId := "cluster" + strconv.Itoa(i)
+			logs[i] = logModel.LogEntry{
+				CreatedAt: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
+				Timestamp: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
+				ClusterId: clusterId,
+			}
+		}
+		err = loadDataIntoElasticsearch(ac, logs)
+		if err != nil {
+			t.Errorf("Failed to load data into Elasticsearch: %v", err)
+		}
+		buckets := []countService.Bucket{countService.Bucket(overlapSize * 2)}
+		dp.ProcessData(context.Background(), buckets, dpIndices)
+
+		stringQuery, err := json.Marshal(getAllQuery())
+		if err != nil {
+			t.Errorf("failed to marshal query: %v", err)
+		}
+
+		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
+		if err != nil {
+			t.Errorf("Failed to count: %v", err)
+		}
+		// every log sequentially overlaps with another, creating two co-occurrences per log (previous and next log)
+		// except for the first and last log
+		assert.Equal(t, int64(logSize*2-2), count)
 	})
 }
