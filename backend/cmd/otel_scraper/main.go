@@ -105,10 +105,13 @@ func main() {
 
 	go func() {
 		for range ticker.C {
-			dp.ProcessData(
+			_, errors := dp.ProcessData(
 				context.Background(),
 				[]count.Bucket{100},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
+			for _, err := range errors {
+				logger.Error("Failed to process data", zap.Error(err))
+			}
 		}
 	}()
 

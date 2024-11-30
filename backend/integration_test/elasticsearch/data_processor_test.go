@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var dpIndices = []string{bootstrapper.LogIndexName}
+var dpIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
 func TestDataProcessor(t *testing.T) {
 	if es == nil {
@@ -78,7 +78,7 @@ func TestDataProcessor(t *testing.T) {
 		}
 
 		buckets := []countService.Bucket{100}
-		dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -108,6 +108,7 @@ func TestDataProcessor(t *testing.T) {
 			}
 		}
 
+		assertAllErrorsAreNil(t, errors)
 		assert.Equal(t, int64(2), clusterAEntries[0].CoOccurrences)
 		assert.Equal(t, int64(2), clusterBEntries[0].CoOccurrences)
 
@@ -167,7 +168,7 @@ func TestDataProcessor(t *testing.T) {
 		}
 
 		buckets := []countService.Bucket{100}
-		dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -197,6 +198,7 @@ func TestDataProcessor(t *testing.T) {
 			}
 		}
 
+		assertAllErrorsAreNil(t, errors)
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
 
@@ -227,7 +229,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
 		buckets := []countService.Bucket{countService.Bucket(overlapSize * 2)}
-		dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -240,6 +242,7 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count: %v", err)
 		}
+		assertAllErrorsAreNil(t, errors)
 		// every log sequentially overlaps with another, creating two co-occurrences per log (previous and next log)
 		// except for the first and last log
 		assert.Equal(t, int64(logSize*2-2), count)
@@ -262,7 +265,7 @@ func TestDataProcessor(t *testing.T) {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
 			buckets := []countService.Bucket{countService.Bucket(overlapSize)}
-			dp.ProcessData(context.Background(), buckets, dpIndices)
+			_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 			stringQuery, err := json.Marshal(getAllQuery())
 			if err != nil {
@@ -275,6 +278,7 @@ func TestDataProcessor(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
+			assertAllErrorsAreNil(t, errors)
 			assert.Equal(t, int64(0), count)
 		},
 	)
@@ -324,7 +328,12 @@ func TestDataProcessor(t *testing.T) {
 		}
 
 		buckets := []countService.Bucket{100}
-		dp.ProcessData(context.Background(), buckets, []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName})
+		_, errors := dp.ProcessData(
+			context.Background(),
+			buckets,
+			[]string{bootstrapper.LogIndexName,
+				bootstrapper.SpanIndexName},
+		)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -354,6 +363,7 @@ func TestDataProcessor(t *testing.T) {
 			}
 		}
 
+		assertAllErrorsAreNil(t, errors)
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
 		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
@@ -422,4 +432,10 @@ func createSpans(
 		spans[i] = span
 	}
 	return spans
+}
+
+func assertAllErrorsAreNil(t *testing.T, errors []error) {
+	for _, err := range errors {
+		assert.Nil(t, err)
+	}
 }

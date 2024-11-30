@@ -41,17 +41,21 @@ func NewDataProcessorService(
 	}
 }
 
-func (dps *DataProcessorService) ProcessData(ctx context.Context, buckets []countService.Bucket, indices []string) {
+func (dps *DataProcessorService) ProcessData(
+	ctx context.Context,
+	buckets []countService.Bucket,
+	indices []string,
+) ([]bool, []error) {
 	// TODO: Add the Clustering Code here as well
 
-	dps.processCounts(ctx, buckets, indices)
+	return dps.processCounts(ctx, buckets, indices)
 }
 
 func (dps *DataProcessorService) processCounts(
 	ctx context.Context,
 	buckets []countService.Bucket,
 	indices []string,
-) {
+) ([]bool, []error) {
 	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
 	defer cancel()
 
@@ -62,12 +66,17 @@ func (dps *DataProcessorService) processCounts(
 		dps.searchParams,
 		&querySize,
 	)
+	successes, errors := make([]bool, 0), make([]error, 0)
 	i := 0
 	for result := range resultChannel {
 		if result.Error != nil {
 			dps.logger.Error("Error in search after", zap.Error(result.Error))
+			errors = append(errors, fmt.Errorf("error in search after: %w", result.Error))
+			successes = append(successes, false)
 		} else if result.Success == nil {
-			dps.logger.Error("Result is nil")
+			dps.logger.Error("Result of SearchAfter is nil")
+			errors = append(errors, fmt.Errorf("result of SearchAfter is nil"))
+			successes = append(successes, false)
 		} else {
 			if len(result.Success.Result) == 0 {
 				break
@@ -84,11 +93,17 @@ func (dps *DataProcessorService) processCounts(
 					zap.Error(err),
 					zap.Int("page", i),
 				)
+				errors = append(errors, fmt.Errorf("failed to increase count for overlaps and misses: %w", err))
+				successes = append(successes, false)
+			} else {
+				successes = append(successes, true)
+				errors = append(errors, nil)
 			}
 			dps.searchParams = &result.Success.ContinueParams
 		}
 		i++
 	}
+	return successes, errors
 }
 
 func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
