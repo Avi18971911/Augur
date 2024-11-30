@@ -1,0 +1,45 @@
+package handler
+
+import "fake_svc/fake_server/pkg/service"
+
+func accountDetailsToDTO(tx *service.AccountDetailsOutput) AccountDetailsResponseDTO {
+	return AccountDetailsResponseDTO{
+		Id:       tx.Id,
+		Username: tx.Username,
+		Person: PersonDTO{
+			FirstName: tx.Person.FirstName,
+			LastName:  tx.Person.LastName,
+		},
+		BankAccounts:      accountsToDTO(tx.BankAccounts),
+		KnownBankAccounts: knownAccountToDTO(tx.KnownBankAccounts),
+		CreatedAt:         tx.CreatedAt,
+	}
+}
+
+func knownAccountToDTO(tx []service.KnownBankAccount) []KnownBankAccountDTO {
+	knownAccountDTOList := make([]KnownBankAccountDTO, len(tx))
+	for i, element := range tx {
+		accountType := string(element.AccountType)
+		knownAccountDTOList[i] = KnownBankAccountDTO{
+			Id:            element.Id,
+			AccountNumber: element.AccountNumber,
+			AccountHolder: element.AccountHolder,
+			AccountType:   accountType,
+		}
+	}
+	return knownAccountDTOList
+}
+
+func accountsToDTO(tx []service.BankAccount) []BankAccountDTO {
+	accountDTOList := make([]BankAccountDTO, len(tx))
+	for i, element := range tx {
+		accountDTOList[i] = BankAccountDTO{
+			Id:               element.Id,
+			AccountNumber:    element.AccountNumber,
+			AccountType:      element.AccountType,
+			PendingBalance:   element.PendingBalance.String(),
+			AvailableBalance: element.AvailableBalance.String(),
+		}
+	}
+	return accountDTOList
+}
