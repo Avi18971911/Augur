@@ -1,5 +1,5 @@
 # Choose the base image
-FROM golang:1.22.2 as builder
+FROM golang:1.23.2 as builder
 
 # Set work directory
 WORKDIR /app

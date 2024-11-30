@@ -44,5 +44,12 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
 
+  fake-server:
+    build:
+      context: ./fake_server/
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+
 volumes:
   grafana-storage:
