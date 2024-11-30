@@ -5,6 +5,7 @@ import (
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"time"
 )
 
 type FakeAccountRepository struct {
@@ -59,5 +60,8 @@ func (ar *FakeAccountRepository) GetAccountDetailsFromUsername(
 	username string,
 	ctx context.Context,
 ) (*model.AccountDetailsOutput, error) {
+	ar.logger.Info("Searching for the username in the DB", zap.String("username", username))
+	time.Sleep(1 * time.Second)
+	ar.logger.Info("Found the username in the DB", zap.String("username", username))
 	return fakeResult, nil
 }

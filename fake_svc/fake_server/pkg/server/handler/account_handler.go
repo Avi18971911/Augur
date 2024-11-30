@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fake_svc/fake_server/pkg/service"
 	"fake_svc/fake_server/pkg/service/model"
+	"go.uber.org/zap"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -22,11 +22,13 @@ import (
 // @Failure 401 {object} utils.ErrorMessage "Invalid credentials"
 // @Failure 500 {object} utils.ErrorMessage "Internal server error"
 // @Router /accounts/login [post]
-func AccountLoginHandler(s service.AccountService, ctx context.Context) http.HandlerFunc {
+func AccountLoginHandler(s service.AccountService, ctx context.Context, logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Error("Login request received", zap.String("URL", r.URL.Path))
 		var req AccountLoginRequestDTO
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
+			logger.Error("Error encountered when decoding request body", zap.Error(err))
 			HttpError(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
@@ -34,16 +36,22 @@ func AccountLoginHandler(s service.AccountService, ctx context.Context) http.Han
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				log.Printf("Failed to close request body: %v", err)
+				logger.Error("Error encountered when closing request body", zap.Error(err))
 			}
 		}(r.Body)
 
 		accountDetails, err := s.Login(req.Username, req.Password, ctx)
 		if err != nil {
 			if errors.Is(err, model.ErrInvalidCredentials) {
+				logger.Error(
+					"Invalid credentials for Login request",
+					zap.String("username", req.Username),
+					zap.String("password", req.Password),
+				)
 				HttpError(w, "Invalid credentials", http.StatusUnauthorized)
 				return
 			}
+			logger.Error("Error encountered during login", zap.Error(err))
 			HttpError(w, "Error encountered during login", http.StatusInternalServerError)
 			return
 		}
@@ -51,10 +59,15 @@ func AccountLoginHandler(s service.AccountService, ctx context.Context) http.Han
 		jsonAccountDetails := accountDetailsToDTO(accountDetails)
 		err = json.NewEncoder(w).Encode(jsonAccountDetails)
 		if err != nil {
+			logger.Error("Error encountered during JSON Encoding of Response", zap.Error(err))
 			HttpError(w, "Error encountered during JSON Encoding of Response",
 				http.StatusInternalServerError)
 			return
 		}
-
+		logger.Error(
+			"Login request successful",
+			zap.String("username", req.Username),
+			zap.String("password", req.Password),
+		)
 	}
 }

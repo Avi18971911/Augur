@@ -20,7 +20,7 @@ func main() {
 	ar := repository.CreateNewFakeAccountRepository(logger)
 	tra := transactional.NewFakeTransactional(logger)
 	as := service.CreateNewAccountServiceImpl(ar, tra, logger)
-	r := router.CreateRouter(as, context.Background())
+	r := router.CreateRouter(as, context.Background(), logger)
 
 	log.Printf("Starting webserver")
 	log.Fatal(http.ListenAndServe(":8080", r))
