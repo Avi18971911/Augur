@@ -2,17 +2,17 @@ package transactional
 
 import (
 	"context"
-	"go.uber.org/zap"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 const timeout = 5 * time.Minute
 
 type FakeTransactional struct {
-	logger *zap.Logger
+	logger *logrus.Logger
 }
 
-func NewFakeTransactional(logger *zap.Logger) *FakeTransactional {
+func NewFakeTransactional(logger *logrus.Logger) *FakeTransactional {
 	return &FakeTransactional{
 		logger: logger,
 	}
@@ -23,10 +23,10 @@ func (ft *FakeTransactional) BeginTransaction(
 	readConcern int,
 	writeConcern int,
 ) (TransactionContext, error) {
-	ft.logger.Info(
-		"Beginning Transaction with concerns",
-		zap.String("readConcern", toStringReadConcern(readConcern)),
-		zap.String("writeConcern", toStringWriteConcern(writeConcern)),
+	ft.logger.Infof(
+		"Beginning Transaction with concerns readConcern: %s, writeConcern: %s",
+		toStringReadConcern(readConcern),
+		toStringWriteConcern(writeConcern),
 	)
 	txnCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -34,12 +34,12 @@ func (ft *FakeTransactional) BeginTransaction(
 }
 
 func (ft *FakeTransactional) Commit(ctx context.Context) error {
-	ft.logger.Info("Committing Transaction")
+	ft.logger.Infof("Committing Transaction")
 	return nil
 }
 
 func (ft *FakeTransactional) Rollback(ctx context.Context) error {
-	ft.logger.Info("Rolling back Transaction")
+	ft.logger.Infof("Rolling back Transaction")
 	return nil
 }
 

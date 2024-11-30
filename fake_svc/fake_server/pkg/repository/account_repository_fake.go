@@ -4,15 +4,15 @@ import (
 	"context"
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/shopspring/decimal"
-	"go.uber.org/zap"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type FakeAccountRepository struct {
-	logger *zap.Logger
+	logger *logrus.Logger
 }
 
-func CreateNewFakeAccountRepository(logger *zap.Logger) *FakeAccountRepository {
+func CreateNewFakeAccountRepository(logger *logrus.Logger) *FakeAccountRepository {
 	ar := FakeAccountRepository{
 		logger,
 	}
@@ -60,8 +60,8 @@ func (ar *FakeAccountRepository) GetAccountDetailsFromUsername(
 	username string,
 	ctx context.Context,
 ) (*model.AccountDetailsOutput, error) {
-	ar.logger.Info("Searching for the username in the DB", zap.String("username", username))
+	ar.logger.Infof("Searching for the username in the DB: %s", username)
 	time.Sleep(1 * time.Second)
-	ar.logger.Info("Found the username in the DB", zap.String("username", username))
+	ar.logger.Infof("Found the username in the DB: %s", username)
 	return fakeResult, nil
 }
