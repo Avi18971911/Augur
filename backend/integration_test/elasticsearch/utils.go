@@ -70,14 +70,14 @@ func deleteAllDocuments(es *elasticsearch.Client) error {
 	return nil
 }
 
-func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) error {
+func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data, index string) error {
 	metaMap, dataMap, err := client.ToMetaAndDataMap(data)
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err = ac.BulkIndex(ctx, metaMap, dataMap, bootstrapper.LogIndexName)
+	err = ac.BulkIndex(ctx, metaMap, dataMap, &index)
 	if err != nil {
 		return err
 	}

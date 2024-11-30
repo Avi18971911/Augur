@@ -170,7 +170,8 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	index := bootstrapper.CountIndexName
+	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, &index)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"failed to bulk index count increments: %w for documentMapList %s", err, documentMapList,
@@ -279,7 +280,8 @@ func (dps *DataProcessorService) processIncrementsForMisses(
 	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, bootstrapper.CountIndexName)
+	index := bootstrapper.CountIndexName
+	err := dps.ac.BulkIndex(updateCtx, metaMapList, documentMapList, &index)
 	if err != nil {
 		dps.logger.Error("Failed to bulk index when incrementing misses", zap.Error(err))
 	}

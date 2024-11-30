@@ -72,7 +72,7 @@ func TestDataProcessor(t *testing.T) {
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs)
+		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
@@ -161,7 +161,7 @@ func TestDataProcessor(t *testing.T) {
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs)
+		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
@@ -222,7 +222,7 @@ func TestDataProcessor(t *testing.T) {
 				ClusterId: clusterId,
 			}
 		}
-		err = loadDataIntoElasticsearch(ac, logs)
+		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -254,10 +254,10 @@ func TestDataProcessor(t *testing.T) {
 			}
 			beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
 			spanSize := 100
-			spans := CreateSpans(beginTime, time.Millisecond*50, spanSize)
+			spans := createSpans(beginTime, time.Millisecond*50, spanSize)
 			overlapSize := 2
 
-			err = loadDataIntoElasticsearch(ac, spans)
+			err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
@@ -278,9 +278,117 @@ func TestDataProcessor(t *testing.T) {
 			assert.Equal(t, int64(0), count)
 		},
 	)
+
+	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
+		dp := service.NewDataProcessorService(ac, cs, logger)
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		clusterA := "clusterA"
+		clusterB := "clusterB"
+
+		firstTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 500, time.UTC)
+		overlapWithFirstTimeStampOne := time.Date(2021, 1, 1, 0, 0, 0, 100, time.UTC)
+		overlapWithFirstTimeStampTwo := time.Date(2021, 1, 1, 0, 0, 0, 200, time.UTC)
+		overlapWithFirstTimeStampThree := time.Date(2021, 1, 1, 0, 0, 0, 300, time.UTC)
+
+		clusterBMiss := time.Date(2023, 1, 1, 0, 0, 1, 200, time.UTC)
+
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		clusterALogs := []logModel.LogEntry{
+			{
+				ClusterId: clusterA,
+				Timestamp: firstTimeStamp,
+				CreatedAt: createdAt,
+			},
+		}
+
+		clusterBSpans := []spanModel.Span{
+			createSpan(clusterB, overlapWithFirstTimeStampOne, overlapWithFirstTimeStampOne.Add(time.Millisecond*50)),
+			createSpan(clusterB, overlapWithFirstTimeStampTwo, overlapWithFirstTimeStampTwo.Add(time.Millisecond*50)),
+			createSpan(
+				clusterB, overlapWithFirstTimeStampThree, overlapWithFirstTimeStampThree.Add(time.Millisecond*50),
+			),
+			createSpan(clusterB, clusterBMiss, clusterBMiss.Add(time.Millisecond*50)),
+		}
+
+		err = loadDataIntoElasticsearch(ac, clusterALogs, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		err = loadDataIntoElasticsearch(ac, clusterBSpans, bootstrapper.SpanIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+
+		buckets := []countService.Bucket{100}
+		dp.ProcessData(context.Background(), buckets, []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName})
+
+		stringQuery, err := json.Marshal(getAllQuery())
+		if err != nil {
+			t.Errorf("failed to marshal query: %v", err)
+		}
+		var querySize = 100
+
+		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+
+		clusterAEntries := make([]countModel.CountEntry, 0)
+		clusterBEntries := make([]countModel.CountEntry, 0)
+
+		for _, entry := range countEntries {
+			if entry.ClusterId == clusterA {
+				clusterAEntries = append(clusterAEntries, entry)
+			} else if entry.ClusterId == clusterB {
+				clusterBEntries = append(clusterBEntries, entry)
+			}
+		}
+
+		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
+		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
+		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
+		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+	})
 }
 
-func CreateSpans(
+func createSpan(
+	clusterId string,
+	startTime time.Time,
+	endTime time.Time,
+) spanModel.Span {
+	return spanModel.Span{
+		CreatedAt:    startTime,
+		SpanID:       clusterId,
+		ParentSpanID: clusterId,
+		TraceID:      "trace-12345",
+		ServiceName:  "serviceName",
+		StartTime:    startTime,
+		EndTime:      endTime,
+		ActionName:   "actionName",
+		SpanKind:     "spanKind",
+		ClusterEvent: fmt.Sprintf(
+			"service=%s,operation=%s,kind=%s", "serviceName", "actionName", "spanKind",
+		),
+		ClusterId: clusterId,
+		Attributes: map[string]string{
+			"http.method": "GET",
+			"user.id":     clusterId,
+		},
+		Events: []spanModel.SpanEvent{},
+	}
+}
+
+func createSpans(
 	baseTime time.Time,
 	interval time.Duration,
 	numSpans int,

@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"context"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -33,7 +34,7 @@ func TestSearchAfter(t *testing.T) {
 				Timestamp: beginTime.Add(time.Duration(i) * time.Second),
 			}
 		}
-		err = loadDataIntoElasticsearch(ac, logs)
+		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -78,7 +79,7 @@ func TestSearchAfter(t *testing.T) {
 				Timestamp: beginTime.Add(time.Duration(i) * time.Second),
 			}
 		}
-		err = loadDataIntoElasticsearch(ac, logs[:cutOffSize])
+		err = loadDataIntoElasticsearch(ac, logs[:cutOffSize], bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -100,7 +101,7 @@ func TestSearchAfter(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to convert timestamp '%s' to time.Time: %v", lastCreatedAt, err)
 		}
-		err = loadDataIntoElasticsearch(ac, logs[cutOffSize:])
+		err = loadDataIntoElasticsearch(ac, logs[cutOffSize:], bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
