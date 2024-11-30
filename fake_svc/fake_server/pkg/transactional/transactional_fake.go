@@ -2,76 +2,31 @@ package transactional
 
 import (
 	"context"
-	"errors"
+	"time"
 )
 
-type MongoTransactional struct{}
+const timeout = 5 * time.Minute
 
-func NewMongoTransactional() *MongoTransactional {
-	return &MongoTransactional{}
+type FakeTransactional struct{}
+
+func NewFakeTransactional() *FakeTransactional {
+	return &FakeTransactional{}
 }
 
-func (m *MongoTransactional) BeginTransaction(
+func (ft *FakeTransactional) BeginTransaction(
 	ctx context.Context,
 	readConcern int,
 	writeConcern int,
 ) (TransactionContext, error) {
-	session, err := m.client.StartSession()
-	if err != nil {
-		return nil, err
-	}
-	m.session = session
-
-	determinedReadConcern := determineReadConcern(readConcern)
-	determinedWriteConcern := determineWriteConcern(writeConcern)
-	txnOpts := options.Transaction().SetReadConcern(determinedReadConcern).SetWriteConcern(determinedWriteConcern)
-	err = session.StartTransaction(txnOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	txnCtx := mongo.NewSessionContext(ctx, session)
+	txnCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	return txnCtx, nil
 }
 
-func determineReadConcern(readConcern int) *readconcern.ReadConcern {
-	switch readConcern {
-	case IsolationLow:
-		return readconcern.Local()
-	case IsolationMedium:
-		return readconcern.Majority()
-	case IsolationHigh:
-		return readconcern.Snapshot()
-	default:
-		return readconcern.Majority()
-	}
+func (ft *FakeTransactional) Commit(ctx context.Context) error {
+	return nil
 }
 
-func determineWriteConcern(writeConcern int) *writeconcern.WriteConcern {
-	switch writeConcern {
-	case DurabilityLow:
-		return writeconcern.W1()
-	case DurabilityHigh:
-		return writeconcern.Majority()
-	default:
-		return writeconcern.Majority()
-	}
-}
-
-func (m *MongoTransactional) Commit(ctx context.Context) error {
-	if m.session != nil {
-		err := m.session.CommitTransaction(ctx)
-		m.session.EndSession(ctx)
-		return err
-	}
-	return errors.New("no session found, please start a transaction before committing")
-}
-
-func (m *MongoTransactional) Rollback(ctx context.Context) error {
-	if m.session != nil {
-		err := m.session.AbortTransaction(ctx)
-		m.session.EndSession(ctx)
-		return err
-	}
-	return errors.New("no session found, please start a transaction before rolling back")
+func (ft *FakeTransactional) Rollback(ctx context.Context) error {
+	return nil
 }
