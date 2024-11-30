@@ -24,7 +24,7 @@ import (
 // @Router /accounts/login [post]
 func AccountLoginHandler(s service.AccountService, ctx context.Context, logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Error("Login request received", zap.String("URL", r.URL.Path))
+		logger.Info("Login request received", zap.String("URL", r.URL.Path))
 		var req AccountLoginRequestDTO
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -64,7 +64,7 @@ func AccountLoginHandler(s service.AccountService, ctx context.Context, logger *
 				http.StatusInternalServerError)
 			return
 		}
-		logger.Error(
+		logger.Info(
 			"Login request successful",
 			zap.String("username", req.Username),
 			zap.String("password", req.Password),
