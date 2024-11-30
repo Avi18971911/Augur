@@ -4,20 +4,20 @@ receivers:
       grpc:
       http:
 
-  # Receiver for reading logs from stdout
+
   filelog:
     include:
-      - /var/log/otel-logs/*.log  # Log files being written to stdout or any specific log file
+      - /var/log/otel-logs/*.log  
     start_at: beginning
 
 exporters:
   otlp:
-    endpoint: "jaeger:4317"  # Point to Jaeger's OTLP gRPC endpoint
+    endpoint: "jaeger:4317"  
     tls:
       insecure: true
 
   otlphttp:
-    endpoint: http://localhost:3100/otlp  # Endpoint for Loki or other log receivers
+    endpoint: http://localhost:3100/otlp  #Loki endpoint
 
 processors:
   batch:
