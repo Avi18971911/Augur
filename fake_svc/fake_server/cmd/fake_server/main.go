@@ -6,17 +6,22 @@ import (
 	"fake_svc/fake_server/pkg/server/router"
 	"fake_svc/fake_server/pkg/service"
 	"fake_svc/fake_server/pkg/transactional"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 )
 
 func main() {
-	ar := repository.CreateNewFakeAccountRepository()
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("Error encountered when creating logger: %v", err)
+	}
 
-	tra := transactional.NewFakeTransactional()
-
-	as := service.CreateNewAccountServiceImpl(ar, tra)
+	ar := repository.CreateNewFakeAccountRepository(logger)
+	tra := transactional.NewFakeTransactional(logger)
+	as := service.CreateNewAccountServiceImpl(ar, tra, logger)
 	r := router.CreateRouter(as, context.Background())
+
 	log.Printf("Starting webserver")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

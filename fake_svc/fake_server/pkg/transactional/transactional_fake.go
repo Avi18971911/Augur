@@ -2,15 +2,20 @@ package transactional
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"time"
 )
 
 const timeout = 5 * time.Minute
 
-type FakeTransactional struct{}
+type FakeTransactional struct {
+	logger *zap.Logger
+}
 
-func NewFakeTransactional() *FakeTransactional {
-	return &FakeTransactional{}
+func NewFakeTransactional(logger *zap.Logger) *FakeTransactional {
+	return &FakeTransactional{
+		logger: logger,
+	}
 }
 
 func (ft *FakeTransactional) BeginTransaction(

@@ -4,13 +4,17 @@ import (
 	"context"
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 )
 
 type FakeAccountRepository struct {
+	logger *zap.Logger
 }
 
-func CreateNewFakeAccountRepository() *FakeAccountRepository {
-	ar := FakeAccountRepository{}
+func CreateNewFakeAccountRepository(logger *zap.Logger) *FakeAccountRepository {
+	ar := FakeAccountRepository{
+		logger,
+	}
 	return &ar
 }
 

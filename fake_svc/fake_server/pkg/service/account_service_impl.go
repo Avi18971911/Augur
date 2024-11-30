@@ -7,6 +7,7 @@ import (
 	"fake_svc/fake_server/pkg/service/model"
 	"fake_svc/fake_server/pkg/transactional"
 	"fmt"
+	"go.uber.org/zap"
 	"log"
 	"time"
 )
@@ -14,17 +15,20 @@ import (
 const addTimeout = 5 * time.Second
 
 type AccountServiceImpl struct {
-	ar   repository.AccountRepository
-	tran transactional.Transactional
+	ar     repository.AccountRepository
+	tran   transactional.Transactional
+	logger *zap.Logger
 }
 
 func CreateNewAccountServiceImpl(
 	ar repository.AccountRepository,
 	tran transactional.Transactional,
+	logger *zap.Logger,
 ) *AccountServiceImpl {
 	return &AccountServiceImpl{
-		ar:   ar,
-		tran: tran,
+		ar:     ar,
+		tran:   tran,
+		logger: logger,
 	}
 }
 
