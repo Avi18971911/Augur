@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fake_svc/fake_server/pkg/service"
+	"fake_svc/fake_server/pkg/service/model"
 	"io"
 	"log"
 	"net/http"
@@ -39,7 +40,7 @@ func AccountLoginHandler(s service.AccountService, ctx context.Context) http.Han
 
 		accountDetails, err := s.Login(req.Username, req.Password, ctx)
 		if err != nil {
-			if errors.Is(err, service.ErrInvalidCredentials) {
+			if errors.Is(err, model.ErrInvalidCredentials) {
 				HttpError(w, "Invalid credentials", http.StatusUnauthorized)
 				return
 			}

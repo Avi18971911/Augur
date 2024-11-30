@@ -1,8 +1,10 @@
 package handler
 
-import "fake_svc/fake_server/pkg/service"
+import (
+	"fake_svc/fake_server/pkg/service/model"
+)
 
-func accountDetailsToDTO(tx *service.AccountDetailsOutput) AccountDetailsResponseDTO {
+func accountDetailsToDTO(tx *model.AccountDetailsOutput) AccountDetailsResponseDTO {
 	return AccountDetailsResponseDTO{
 		Id:       tx.Id,
 		Username: tx.Username,
@@ -16,7 +18,7 @@ func accountDetailsToDTO(tx *service.AccountDetailsOutput) AccountDetailsRespons
 	}
 }
 
-func knownAccountToDTO(tx []service.KnownBankAccount) []KnownBankAccountDTO {
+func knownAccountToDTO(tx []model.KnownBankAccount) []KnownBankAccountDTO {
 	knownAccountDTOList := make([]KnownBankAccountDTO, len(tx))
 	for i, element := range tx {
 		accountType := string(element.AccountType)
@@ -30,7 +32,7 @@ func knownAccountToDTO(tx []service.KnownBankAccount) []KnownBankAccountDTO {
 	return knownAccountDTOList
 }
 
-func accountsToDTO(tx []service.BankAccount) []BankAccountDTO {
+func accountsToDTO(tx []model.BankAccount) []BankAccountDTO {
 	accountDTOList := make([]BankAccountDTO, len(tx))
 	for i, element := range tx {
 		accountDTOList[i] = BankAccountDTO{

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fake_svc/fake_server/pkg/repository"
+	"fake_svc/fake_server/pkg/service/model"
 	"fake_svc/fake_server/pkg/transactional"
 	"fmt"
 	"log"
@@ -31,7 +32,7 @@ func (a *AccountServiceImpl) Login(
 	username string,
 	password string,
 	ctx context.Context,
-) (*AccountDetailsOutput, error) {
+) (*model.AccountDetailsOutput, error) {
 	getCtx, cancel := context.WithTimeout(ctx, addTimeout)
 	defer cancel()
 
@@ -51,15 +52,15 @@ func (a *AccountServiceImpl) Login(
 	accountDetails, err := a.ar.GetAccountDetailsFromUsername(username, getCtx)
 	if err != nil {
 		log.Printf("Unable to login with error: %v", err)
-		if errors.Is(err, ErrNoMatchingUsername) {
-			return nil, ErrInvalidCredentials
+		if errors.Is(err, model.ErrNoMatchingUsername) {
+			return nil, model.ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("unable to login with error: %w", err)
 	}
 	exists := accountDetails.Password == password
 	if !exists {
 		log.Printf("Login failed for Username %s", username)
-		return nil, ErrInvalidCredentials
+		return nil, model.ErrInvalidCredentials
 	}
 	return accountDetails, nil
 }

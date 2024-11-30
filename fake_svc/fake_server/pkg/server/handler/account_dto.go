@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fake_svc/fake_server/pkg/service"
+	"fake_svc/fake_server/pkg/service/model"
 	"time"
 )
 
@@ -39,7 +39,7 @@ type BankAccountDTO struct {
 	// The account number associated with the account
 	AccountNumber string `json:"accountNumber" validate:"required"`
 	// The type of the account (e.g., savings, checking)
-	AccountType service.BankAccountType `json:"accountType" validate:"required"`
+	AccountType model.BankAccountType `json:"accountType" validate:"required"`
 	// The available balance of the account. Valid to two decimal places.
 	AvailableBalance string `json:"availableBalance" validate:"required"`
 	// The pending balance of the account. Valid to two decimal places.

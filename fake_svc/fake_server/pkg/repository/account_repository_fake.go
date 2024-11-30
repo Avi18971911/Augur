@@ -2,15 +2,15 @@ package repository
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/service"
+	"fake_svc/fake_server/pkg/service/model"
 	"github.com/shopspring/decimal"
 )
 
-type AccountRepositoryMongodb struct {
+type FakeAccountRepository struct {
 }
 
-func CreateNewAccountRepositoryMongodb() *AccountRepositoryMongodb {
-	ar := AccountRepositoryMongodb{}
+func CreateNewFakeAccountRepository() *FakeAccountRepository {
+	ar := FakeAccountRepository{}
 	return &ar
 }
 
@@ -19,14 +19,14 @@ var bobPendingAmount, _ = decimal.NewFromString("0.00")
 var ollyAccountId1 = "ollyAccountId1"
 var hildaAccountId1 = "hildaAccountId1"
 
-var fakeResult = &service.AccountDetailsOutput{
+var fakeResult = &model.AccountDetailsOutput{
 	Username: "fake_username",
 	Password: "fake_password",
-	Person: service.Person{
+	Person: model.Person{
 		FirstName: "Bob",
 		LastName:  "Barker",
 	},
-	BankAccounts: []service.BankAccount{
+	BankAccounts: []model.BankAccount{
 		{
 			Id:               ollyAccountId1,
 			AccountNumber:    "123-12345-1",
@@ -35,7 +35,7 @@ var fakeResult = &service.AccountDetailsOutput{
 			PendingBalance:   bobPendingAmount,
 		},
 	},
-	KnownBankAccounts: []service.KnownBankAccount{
+	KnownBankAccounts: []model.KnownBankAccount{
 		{
 			Id:            ollyAccountId1,
 			AccountNumber: "123-12345-0",
@@ -51,9 +51,9 @@ var fakeResult = &service.AccountDetailsOutput{
 	},
 }
 
-func (ar *AccountRepositoryMongodb) GetAccountDetailsFromUsername(
+func (ar *FakeAccountRepository) GetAccountDetailsFromUsername(
 	username string,
 	ctx context.Context,
-) (*service.AccountDetailsOutput, error) {
+) (*model.AccountDetailsOutput, error) {
 	return fakeResult, nil
 }
