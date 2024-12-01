@@ -45,20 +45,10 @@ func initTracer() func() {
 	}
 }
 
-func initLogger() *zap.Logger {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalf("Failed to create logger: %v", err)
-	}
-	return logger
-}
-
 func main() {
 
 	shutdownTracer := initTracer()
 	defer shutdownTracer()
-
-	logger := initLogger()
 
 	tracer := otel.Tracer("fake-service")
 

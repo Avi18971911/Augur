@@ -2,13 +2,11 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 
-  filelog:
-    include:
-      - /var/log/otel-logs/*.log  
-    start_at: beginning
 
 exporters:
   otlp:
@@ -17,8 +15,9 @@ exporters:
       insecure: true
 
   otlphttp:
-    endpoint: http://localhost:3100/otlp  #Loki endpoint
-
+    endpoint: http://loki:3100/otlp  
+    tls: 
+      insecure: true
 processors:
   batch:
     send_batch_size: 1024
@@ -38,9 +37,8 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp] 
-
+      exporters: [otlp]
     logs:
-      receivers: [filelog]
+      receivers: [otlp]  
       processors: [batch, attributes]
-      exporters: [otlphttp] 
+      exporters: [otlphttp]

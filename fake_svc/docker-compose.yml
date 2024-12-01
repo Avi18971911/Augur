@@ -1,41 +1,35 @@
 services:
-  # OTEL Collector: Collects traces and logs, exports them to Jaeger and Loki
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     container_name: otel-collector
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP HTTP receiver
-      - "55681:55681" # For receiving logs via the filelog receiver
+      - "4317:4317" 
+      - "4318:4318" 
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317  # Set endpoint to OTEL collector for traces
-      - LOGS_API_ENDPOINT=http://otel-collector:3100  # Set Loki API endpoint for logs
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317  
+      - LOGS_API_ENDPOINT=http://otel-collector:3100  
+      - OTEL_SERVICE_NAME=fake-service
 
-  # Loki: Collect logs for Grafana
   loki:
-    image: grafana/loki:2.7.3
-    container_name: loki
+    image: grafana/loki:3.1.1
     ports:
-      - "3100:3100" # Loki UI and API endpoint for logs
-    environment:
-      - LOKI_API_URL=http://otel-collector:4317 # Connect OTEL collector for logs
+       - 3100:3100
 
   jaeger:
     image: jaegertracing/all-in-one:1.47
     container_name: jaeger
     ports:
-      - "16686:16686" # Jaeger UI
-      - "14250:14250" # OTLP gRPC
-      - "14268:14268" # OTLP HTTP
+      - "16686:16686" 
+      - "14250:14250" 
+      - "14268:14268"
 
-  # Grafana: For visualizing metrics and logs from Loki
   grafana:
     image: grafana/grafana:10.2.2
     container_name: grafana
     ports:
-      - "3000:3000" # Grafana UI
+      - "3000:3000" 
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
