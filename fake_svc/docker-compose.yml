@@ -5,6 +5,7 @@ services:
     container_name: otel-collector
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+      - otel-logs:/app/logs
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
@@ -50,6 +51,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - otel-logs:/app/logs
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_SERVICE_NAME=fakeserver
+      - LOG_DIR=/app/logs
+
 
 volumes:
   grafana-storage:
+  otel-logs:
+    driver: local

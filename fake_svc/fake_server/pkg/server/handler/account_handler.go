@@ -7,6 +7,8 @@ import (
 	"fake_svc/fake_server/pkg/service"
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 )
@@ -22,9 +24,22 @@ import (
 // @Failure 401 {object} utils.ErrorMessage "Invalid credentials"
 // @Failure 500 {object} utils.ErrorMessage "Internal server error"
 // @Router /accounts/login [post]
-func AccountLoginHandler(s service.AccountService, ctx context.Context, logger *logrus.Logger) http.HandlerFunc {
+func AccountLoginHandler(
+	s service.AccountService,
+	ctx context.Context,
+	tracer trace.Tracer,
+	logger *logrus.Logger,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("Login request received with URL %s and method %s", r.URL.Path, r.Method)
+		newCtx, span := tracer.Start(ctx, "AccountLoginHandler")
+		defer span.End()
+		span.SetAttributes(
+			attribute.String("http.url", r.URL.Path),
+			attribute.String("username", r.Header.Get("username")),
+			attribute.String("password", r.Header.Get("password")),
+		)
+
 		var req AccountLoginRequestDTO
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -40,7 +55,7 @@ func AccountLoginHandler(s service.AccountService, ctx context.Context, logger *
 			}
 		}(r.Body)
 
-		accountDetails, err := s.Login(req.Username, req.Password, ctx)
+		accountDetails, err := s.Login(req.Username, req.Password, newCtx)
 		if err != nil {
 			if errors.Is(err, model.ErrInvalidCredentials) {
 				logger.Errorf(
