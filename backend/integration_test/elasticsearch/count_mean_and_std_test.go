@@ -29,24 +29,30 @@ func TestMeandAndSTD(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
-		newLog := model.LogEntry{
+		firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		secondTime := time.Date(2021, 1, 2, 0, 0, 1, 204, time.UTC)
+		firstTimeLog := model.LogEntry{
 			ClusterId: "initialClusterId",
-			Timestamp: initialTime,
+			Timestamp: firstTime,
 		}
-		logOneSecondAfter := model.LogEntry{
-			ClusterId: "otherClusterId",
-			Timestamp: initialTime.Add(time.Second),
+		secondTimeLog := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: secondTime,
 		}
-		logTwoSecondsAfter := model.LogEntry{
+		firstTimeSecondAfter := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: initialTime.Add(time.Second * 2),
+			Timestamp: firstTime.Add(time.Second),
+		}
+		secondTimeTwoSecondsAfter := model.LogEntry{
+			ClusterId: "otherClusterId",
+			Timestamp: secondTime.Add(time.Second * 2),
 		}
 		err = loadDataIntoElasticsearch(
 			ac, []model.LogEntry{
-				newLog,
-				logOneSecondAfter,
-				logTwoSecondsAfter,
+				firstTimeLog,
+				secondTimeLog,
+				firstTimeSecondAfter,
+				secondTimeTwoSecondsAfter,
 			}, bootstrapper.LogIndexName,
 		)
 		if err != nil {
@@ -57,8 +63,8 @@ func TestMeandAndSTD(t *testing.T) {
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 			ctx,
-			newLog.ClusterId,
-			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+			firstTimeLog.ClusterId,
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
 			indices,
 			buckets,
 		)
@@ -71,7 +77,22 @@ func TestMeandAndSTD(t *testing.T) {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 
-		searchQueryBody := countQuery(newLog.ClusterId)
+		secondRes, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+			ctx,
+			secondTimeLog.ClusterId,
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: secondTimeLog.Timestamp}},
+			indices,
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+
+		searchQueryBody := countQuery(firstTimeLog.ClusterId)
 		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
@@ -82,8 +103,14 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 
 		countEntry := countEntries[0]
-		expectedMean := (logOneSecondAfter.Timestamp.Sub(newLog.Timestamp).Seconds() + logTwoSecondsAfter.Timestamp.Sub(newLog.Timestamp).Seconds()) / 2
+		expectedMeanFirstTerm := firstTimeSecondAfter.Timestamp.Sub(firstTimeLog.Timestamp).Seconds()
+		expectedMeanSecondTerm := secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds()
+		expectedMean := (expectedMeanFirstTerm + expectedMeanSecondTerm) / 2
+		expectedVarianceFirstTerm := (firstTimeSecondAfter.Timestamp.Sub(firstTimeLog.Timestamp).Seconds() - expectedMean) * (firstTimeSecondAfter.Timestamp.Sub(firstTimeLog.Timestamp).Seconds() - expectedMean)
+		expectedVarianceSecondTerm := (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean) * (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean)
+		expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+		assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
 	})
 
 	t.Run("should maintain a running variance for the time difference of arrival for spans", func(t *testing.T) {

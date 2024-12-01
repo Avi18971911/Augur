@@ -110,15 +110,13 @@ func buildUpdateClusterCountsQuery(
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": `
-				ctx._source.occurrences += params.increment;
-				ctx._source.co_occurrences += params.increment;
-				// Update Welford's variables for running mean and variance
-				def delta = params.new_value - ctx._source.mean_TDOA;
-				ctx._source.mean_TDOA += delta / ctx._source.co_occurrences;
-				def delta2 = params.new_value - ctx._source.mean_TDOA;
-				ctx._source.variance_TDOA += delta * delta2;
-			`,
+			"source": "ctx._source.occurrences = ctx._source.occurrences + params.increment;" +
+				"ctx._source.co_occurrences = ctx._source.co_occurrences + params.increment;" +
+				// Update mean and variance using Welford's online algorithm
+				"def delta = params.new_value - ctx._source.mean_TDOA;" +
+				"ctx._source.mean_TDOA = ctx._source.mean_TDOA + (delta * 1.0) / ctx._source.co_occurrences;" +
+				"def delta2 = params.new_value - ctx._source.mean_TDOA;" +
+				"ctx._source.variance_TDOA = ctx._source.variance_TDOA + delta * delta2;",
 			"params": map[string]interface{}{
 				"increment": 1,
 				"new_value": newValue,
@@ -130,8 +128,8 @@ func buildUpdateClusterCountsQuery(
 			"co_cluster_id":  otherClusterId,
 			"occurrences":    1,
 			"co_occurrences": 1,
-			"mean_TDOA":      newValue,
-			"variance_TDOA":  0,
+			"mean_TDOA":      newValue * 1.0,
+			"variance_TDOA":  0.0,
 		},
 	}
 
