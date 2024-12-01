@@ -50,10 +50,7 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 				"minimum_should_match": 1,
 			},
 		},
-		"collapse": map[string]interface{}{
-			"field": "cluster_id", // Collapse results by unique cluster_id
-		},
-		"_source": []string{"cluster_id"}, // Retrieve only the cluster IDs
+		"_source": []string{"cluster_id", "start_time", "end_time", "timestamp "}, // Retrieve only the cluster IDs
 	}
 }
 
@@ -109,12 +106,22 @@ func buildUpdateClusterCountsQuery(
 	id string,
 	clusterId string,
 	otherClusterId string,
+	newValue float64,
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.increment; ctx._source.co_occurrences += params.increment",
+			"source": `
+				ctx._source.occurrences += params.increment;
+				ctx._source.co_occurrences += params.increment;
+				// Update Welford's variables for running mean and variance
+				def delta = params.new_value - ctx._source.mean_TDOA;
+				ctx._source.mean_TDOA += delta / ctx._source.co_occurrences;
+				def delta2 = params.new_value - ctx._source.mean_TDOA;
+				ctx._source.variance_TDOA += delta * delta2;
+			`,
 			"params": map[string]interface{}{
 				"increment": 1,
+				"new_value": newValue,
 			},
 		},
 		"upsert": map[string]interface{}{
@@ -123,6 +130,8 @@ func buildUpdateClusterCountsQuery(
 			"co_cluster_id":  otherClusterId,
 			"occurrences":    1,
 			"co_occurrences": 1,
+			"mean_TDOA":      newValue,
+			"variance_TDOA":  0,
 		},
 	}
 

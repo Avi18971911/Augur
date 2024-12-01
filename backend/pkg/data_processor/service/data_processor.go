@@ -43,7 +43,7 @@ func NewDataProcessorService(
 
 func (dps *DataProcessorService) ProcessData(
 	ctx context.Context,
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) ([]bool, []error) {
 	// TODO: Add the Clustering Code here as well
@@ -53,7 +53,7 @@ func (dps *DataProcessorService) ProcessData(
 
 func (dps *DataProcessorService) processCounts(
 	ctx context.Context,
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) ([]bool, []error) {
 	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
@@ -109,7 +109,7 @@ func (dps *DataProcessorService) processCounts(
 func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) error {
 	increaseMissesInput, err := dps.processCountsForOverlaps(
@@ -136,7 +136,7 @@ func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 func (dps *DataProcessorService) processCountsForOverlaps(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) ([]countModel.IncreaseMissesInput, error) {
 	const logErrorMsg = "Failed to process log"
@@ -198,7 +198,7 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 func (dps *DataProcessorService) processLog(
 	ctx context.Context,
 	untypedLog map[string]interface{},
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
@@ -230,7 +230,7 @@ func (dps *DataProcessorService) processLog(
 func (dps *DataProcessorService) processSpan(
 	ctx context.Context,
 	untypedSpan map[string]interface{},
-	buckets []countService.Bucket,
+	buckets []countModel.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
 	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
