@@ -245,15 +245,15 @@ func addCoOccurringClustersToCoClusterInfoMap(
 		if err != nil {
 			return fmt.Errorf("error calculating TDOA: %w", err)
 		}
-		if _, ok := coClusterInfoMap[cluster.CoClusterId]; !ok {
-			coClusterInfoMap[cluster.CoClusterId] = model.CountInfo{
+		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
+			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
 				Occurrences: 1,
 				TotalTDOA:   TDOA,
 			}
 		} else {
-			coClusterInfoMap[cluster.CoClusterId] = model.CountInfo{
-				Occurrences: coClusterInfoMap[cluster.CoClusterId].Occurrences + 1,
-				TotalTDOA:   coClusterInfoMap[cluster.CoClusterId].TotalTDOA + TDOA,
+			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
+				Occurrences: coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
+				TotalTDOA:   coClusterInfoMap[cluster.ClusterId].TotalTDOA + TDOA,
 			}
 		}
 	}

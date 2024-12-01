@@ -457,6 +457,16 @@ func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel
 			return nil, fmt.Errorf("failed to convert co_occurrences to int")
 		}
 		countEntry.CoOccurrences = int64(coOccurrences)
+		meanTDOA, ok := doc["mean_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
+		}
+		countEntry.MeanTDOA = meanTDOA
+		varianceTDOA, ok := doc["variance_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert variance_tdoa to float64")
+		}
+		countEntry.VarianceTDOA = varianceTDOA
 		countEntries = append(countEntries, countEntry)
 	}
 	return countEntries, nil

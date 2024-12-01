@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-var buckets = []count.Bucket{2500}
-
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
 	cache        cache.WriteBehindCache[model.LogEntry]
