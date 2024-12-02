@@ -1,0 +1,42 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel-collector
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - "4317:4317" 
+      - "4318:4318" 
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317  
+      - LOGS_API_ENDPOINT=http://otel-collector:3100  
+      - OTEL_SERVICE_NAME=fake-service
+
+  loki:
+    image: grafana/loki:3.1.1
+    ports:
+       - 3100:3100
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    container_name: jaeger
+    ports:
+      - "16686:16686" 
+      - "14250:14250" 
+      - "14268:14268"
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: grafana
+    ports:
+      - "3000:3000" 
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:
