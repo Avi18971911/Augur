@@ -434,4 +434,147 @@ func TestMeandAndSTD(t *testing.T) {
 			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
 		},
 	)
+
+	t.Run("should deal with one-to-many relationships", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		firstTimeLog := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: firstTime,
+		}
+		firstTimeOverlapOne := model.LogEntry{
+			ClusterId: "otherClusterId",
+			Timestamp: firstTime.Add(time.Second),
+		}
+		firstTimeOverlapTwo := model.LogEntry{
+			ClusterId: "otherClusterId",
+			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+		}
+		firstTimeOverlapThree := model.LogEntry{
+			ClusterId: "otherClusterId",
+			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+		}
+
+		err = loadDataIntoElasticsearch(
+			ac, []model.LogEntry{
+				firstTimeLog,
+				firstTimeOverlapOne,
+				firstTimeOverlapTwo,
+				firstTimeOverlapThree,
+			}, bootstrapper.LogIndexName,
+		)
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		buckets := []countModel.Bucket{4500}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+			ctx,
+			firstTimeLog.ClusterId,
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
+			indices,
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+
+		searchQueryBody := countQuery(firstTimeLog.ClusterId)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+
+		countEntry := countEntries[0]
+		expectedMeanFirstTerm := firstTimeOverlapOne.Timestamp.Sub(firstTimeLog.Timestamp).Seconds()
+		expectedMeanSecondTerm := firstTimeOverlapTwo.Timestamp.Sub(firstTimeLog.Timestamp).Seconds()
+		expectedMeanThirdTerm := firstTimeOverlapThree.Timestamp.Sub(firstTimeLog.Timestamp).Seconds()
+		expectedMean := (expectedMeanFirstTerm + expectedMeanSecondTerm + expectedMeanThirdTerm) / 3
+		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+		// count service will condense all three in the one-to-many relationship into one mean value before processing
+		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+	})
+
+	t.Run("should deal with many-to-one relationships", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+		firstTimeLogOne := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: firstTime,
+		}
+		firstTimeLogTwo := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: firstTime.Add(time.Second),
+		}
+		firstTimeLogThree := model.LogEntry{
+			ClusterId: "initialClusterId",
+			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+		}
+		firstTimeLogOverlap := model.LogEntry{
+			ClusterId: "otherClusterId",
+			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+		}
+
+		err = loadDataIntoElasticsearch(
+			ac, []model.LogEntry{
+				firstTimeLogOne,
+				firstTimeLogTwo,
+				firstTimeLogThree,
+				firstTimeLogOverlap,
+			},
+			bootstrapper.LogIndexName,
+		)
+		if err != nil {
+			t.Error("Failed to load logs into elasticsearch")
+		}
+		buckets := []countModel.Bucket{4500}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+			ctx,
+			firstTimeLogOne.ClusterId,
+			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLogOne.Timestamp}},
+			indices,
+			buckets,
+		)
+		if err != nil {
+			t.Errorf("Failed to count occurrences: %v", err)
+		}
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+
+		searchQueryBody := countQuery(firstTimeLogOne.ClusterId)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		if err != nil {
+			t.Errorf("Failed to search for count: %v", err)
+		}
+		countEntries, err := convertCountDocsToCountEntries(docs)
+		if err != nil {
+			t.Errorf("Failed to convert count docs to count entries: %v", err)
+		}
+
+		countEntry := countEntries[0]
+		expectedMean := firstTimeLogOverlap.Timestamp.Sub(firstTimeLogOne.Timestamp).Seconds()
+		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+	})
 }
