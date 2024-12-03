@@ -2,7 +2,6 @@ package elasticsearch
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -33,52 +32,25 @@ func TestUpdates(t *testing.T) {
 			Message: "[Partition __consumer_offsets-99 broker=2] Log loaded for partition " +
 				"__consumer_offsets-55 with initial high watermark 0",
 			Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 8748, time.UTC),
+			Id:        "test",
 		}
-		_, docs, err := logProcessor.ClusterLog(ctx, logEntry)
+		ids, docs, err := logProcessor.ClusterLog(ctx, logEntry)
 		if err != nil {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}
 		assert.NotZero(t, len(docs))
 		assert.NotEqual(t, 1, len(docs))
 		var equalClusterId = docs[0]["cluster_id"]
-		for _, doc := range docs[1:] {
-			assert.Equal(t, equalClusterId, doc["cluster_id"])
+		var testClusterId string
+		if ids[0] == "test" {
+			testClusterId = docs[0]["cluster_id"].(string)
 		}
+		for i, doc := range docs[1:] {
+			assert.Equal(t, equalClusterId, doc["cluster_id"])
+			if ids[i+1] == "test" {
+				testClusterId = doc["cluster_id"].(string)
+			}
+		}
+		assert.NotEqual(t, "", testClusterId)
 	})
-}
-
-func getLogsWithClusterIdQuery(clusterId string) string {
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"term": map[string]interface{}{
-				"cluster_id": clusterId,
-			},
-		},
-	}
-	queryBody, err := json.Marshal(query)
-	if err != nil {
-		panic(err)
-	}
-	return string(queryBody)
-}
-
-func getAllLogsQuery() string {
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_all": map[string]interface{}{},
-		},
-	}
-	queryBody, err := json.Marshal(query)
-	if err != nil {
-		panic(err)
-	}
-	return string(queryBody)
-}
-
-func convertToDocs(fieldList []model.LogClusterIdField) []map[string]interface{} {
-	mapInterface := make([]map[string]interface{}, len(fieldList))
-	for idx, field := range fieldList {
-		mapInterface[idx] = field
-	}
-	return mapInterface
 }
