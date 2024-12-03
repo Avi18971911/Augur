@@ -1,8 +1,4 @@
 receivers:
-  filelog:
-    include:
-      - /app/logs/*.log
-    start_at: beginning
   otlp:
     protocols:
       grpc:
@@ -46,6 +42,6 @@ service:
       processors: [batch]
       exporters: [otlp]
     logs:
-      receivers: [otlp, filelog]
+      receivers: [otlp]
       processors: [batch, attributes]
       exporters: [otlp, otlphttp, debug]

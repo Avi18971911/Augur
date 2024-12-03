@@ -4,7 +4,6 @@ services:
     container_name: otel-collector
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
-      - otel-logs:/app/logs
     ports:
       - "4317:4317" 
       - "4318:4318" 
@@ -46,8 +45,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    volumes:
-      - otel-logs:/app/logs
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_RESOURCE_ATTRIBUTES
@@ -77,9 +74,3 @@ services:
 
 volumes:
   grafana-storage:
-  otel-logs:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./otel-logs

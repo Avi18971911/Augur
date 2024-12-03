@@ -7,13 +7,17 @@ import (
 	"fake_svc/fake_server/pkg/service"
 	"fake_svc/fake_server/pkg/transactional"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/bridges/otellogrus"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/log"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
-	"log"
+	goLog "log"
 	"net/http"
 	"os"
 	"sync"
@@ -59,9 +63,9 @@ func initResource() *sdkresource.Resource {
 func initTracerProvider() *sdktrace.TracerProvider {
 	ctx := context.Background()
 
-	exporter, err := otlptracegrpc.New(ctx)
+	exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint("otel-collector:4318"))
 	if err != nil {
-		log.Fatalf("new otlp trace grpc exporter failed: %v", err)
+		goLog.Fatalf("new otlp trace grpc exporter failed: %v", err)
 	}
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
@@ -75,24 +79,23 @@ func initTracerProvider() *sdktrace.TracerProvider {
 }
 
 func main() {
-	logger := initLogger()
-	logDir := os.Getenv("LOG_DIR")
-	if logDir == "" {
-		logDir = "./otel-logs"
-	}
-
-	// Create the log directory if it doesn't exist
-	if err := os.MkdirAll(logDir, 0755); err != nil {
-		logger.Fatalf("Failed to create log directory %s: %v", logDir, err)
-	}
-
-	logFile, err := os.OpenFile(logDir+"/fake-server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	res := initResource()
+	ctx := context.Background()
+	logExporter, err := otlploghttp.New(ctx, otlploghttp.WithEndpoint("otel-collector:4318"), otlploghttp.WithInsecure())
 	if err != nil {
-		logger.Fatalf("Failed to open log file: %v", err)
+		panic("failed to initialize exporter")
 	}
-	defer logFile.Close()
-	logger.Infof("Log directory created at %s. Going to write to the file instead.", logDir)
-	logger.SetOutput(logFile)
+
+	lp := log.NewLoggerProvider(
+		log.WithResource(res),
+		log.WithProcessor(
+			log.NewBatchProcessor(logExporter),
+		),
+	)
+	defer lp.Shutdown(ctx)
+	global.SetLoggerProvider(lp)
+	logger := initLogger()
+	logger.AddHook(otellogrus.NewHook("fake-server", otellogrus.WithLoggerProvider(lp)))
 
 	tp := initTracerProvider()
 	defer func() {
