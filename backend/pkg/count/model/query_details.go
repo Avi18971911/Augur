@@ -3,8 +3,8 @@ package model
 import "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 
 type IncreaseMissesInput struct {
-	ClusterId             string
-	CoClusterIdsToExclude []string
+	ClusterId                 string
+	CoClusterDetailsToExclude []string
 }
 
 type GetCountAndUpdateQueryDetails struct {

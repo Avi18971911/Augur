@@ -47,7 +47,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countService.Bucket{2500}
+		buckets := []countModel.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -123,7 +123,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countService.Bucket{2500}
+		buckets := []countModel.Bucket{2500}
 		firstCtx, firstCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer firstCancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -144,8 +144,8 @@ func TestLogCount(t *testing.T) {
 		secondCtx, secondCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer secondCancel()
 		fakeInput := countModel.IncreaseMissesInput{
-			ClusterId:             newLog.ClusterId,
-			CoClusterIdsToExclude: []string{},
+			ClusterId:                 newLog.ClusterId,
+			CoClusterDetailsToExclude: []string{},
 		}
 		missesRes, err := cs.GetIncrementMissesQueryInfo(
 			secondCtx,
@@ -207,8 +207,8 @@ func TestLogCount(t *testing.T) {
 		missCtx, missCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer missCancel()
 		fakeInput := countModel.IncreaseMissesInput{
-			ClusterId:             newLog.ClusterId,
-			CoClusterIdsToExclude: []string{},
+			ClusterId:                 newLog.ClusterId,
+			CoClusterDetailsToExclude: []string{},
 		}
 		missRes, err := cs.GetIncrementMissesQueryInfo(
 			missCtx,
@@ -264,7 +264,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
-		buckets := []countService.Bucket{1000}
+		buckets := []countModel.Bucket{1000}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -353,7 +353,7 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countService.Bucket{2500}
+		buckets := []countModel.Bucket{2500}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -457,6 +457,16 @@ func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel
 			return nil, fmt.Errorf("failed to convert co_occurrences to int")
 		}
 		countEntry.CoOccurrences = int64(coOccurrences)
+		meanTDOA, ok := doc["mean_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
+		}
+		countEntry.MeanTDOA = meanTDOA
+		varianceTDOA, ok := doc["variance_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert variance_tdoa to float64")
+		}
+		countEntry.VarianceTDOA = varianceTDOA
 		countEntries = append(countEntries, countEntry)
 	}
 	return countEntries, nil
