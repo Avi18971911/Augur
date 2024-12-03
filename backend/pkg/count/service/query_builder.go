@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"time"
 )
 
@@ -49,13 +50,16 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 				"minimum_should_match": 1,
 			},
 		},
+		"collapse": map[string]interface{}{
+			"field": "cluster_id", // Collapse results by unique cluster_id
+		},
 		"_source": []string{"cluster_id"}, // Retrieve only the cluster IDs
 	}
 }
 
-func buildGetNonMatchedClusterIdsQuery(
-	coOccurringClusterId string,
-	matchedClusterIds []string,
+func buildGetNonMatchedCoClusterIdsQuery(
+	clusterId string,
+	matchedCoClusterIds []string,
 ) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
@@ -63,26 +67,26 @@ func buildGetNonMatchedClusterIdsQuery(
 				"must": []map[string]interface{}{
 					{
 						"term": map[string]interface{}{
-							"co_cluster_id": coOccurringClusterId,
+							"cluster_id": clusterId,
 						},
 					},
 				},
 				"must_not": []map[string]interface{}{
 					{
 						"terms": map[string]interface{}{
-							"cluster_id": matchedClusterIds,
+							"co_cluster_id": matchedCoClusterIds,
 						},
 					},
 				},
 			},
 		},
-		"_source": []string{"cluster_id"}, // Retrieve only the document IDs
+		"_source": []string{"co_cluster_id"}, // Retrieve only the co-cluster IDs
 	}
 }
 
-func buildUpdateNonMatchedClusterIdsQuery(
-	clusterId string,
-) (map[string]interface{}, map[string]interface{}) {
+func buildIncrementNonMatchedCoClusterIdsQuery(
+	id string,
+) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.occurrences += params.increment",
@@ -93,7 +97,7 @@ func buildUpdateNonMatchedClusterIdsQuery(
 	}
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
-			"_id":               clusterId,
+			"_id":               id,
 			"_index":            bootstrapper.CountIndexName,
 			"retry_on_conflict": 5,
 		},
@@ -102,30 +106,29 @@ func buildUpdateNonMatchedClusterIdsQuery(
 }
 
 func buildUpdateClusterCountsQuery(
+	id string,
 	clusterId string,
 	otherClusterId string,
-	countInfo CountInfo,
-) (map[string]interface{}, map[string]interface{}) {
+) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.occurrences; ctx._source.co_occurrences += params.co_occurrences",
+			"source": "ctx._source.occurrences += params.increment; ctx._source.co_occurrences += params.increment",
 			"params": map[string]interface{}{
-				"occurrences":    countInfo.Occurrences,
-				"co_occurrences": countInfo.CoOccurrences,
+				"increment": 1,
 			},
 		},
 		"upsert": map[string]interface{}{
 			"created_at":     time.Now().UTC(),
 			"cluster_id":     clusterId,
 			"co_cluster_id":  otherClusterId,
-			"occurrences":    countInfo.Occurrences,
-			"co_occurrences": countInfo.CoOccurrences,
+			"occurrences":    1,
+			"co_occurrences": 1,
 		},
 	}
 
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
-			"_id":               clusterId,
+			"_id":               id,
 			"_index":            bootstrapper.CountIndexName,
 			"retry_on_conflict": 5,
 		},

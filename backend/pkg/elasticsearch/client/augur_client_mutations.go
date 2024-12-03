@@ -83,12 +83,12 @@ func (a *AugurClientImpl) Upsert(
 
 func (a *AugurClientImpl) BulkIndex(
 	ctx context.Context,
-	data []map[string]interface{},
-	metaInfo []map[string]interface{},
-	index string,
+	metaInfo []MetaMap,
+	documentInfo []DocumentMap,
+	index *string,
 ) error {
 	var buf bytes.Buffer
-	for i, d := range data {
+	for i, d := range documentInfo {
 		var meta map[string]interface{}
 		if metaInfo != nil && i < len(metaInfo) {
 			meta = metaInfo[i]
@@ -105,17 +105,17 @@ func (a *AugurClientImpl) BulkIndex(
 
 		dataJSON, err := json.Marshal(d)
 		if err != nil {
-			return fmt.Errorf("error marshaling data to bulk index: %w", err)
+			return fmt.Errorf("error marshaling documentInfo to bulk index: %w", err)
 		}
 		buf.Write(dataJSON)
 		buf.WriteByte('\n')
 	}
 	var res *esapi.Response
 	var err error
-	if len(index) > 0 {
+	if index != nil {
 		res, err = a.es.Bulk(
 			bytes.NewReader(buf.Bytes()),
-			a.es.Bulk.WithIndex(index),
+			a.es.Bulk.WithIndex(*index),
 			a.es.Bulk.WithContext(ctx),
 			a.es.Bulk.WithRefresh(a.refreshRate),
 		)
@@ -138,12 +138,12 @@ func (a *AugurClientImpl) BulkIndex(
 
 func (a *AugurClientImpl) Index(
 	ctx context.Context,
-	data map[string]interface{},
-	metaInfo map[string]interface{},
-	index string,
+	metaInfo MetaMap,
+	documentInfo DocumentMap,
+	index *string,
 ) error {
 	if metaInfo == nil {
-		return a.BulkIndex(ctx, []map[string]interface{}{data}, nil, index)
+		return a.BulkIndex(ctx, nil, []DocumentMap{documentInfo}, index)
 	}
-	return a.BulkIndex(ctx, []map[string]interface{}{data}, []map[string]interface{}{metaInfo}, index)
+	return a.BulkIndex(ctx, []MetaMap{metaInfo}, []DocumentMap{documentInfo}, index)
 }

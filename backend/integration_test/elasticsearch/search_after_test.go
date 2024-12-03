@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"context"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -33,7 +34,7 @@ func TestSearchAfter(t *testing.T) {
 				Timestamp: beginTime.Add(time.Duration(i) * time.Second),
 			}
 		}
-		err = loadDataIntoElasticsearch(ac, logs)
+		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -43,7 +44,7 @@ func TestSearchAfter(t *testing.T) {
 		var results []map[string]interface{}
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -78,7 +79,7 @@ func TestSearchAfter(t *testing.T) {
 				Timestamp: beginTime.Add(time.Duration(i) * time.Second),
 			}
 		}
-		err = loadDataIntoElasticsearch(ac, logs[:cutOffSize])
+		err = loadDataIntoElasticsearch(ac, logs[:cutOffSize], bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -88,7 +89,7 @@ func TestSearchAfter(t *testing.T) {
 		var results []map[string]interface{}
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -100,7 +101,7 @@ func TestSearchAfter(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to convert timestamp '%s' to time.Time: %v", lastCreatedAt, err)
 		}
-		err = loadDataIntoElasticsearch(ac, logs[cutOffSize:])
+		err = loadDataIntoElasticsearch(ac, logs[cutOffSize:], bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
@@ -110,7 +111,7 @@ func TestSearchAfter(t *testing.T) {
 		channel = ac.SearchAfter(searchCtx, getAllQuery(), indices, newSearchParams, &querySize)
 		for result := range channel {
 			if result.Error != nil {
-				t.Errorf("Error in search after: %v", *result.Error)
+				t.Errorf("Error in search after: %v", result.Error)
 			} else if result.Success == nil {
 				t.Error("Result is nil")
 			} else {
@@ -128,12 +129,4 @@ func TestSearchAfter(t *testing.T) {
 		}
 	})
 
-}
-
-func getAllQuery() map[string]interface{} {
-	return map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_all": map[string]interface{}{},
-		},
-	}
 }
