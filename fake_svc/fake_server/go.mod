@@ -8,6 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	go.opentelemetry.io/contrib/bridges/otellogrus v0.7.0
 	go.opentelemetry.io/otel v1.32.0
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.8.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.32.0
 	go.opentelemetry.io/otel/log v0.8.0

@@ -32,7 +32,7 @@ func AccountLoginHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("Login request received with URL %s and method %s", r.URL.Path, r.Method)
-		newCtx, span := tracer.Start(ctx, "AccountLoginHandler")
+		ctx, span := tracer.Start(ctx, "AccountLoginHandler")
 		defer span.End()
 		span.SetAttributes(
 			attribute.String("http.url", r.URL.Path),
@@ -55,7 +55,7 @@ func AccountLoginHandler(
 			}
 		}(r.Body)
 
-		accountDetails, err := s.Login(req.Username, req.Password, newCtx)
+		accountDetails, err := s.Login(req.Username, req.Password, ctx)
 		if err != nil {
 			if errors.Is(err, model.ErrInvalidCredentials) {
 				logger.Errorf(

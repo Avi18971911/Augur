@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/bridges/otellogrus"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
@@ -66,19 +66,19 @@ func initResource() *sdkresource.Resource {
 func initTracerProvider(
 	ctx context.Context,
 	res *sdkresource.Resource,
-	otelHttpUrl string,
+	otelgRPCUrl string,
 ) (*sdktrace.TracerProvider, func()) {
 	exporter, err := otlptracegrpc.New(
 		ctx,
 		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint(otelHttpUrl),
+		otlptracegrpc.WithEndpoint(otelgRPCUrl),
 	)
 	if err != nil {
-		log.Fatalf("new otlp trace http exporter failed: %v", err)
+		log.Fatalf("new otlp trace gRPC exporter failed: %v", err)
 	}
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(initResource()),
+		sdktrace.WithResource(res),
 	)
 	cleanup := func() {
 		if err := tp.Shutdown(ctx); err != nil {
@@ -95,15 +95,15 @@ func initTracerProvider(
 func initLogProvider(
 	ctx context.Context,
 	res *sdkresource.Resource,
-	otelHttpUrl string,
+	otelgRPCUrl string,
 ) (*sdklog.LoggerProvider, func()) {
-	logExporter, err := otlploghttp.New(
+	logExporter, err := otlploggrpc.New(
 		ctx,
-		otlploghttp.WithEndpoint(otelHttpUrl),
-		otlploghttp.WithInsecure(),
+		otlploggrpc.WithEndpoint(otelgRPCUrl),
+		otlploggrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("new otlp log http exporter failed: %v", err)
+		log.Fatalf("new otlp log gRPC exporter failed: %v", err)
 	}
 
 	batchProcessor := sdklog.NewBatchProcessor(logExporter)
@@ -123,17 +123,17 @@ func initLogProvider(
 func main() {
 	res := initResource()
 	ctx := context.Background()
-	otelHttpUrl := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if otelHttpUrl == "" {
-		otelHttpUrl = "localhost:4318"
+	otelgRPCUrl := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if otelgRPCUrl == "" {
+		otelgRPCUrl = "localhost:4317"
 	}
 
-	lp, lpCleanup := initLogProvider(ctx, res, otelHttpUrl)
+	lp, lpCleanup := initLogProvider(ctx, res, otelgRPCUrl)
 	defer lpCleanup()
 
 	logger := initLogger(lp)
 
-	tp, tpCleanup := initTracerProvider(ctx, res, otelHttpUrl)
+	tp, tpCleanup := initTracerProvider(ctx, res, otelgRPCUrl)
 	defer tpCleanup()
 
 	tracer := tp.Tracer(serviceName)
