@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/cache"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/Avi18971911/Augur/pkg/trace/service"
@@ -17,14 +16,14 @@ import (
 type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
 	logger           *zap.Logger
-	writeBehindCache cache.WriteBehindCache[model.Span]
+	writeBehindCache database_write_buffer.DatabaseWriteBuffer[model.Span]
 	clusterService   service.SpanClusterService
 	countService     *count.CountService
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache cache.WriteBehindCache[model.Span],
+	cache database_write_buffer.DatabaseWriteBuffer[model.Span],
 	clusterService service.SpanClusterService,
 	countService *count.CountService,
 ) TraceServiceServerImpl {

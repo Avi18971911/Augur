@@ -5,10 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/cache"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/log/model"
-	"github.com/Avi18971911/Augur/pkg/log/service"
+	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	v1 "go.opentelemetry.io/proto/otlp/logs/v1"
 	"go.uber.org/zap"
@@ -17,24 +15,18 @@ import (
 
 type LogServiceServerImpl struct {
 	protoLogs.UnimplementedLogsServiceServer
-	cache        cache.WriteBehindCache[model.LogEntry]
-	logger       *zap.Logger
-	logProcessor service.LogProcessorService
-	countService *count.CountService
+	dbBuffer write_buffer.DatabaseWriteBuffer[model.LogEntry]
+	logger   *zap.Logger
 }
 
 func NewLogServiceServerImpl(
 	logger *zap.Logger,
-	cache cache.WriteBehindCache[model.LogEntry],
-	logProcessor service.LogProcessorService,
-	countService *count.CountService,
+	cache write_buffer.DatabaseWriteBuffer[model.LogEntry],
 ) *LogServiceServerImpl {
 	logger.Info("Creating new LogServiceServerImpl")
 	return &LogServiceServerImpl{
-		logger:       logger,
-		cache:        cache,
-		logProcessor: logProcessor,
-		countService: countService,
+		logger:   logger,
+		dbBuffer: cache,
 	}
 }
 
@@ -46,26 +38,11 @@ func (lss *LogServiceServerImpl) Export(
 		// Ignore resource logs for now
 		for _, scopeLog := range resourceLogs.ScopeLogs {
 			serviceName := scopeLog.Scope.Name
-			for _, log := range scopeLog.LogRecords {
-				typedLog := typeLog(log, serviceName)
-
-				go func(typedLog model.LogEntry, serviceName string) {
-					processCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-					logWithClusterId, err := lss.logProcessor.ParseLogWithMessage(processCtx, serviceName, typedLog)
-					if err != nil {
-						lss.logger.Error("Failed to parse log with message", zap.Error(err))
-						return
-					}
-					insertCtx, insertCancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer insertCancel()
-					err = lss.cache.Put(insertCtx, logWithClusterId.ClusterId, []model.LogEntry{logWithClusterId})
-					if err != nil {
-						lss.logger.Error("Failed to put log in cache", zap.Error(err))
-						return
-					}
-				}(typedLog, serviceName)
+			typedLogs := make([]model.LogEntry, 0, len(scopeLog.LogRecords))
+			for i, log := range scopeLog.LogRecords {
+				typedLogs[i] = typeLog(log, serviceName)
 			}
+			lss.dbBuffer.WriteToBuffer(typedLogs)
 		}
 	}
 	return &protoLogs.ExportLogsServiceResponse{}, nil
@@ -80,6 +57,7 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	return model.LogEntry{
 		Id:        generateLogId(timestamp, message),
 		CreatedAt: time.Now().UTC(),
+		ClusterId: "NOT_ASSIGNED",
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,
