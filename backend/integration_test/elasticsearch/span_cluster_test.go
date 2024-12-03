@@ -32,7 +32,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		span := model.Span{
 			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
 		}
-		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
+		newSpan, err := spanClusterer.ClusterSpan(ctx, span)
 		if err != nil {
 			t.Errorf("Failed to parse span with message: %v", err)
 		}
@@ -67,7 +67,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		span := model.Span{
 			ClusterEvent: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
 		}
-		newSpan, err := spanClusterer.ClusterAndUpdateSpans(ctx, span)
+		newSpan, err := spanClusterer.ClusterSpan(ctx, span)
 		if err != nil {
 			t.Errorf("Failed to parse span with message: %v", err)
 		}
@@ -75,7 +75,7 @@ func TestSpanClusterUpdates(t *testing.T) {
 		span2 := model.Span{
 			ClusterEvent: "service=flagd,operation=resolveInt,kind=SPAN_KIND_INTERNAL,attributes=map[]",
 		}
-		newSpan2, err := spanClusterer.ClusterAndUpdateSpans(ctx, span2)
+		newSpan2, err := spanClusterer.ClusterSpan(ctx, span2)
 		if err != nil {
 			t.Errorf("Failed to parse span with message: %v", err)
 		}

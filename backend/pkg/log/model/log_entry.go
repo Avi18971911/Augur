@@ -2,6 +2,8 @@ package model
 
 import "time"
 
+type LogData map[string]interface{}
+
 type LogEntry struct {
 	Id        string    `json:"_id,omitempty"`
 	CreatedAt time.Time `json:"created_at"`

@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-const scTimeOut = 1 * time.Second
+const scTimeOut = 10 * time.Second
 
 type SpanClusterService interface {
-	ClusterAndUpdateSpans(ctx context.Context, span model.Span) (model.Span, error)
+	ClusterSpan(ctx context.Context, span model.SpanData) ([]string, []model.SpanClusterIdField, error)
 }
 
 type SpanClusterServiceImpl struct {
@@ -30,23 +30,11 @@ func NewSpanClusterService(ac client.AugurClient, logger *zap.Logger) SpanCluste
 	}
 }
 
-func equalityQueryBuilder(phrase string) map[string]interface{} {
-	return map[string]interface{}{
-		"query": map[string]interface{}{
-			"term": map[string]interface{}{
-				"cluster_event": map[string]interface{}{
-					"value": phrase,
-				},
-			},
-		},
-	}
-}
-
 func getSpansWithClusterId(spans []model.Span) []model.Span {
 	newSpans := make([]model.Span, len(spans))
 	var clusterId string
 	for _, span := range spans {
-		if span.ClusterId != "" {
+		if span.ClusterId != "" && span.ClusterId != "NOT_ASSIGNED" {
 			clusterId = span.ClusterId
 			break
 		}
@@ -75,26 +63,27 @@ func getSpansWithClusterId(spans []model.Span) []model.Span {
 	return newSpans
 }
 
-func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
+func (scs *SpanClusterServiceImpl) ClusterSpan(
 	ctx context.Context,
-	span model.Span,
-) (model.Span, error) {
-	queryBody, err := json.Marshal(equalityQueryBuilder(span.ClusterEvent))
+	untypedSpan model.SpanData,
+) ([]string, []model.SpanClusterIdField, error) {
+	typedSpan, err := typeSpan(untypedSpan)
+	queryBody, err := json.Marshal(equalityQueryBuilder(typedSpan.ClusterEvent))
 	if err != nil {
-		return model.Span{}, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
+		return nil, nil, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
 	var querySize = 100
 	queryCtx, queryCancel := context.WithTimeout(ctx, scTimeOut)
 	defer queryCancel()
 	res, err := scs.ac.Search(queryCtx, string(queryBody), []string{augurElasticsearch.SpanIndexName}, &querySize)
 	if err != nil {
-		return model.Span{}, fmt.Errorf("failed to search for similar spans in Elasticsearch: %w", err)
+		return nil, nil, fmt.Errorf("failed to search for similar spans in Elasticsearch: %w", err)
 	}
 	totalSpans, err := ConvertToSpanDocuments(res)
 	if err != nil {
-		return model.Span{}, fmt.Errorf("failed to convert search results to span documents: %w", err)
+		return nil, nil, fmt.Errorf("failed to convert search results to untypedSpan documents: %w", err)
 	}
-	totalSpans = append(totalSpans, span)
+	totalSpans = append(totalSpans, typedSpan)
 	totalSpansClusterIds := make([]string, len(totalSpans))
 	for i, span := range totalSpans {
 		totalSpansClusterIds[i] = span.ClusterId
@@ -102,27 +91,15 @@ func (scs *SpanClusterServiceImpl) ClusterAndUpdateSpans(
 
 	clusteredSpans := getSpansWithClusterId(totalSpans)
 
-	// last span is the new one so don't update it
-	ids := make([]string, len(clusteredSpans)-1)
-	fieldList := make([]map[string]interface{}, len(clusteredSpans)-1)
-	for idx, span := range clusteredSpans[:len(clusteredSpans)-1] {
+	ids := make([]string, len(clusteredSpans))
+	fieldList := make([]model.SpanClusterIdField, len(clusteredSpans))
+	for idx, span := range clusteredSpans {
 		ids[idx] = span.Id
 		fieldList[idx] = map[string]interface{}{
 			"cluster_id": span.ClusterId,
 		}
 	}
-	updateCtx, updateCancel := context.WithTimeout(ctx, scTimeOut)
-	defer updateCancel()
-	if len(fieldList) != 0 {
-		err = scs.ac.BulkUpdate(updateCtx, ids, fieldList, augurElasticsearch.SpanIndexName)
-		if err != nil {
-			return model.Span{}, fmt.Errorf("failed to update similar span in Elasticsearch: %w", err)
-		}
-	}
-
-	newLogEntry := clusteredSpans[len(clusteredSpans)-1]
-
-	return newLogEntry, nil
+	return ids, fieldList, nil
 }
 
 func ConvertToSpanDocuments(res []map[string]interface{}) ([]model.Span, error) {
@@ -244,4 +221,12 @@ func typeAttributes(attributes map[string]interface{}) map[string]string {
 		typedAttributes[k] = fmt.Sprintf("%v", v)
 	}
 	return typedAttributes
+}
+
+func typeSpan(span model.SpanData) (model.Span, error) {
+	typedSpan, err := ConvertToSpanDocuments([]map[string]interface{}{span})
+	if err != nil {
+		return model.Span{}, fmt.Errorf("failed to convert span to span document: %w", err)
+	}
+	return typedSpan[0], nil
 }

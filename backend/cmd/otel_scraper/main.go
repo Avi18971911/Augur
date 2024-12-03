@@ -65,8 +65,6 @@ func main() {
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
 		traceDBBuffer,
-		spanClusterService,
-		countService,
 	)
 	logServiceServer := logsServer.NewLogServiceServerImpl(
 		logger,
@@ -77,7 +75,13 @@ func main() {
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
 
-	dp := dataProcessor.NewDataProcessorService(ac, countService, logger)
+	dp := dataProcessor.NewDataProcessorService(
+		ac,
+		countService,
+		logProcessorService,
+		spanClusterService,
+		logger,
+	)
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 

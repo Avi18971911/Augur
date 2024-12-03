@@ -12,12 +12,10 @@ import (
 	"time"
 )
 
-type clusterIdField map[string]interface{}
-
-const lpTimeOut = 2 * time.Second
+const lpTimeOut = 10 * time.Second
 
 type LogClusterService interface {
-	ClusterLog(ctx context.Context, service string, log model.LogEntry) ([]string, []clusterIdField, error)
+	ClusterLog(ctx context.Context, untypedLog model.LogData) ([]string, []model.LogClusterIdField, error)
 }
 
 type LogClusterServiceImpl struct {
@@ -60,16 +58,20 @@ func getLogsWithClusterId(logs []model.LogEntry) []model.LogEntry {
 
 func (lps *LogClusterServiceImpl) ClusterLog(
 	ctx context.Context,
-	service string,
-	log model.LogEntry,
-) ([]string, []clusterIdField, error) {
-	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(service, log.Message))
+	untypedLog model.LogData,
+) ([]string, []model.LogClusterIdField, error) {
+	typedLog, err := typeLog(untypedLog)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to type log: %w", err)
+	}
+	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(typedLog.Service, typedLog.Message))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
 	queryCtx, queryCancel := context.WithTimeout(ctx, lpTimeOut)
 	defer queryCancel()
-	res, err := lps.ac.Search(queryCtx, string(queryBody), []string{augurElasticsearch.LogIndexName}, nil)
+	querySize := 100
+	res, err := lps.ac.Search(queryCtx, string(queryBody), []string{augurElasticsearch.LogIndexName}, &querySize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to search for similar logs in Elasticsearch: %w", err)
 	}
@@ -77,12 +79,12 @@ func (lps *LogClusterServiceImpl) ClusterLog(
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to convert search results to log documents: %w", err)
 	}
-	totalLogs = append(totalLogs, log)
+	totalLogs = append(totalLogs, typedLog)
 
 	parsedLogs := getLogsWithClusterId(totalLogs)
 
 	ids := make([]string, len(parsedLogs))
-	fieldList := make([]clusterIdField, len(parsedLogs))
+	fieldList := make([]model.LogClusterIdField, len(parsedLogs))
 	for idx, log := range parsedLogs {
 		ids[idx] = log.Id
 		fieldList[idx] = map[string]interface{}{
@@ -150,4 +152,12 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]model.LogEntry, err
 	}
 
 	return docs, nil
+}
+
+func typeLog(log model.LogData) (model.LogEntry, error) {
+	typedLog, err := ConvertToLogDocuments([]map[string]interface{}{log})
+	if err != nil {
+		return model.LogEntry{}, err
+	}
+	return typedLog[0], nil
 }
