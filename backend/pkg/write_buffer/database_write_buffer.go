@@ -64,6 +64,7 @@ func (wbc *DatabaseWriteBufferImpl[ValueType]) flushToElasticsearch() error {
 		return fmt.Errorf("error converting write queue to meta and data map: %w", err)
 	}
 	if metaMap == nil || len(metaMap) == 0 {
+		wbc.writeQueue = []ValueType{}
 		return nil
 	}
 	err = wbc.ac.BulkIndex(

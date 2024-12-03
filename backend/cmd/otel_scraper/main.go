@@ -92,7 +92,9 @@ func main() {
 				[]countModel.Bucket{100},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
 			for _, err := range errors {
-				logger.Error("Failed to process data", zap.Error(err))
+				if err != nil {
+					logger.Error("Failed to process data", zap.Error(err))
+				}
 			}
 		}
 	}()

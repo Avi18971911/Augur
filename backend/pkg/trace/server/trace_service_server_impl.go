@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
@@ -82,6 +83,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 	clusterEvent := getClusterString(serviceName, span.Name, spanKind, getAttributesString(attributes))
 
 	return model.Span{
+		Id:           generateSpanId(startTime, clusterEvent),
 		CreatedAt:    time.Now().UTC(),
 		SpanID:       spanId,
 		ParentSpanID: parentSpanId,
@@ -138,4 +140,10 @@ func getClusterString(serviceName string, actionName string, spanKind string, at
 		spanKind,
 		attributes,
 	)
+}
+
+func generateSpanId(timeStamp time.Time, clusterEvent string) string {
+	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), clusterEvent)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }
