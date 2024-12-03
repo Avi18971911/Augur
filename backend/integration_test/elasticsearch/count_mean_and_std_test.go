@@ -113,119 +113,59 @@ func TestMeandAndSTD(t *testing.T) {
 		assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
 	})
 
-	t.Run("should maintain a running variance for the time difference of arrival for spans", func(t *testing.T) {
-		err := deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
-		initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
-		newSpan := spanModel.Span{
-			ClusterId: "initialClusterId",
-			StartTime: initialTime,
-			EndTime:   initialTime.Add(time.Second),
-		}
-		spanOneSecondAfter := spanModel.Span{
-			ClusterId: "otherClusterId",
-			StartTime: initialTime.Add(time.Second),
-			EndTime:   initialTime.Add(time.Second * 2),
-		}
-		spanTwoSecondsAfter := spanModel.Span{
-			ClusterId: "otherClusterId",
-			StartTime: initialTime.Add(time.Second * 2),
-			EndTime:   initialTime.Add(time.Second * 3),
-		}
-		err = loadDataIntoElasticsearch(
-			ac, []spanModel.Span{
-				newSpan,
-				spanOneSecondAfter,
-				spanTwoSecondsAfter,
-			},
-			bootstrapper.SpanIndexName,
-		)
-		if err != nil {
-			t.Error("Failed to load spans into elasticsearch")
-		}
-		buckets := []countModel.Bucket{4500}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
-			ctx,
-			newSpan.ClusterId,
-			countModel.TimeInfo{SpanInfo: &countModel.SpanInfo{FromTime: newSpan.StartTime, ToTime: newSpan.EndTime}},
-			indices,
-			buckets,
-		)
-		if err != nil {
-			t.Errorf("Failed to count occurrences: %v", err)
-		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
-		if err != nil {
-			t.Errorf("Failed to insert records: %v", err)
-		}
-
-		searchQueryBody := countQuery(newSpan.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
-		if err != nil {
-			t.Errorf("Failed to search for count: %v", err)
-		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
-		if err != nil {
-			t.Errorf("Failed to convert count docs to count entries: %v", err)
-		}
-
-		countEntry := countEntries[0]
-		expectedMean := (spanOneSecondAfter.StartTime.Sub(newSpan.StartTime).Seconds() + spanTwoSecondsAfter.StartTime.Sub(newSpan.StartTime).Seconds()) / 2
-		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-	})
-
 	t.Run(
-		"should maintain a running variance for the time difference of arrival for a mix of spans and logs",
+		"should maintain a running mean and variance for the time difference of arrival for spans",
 		func(t *testing.T) {
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
 			}
-			initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
-			newSpan := spanModel.Span{
+			firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+			secondTime := time.Date(2021, 1, 2, 0, 0, 1, 204, time.UTC)
+
+			firstTimeSpan := spanModel.Span{
 				ClusterId: "initialClusterId",
-				StartTime: initialTime,
-				EndTime:   initialTime.Add(time.Second),
+				StartTime: firstTime,
+				EndTime:   firstTime.Add(time.Second),
 			}
-			logOneSecondAfter := model.LogEntry{
+			firstTimeSpanSecondAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				Timestamp: initialTime.Add(time.Second),
+				StartTime: firstTime.Add(time.Second),
+				EndTime:   firstTime.Add(time.Second * 2),
 			}
-			logTwoSecondsAfter := model.LogEntry{
+			secondTimeSpan := spanModel.Span{
+				ClusterId: "initialClusterId",
+				StartTime: secondTime,
+				EndTime:   secondTime.Add(time.Second),
+			}
+			secondTimeSpanTwoSecondsAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				Timestamp: initialTime.Add(time.Second * 2),
+				StartTime: secondTime.Add(time.Second * 2),
+				EndTime:   secondTime.Add(time.Second * 4),
 			}
 			err = loadDataIntoElasticsearch(
 				ac, []spanModel.Span{
-					newSpan,
+					firstTimeSpan,
+					firstTimeSpanSecondAfter,
+					secondTimeSpan,
+					secondTimeSpanTwoSecondsAfter,
 				},
 				bootstrapper.SpanIndexName,
 			)
 			if err != nil {
 				t.Error("Failed to load spans into elasticsearch")
 			}
-			err = loadDataIntoElasticsearch(
-				ac, []model.LogEntry{
-					logOneSecondAfter,
-					logTwoSecondsAfter,
-				},
-				bootstrapper.LogIndexName,
-			)
-			if err != nil {
-				t.Error("Failed to load logs into elasticsearch")
-			}
 			buckets := []countModel.Bucket{4500}
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 				ctx,
-				newSpan.ClusterId,
-				countModel.TimeInfo{SpanInfo: &countModel.SpanInfo{FromTime: newSpan.StartTime, ToTime: newSpan.EndTime}},
+				firstTimeSpan.ClusterId,
+				countModel.TimeInfo{
+					SpanInfo: &countModel.SpanInfo{
+						FromTime: firstTimeSpan.StartTime, ToTime: firstTimeSpan.EndTime,
+					},
+				},
 				indices,
 				buckets,
 			)
@@ -238,7 +178,26 @@ func TestMeandAndSTD(t *testing.T) {
 				t.Errorf("Failed to insert records: %v", err)
 			}
 
-			searchQueryBody := countQuery(newSpan.ClusterId)
+			secondRes, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+				ctx,
+				secondTimeSpan.ClusterId,
+				countModel.TimeInfo{
+					SpanInfo: &countModel.SpanInfo{
+						FromTime: secondTimeSpan.StartTime, ToTime: secondTimeSpan.EndTime,
+					},
+				},
+				indices,
+				buckets,
+			)
+			if err != nil {
+				t.Errorf("Failed to count occurrences: %v", err)
+			}
+			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			if err != nil {
+				t.Errorf("Failed to insert records: %v", err)
+			}
+
+			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
 			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
@@ -249,37 +208,48 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 
 			countEntry := countEntries[0]
-			expectedMean := (logOneSecondAfter.Timestamp.Sub(newSpan.StartTime).Seconds() + logTwoSecondsAfter.Timestamp.Sub(newSpan.StartTime).Seconds()) / 2
+			expectedMeanFirstTerm := firstTimeSpanSecondAfter.StartTime.Sub(firstTimeSpan.StartTime).Seconds()
+			expectedMeanSecondTerm := secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds()
+			expectedMean := (expectedMeanFirstTerm + expectedMeanSecondTerm) / 2
+			expectedVarianceFirstTerm := (firstTimeSpanSecondAfter.StartTime.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean) * (firstTimeSpanSecondAfter.StartTime.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean)
+			expectedVarianceSecondTerm := (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
+			expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 			assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
 		},
 	)
 
 	t.Run(
-		"should maintain a running variance for the time difference of arrival for a mix of logs and spans",
+		"should maintain a running mean and variance for the time difference of arrival for a mix of spans and logs",
 		func(t *testing.T) {
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
 			}
-			initialTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
-			newLog := model.LogEntry{
+			firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+			secondTime := time.Date(2021, 1, 2, 0, 0, 1, 204, time.UTC)
+			firstTimeSpan := spanModel.Span{
 				ClusterId: "initialClusterId",
-				Timestamp: initialTime,
+				StartTime: firstTime,
+				EndTime:   firstTime.Add(time.Second),
 			}
-			spanOneSecondAfter := spanModel.Span{
+			firstTimeLogOneSecondAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				StartTime: initialTime.Add(time.Second),
-				EndTime:   initialTime.Add(time.Second * 2),
+				Timestamp: firstTime.Add(time.Second),
 			}
-			spanTwoSecondsAfter := spanModel.Span{
+			secondTimeSpan := spanModel.Span{
+				ClusterId: "initialClusterId",
+				StartTime: secondTime,
+				EndTime:   secondTime.Add(time.Second),
+			}
+			secondTimeLogTwoSecondsAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				StartTime: initialTime.Add(time.Second * 2),
-				EndTime:   initialTime.Add(time.Second * 3),
+				Timestamp: secondTime.Add(time.Second * 2),
 			}
 			err = loadDataIntoElasticsearch(
 				ac, []spanModel.Span{
-					spanOneSecondAfter,
-					spanTwoSecondsAfter,
+					firstTimeSpan,
+					secondTimeSpan,
 				},
 				bootstrapper.SpanIndexName,
 			)
@@ -288,7 +258,8 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			err = loadDataIntoElasticsearch(
 				ac, []model.LogEntry{
-					newLog,
+					firstTimeLogOneSecondAfter,
+					secondTimeLogTwoSecondsAfter,
 				},
 				bootstrapper.LogIndexName,
 			)
@@ -300,8 +271,12 @@ func TestMeandAndSTD(t *testing.T) {
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
 				ctx,
-				newLog.ClusterId,
-				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
+				firstTimeSpan.ClusterId,
+				countModel.TimeInfo{
+					SpanInfo: &countModel.SpanInfo{
+						FromTime: firstTimeSpan.StartTime, ToTime: firstTimeSpan.EndTime,
+					},
+				},
 				indices,
 				buckets,
 			)
@@ -314,7 +289,26 @@ func TestMeandAndSTD(t *testing.T) {
 				t.Errorf("Failed to insert records: %v", err)
 			}
 
-			searchQueryBody := countQuery(newLog.ClusterId)
+			secondRes, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+				ctx,
+				secondTimeSpan.ClusterId,
+				countModel.TimeInfo{
+					SpanInfo: &countModel.SpanInfo{
+						FromTime: secondTimeSpan.StartTime, ToTime: secondTimeSpan.EndTime,
+					},
+				},
+				indices,
+				buckets,
+			)
+			if err != nil {
+				t.Errorf("Failed to count occurrences: %v", err)
+			}
+			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			if err != nil {
+				t.Errorf("Failed to insert records: %v", err)
+			}
+
+			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
 			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
@@ -325,8 +319,119 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 
 			countEntry := countEntries[0]
-			expectedMean := (spanOneSecondAfter.StartTime.Sub(newLog.Timestamp).Seconds() + spanTwoSecondsAfter.StartTime.Sub(newLog.Timestamp).Seconds()) / 2
+			firstMeanTerm := firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds()
+			secondMeanTerm := secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds()
+			expectedMean := (firstMeanTerm + secondMeanTerm) / 2
 			assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+
+			firstVarianceTerm := (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean) * (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean)
+			secondVarianceTerm := (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
+			expectedVariance := (firstVarianceTerm + secondVarianceTerm) / 1
+			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+		},
+	)
+
+	t.Run(
+		"should maintain a running mean and variance for the time difference of arrival for a mix of logs and spans",
+		func(t *testing.T) {
+			err := deleteAllDocuments(es)
+			if err != nil {
+				t.Errorf("Failed to delete all documents: %v", err)
+			}
+			firstTime := time.Date(2021, 1, 1, 0, 0, 0, 204, time.UTC)
+			secondTime := time.Date(2021, 1, 2, 0, 0, 1, 204, time.UTC)
+			logAtFirstTime := model.LogEntry{
+				ClusterId: "initialClusterId",
+				Timestamp: firstTime,
+			}
+			logAtSecondTime := model.LogEntry{
+				ClusterId: "initialClusterId",
+				Timestamp: secondTime,
+			}
+			spanOneSecondAfterFirstTime := spanModel.Span{
+				ClusterId: "otherClusterId",
+				StartTime: firstTime.Add(time.Second),
+				EndTime:   firstTime.Add(time.Second * 2),
+			}
+			spanTwoSecondsAfterSecondTime := spanModel.Span{
+				ClusterId: "otherClusterId",
+				StartTime: secondTime.Add(time.Second * 2),
+				EndTime:   secondTime.Add(time.Second * 3),
+			}
+			err = loadDataIntoElasticsearch(
+				ac, []spanModel.Span{
+					spanOneSecondAfterFirstTime,
+					spanTwoSecondsAfterSecondTime,
+				},
+				bootstrapper.SpanIndexName,
+			)
+			if err != nil {
+				t.Error("Failed to load spans into elasticsearch")
+			}
+			err = loadDataIntoElasticsearch(
+				ac, []model.LogEntry{
+					logAtFirstTime,
+					logAtSecondTime,
+				},
+				bootstrapper.LogIndexName,
+			)
+			if err != nil {
+				t.Error("Failed to load logs into elasticsearch")
+			}
+			buckets := []countModel.Bucket{4500}
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+				ctx,
+				logAtFirstTime.ClusterId,
+				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtFirstTime.Timestamp}},
+				indices,
+				buckets,
+			)
+			if err != nil {
+				t.Errorf("Failed to count occurrences: %v", err)
+			}
+			index := bootstrapper.CountIndexName
+			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			if err != nil {
+				t.Errorf("Failed to insert records: %v", err)
+			}
+
+			secondRes, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
+				ctx,
+				logAtSecondTime.ClusterId,
+				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtSecondTime.Timestamp}},
+				indices,
+				buckets,
+			)
+			if err != nil {
+				t.Errorf("Failed to count occurrences: %v", err)
+			}
+			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			if err != nil {
+				t.Errorf("Failed to insert records: %v", err)
+			}
+
+			searchQueryBody := countQuery(logAtFirstTime.ClusterId)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+			if err != nil {
+				t.Errorf("Failed to search for count: %v", err)
+			}
+			countEntries, err := convertCountDocsToCountEntries(docs)
+			if err != nil {
+				t.Errorf("Failed to convert count docs to count entries: %v", err)
+			}
+
+			countEntry := countEntries[0]
+			expectedMeanFirstTime := spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds()
+			expectedMeanSecondTime := spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds()
+			expectedMean := (expectedMeanFirstTime + expectedMeanSecondTime) / 2
+			assert.Equal(t, expectedMean, countEntry.MeanTDOA)
+
+			expectedVarianceFirstTime := (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean) * (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean)
+			expectedVarianceSecondTime := (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean) * (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean)
+			expectedVariance := (expectedVarianceFirstTime + expectedVarianceSecondTime) / 1
+			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
 		},
 	)
 }
