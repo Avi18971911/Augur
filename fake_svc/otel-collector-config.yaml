@@ -1,0 +1,44 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317"  
+    tls:
+      insecure: true
+
+  otlphttp:
+    endpoint: http://loki:3100/otlp  
+    tls: 
+      insecure: true
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 10s
+  attributes:
+    actions:
+      - action: insert
+        key: service.name
+        value: fake-service
+
+extensions:
+  health_check:
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
+    logs:
+      receivers: [otlp]  
+      processors: [batch, attributes]
+      exporters: [otlphttp]
