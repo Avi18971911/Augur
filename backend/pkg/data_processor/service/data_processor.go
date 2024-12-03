@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-const timeout = 2 * time.Second
-const searchAfterTimeout = 30 * time.Second
+const timeout = 10 * time.Second
+const searchAfterTimeout = 60 * time.Second
 const workerCount = 50
 
 var querySize = 10000
