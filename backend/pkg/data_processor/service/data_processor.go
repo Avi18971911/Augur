@@ -7,9 +7,7 @@ import (
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logService "github.com/Avi18971911/Augur/pkg/log/service"
-	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"go.uber.org/zap"
 	"sync"
@@ -168,8 +166,8 @@ func getResultsWithWorkers[
 	return resultChannel
 }
 
-func splitLogsAndSpans(data []map[string]interface{}) ([]logModel.LogData, []spanModel.SpanData) {
-	logs, spans := make([]logModel.LogData, 0), make([]spanModel.SpanData, 0)
+func splitLogsAndSpans(data []map[string]interface{}) ([]map[string]interface{}, []map[string]interface{}) {
+	logs, spans := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 	for _, item := range data {
 		dataType := detectDataType(item)
 		if dataType == model.Log {

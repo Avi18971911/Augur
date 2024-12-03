@@ -15,7 +15,7 @@ import (
 const lpTimeOut = 10 * time.Second
 
 type LogClusterService interface {
-	ClusterLog(ctx context.Context, untypedLog model.LogData) ([]string, []model.LogClusterIdField, error)
+	ClusterLog(ctx context.Context, log model.LogEntry) ([]string, []model.LogClusterIdField, error)
 }
 
 type LogClusterServiceImpl struct {
@@ -58,13 +58,9 @@ func getLogsWithClusterId(logs []model.LogEntry) []model.LogEntry {
 
 func (lps *LogClusterServiceImpl) ClusterLog(
 	ctx context.Context,
-	untypedLog model.LogData,
+	log model.LogEntry,
 ) ([]string, []model.LogClusterIdField, error) {
-	typedLog, err := typeLog(untypedLog)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to type log: %w", err)
-	}
-	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(typedLog.Service, typedLog.Message))
+	queryBody, err := json.Marshal(moreLikeThisQueryBuilder(log.Service, log.Message))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
 	}
@@ -79,7 +75,7 @@ func (lps *LogClusterServiceImpl) ClusterLog(
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to convert search results to log documents: %w", err)
 	}
-	totalLogs = append(totalLogs, typedLog)
+	totalLogs = append(totalLogs, log)
 
 	parsedLogs := getLogsWithClusterId(totalLogs)
 
@@ -91,7 +87,6 @@ func (lps *LogClusterServiceImpl) ClusterLog(
 			"cluster_id": log.ClusterId,
 		}
 	}
-
 	return ids, fieldList, nil
 }
 
@@ -152,12 +147,4 @@ func ConvertToLogDocuments(data []map[string]interface{}) ([]model.LogEntry, err
 	}
 
 	return docs, nil
-}
-
-func typeLog(log model.LogData) (model.LogEntry, error) {
-	typedLog, err := ConvertToLogDocuments([]map[string]interface{}{log})
-	if err != nil {
-		return model.LogEntry{}, err
-	}
-	return typedLog[0], nil
 }

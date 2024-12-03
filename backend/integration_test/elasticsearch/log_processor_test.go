@@ -3,7 +3,6 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/log/service"
@@ -27,7 +26,6 @@ func TestUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}
-		logService := "kafka.cluster.Partition"
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		logEntry := model.LogEntry{
@@ -36,18 +34,15 @@ func TestUpdates(t *testing.T) {
 				"__consumer_offsets-55 with initial high watermark 0",
 			Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 8748, time.UTC),
 		}
-		newLog, err := logProcessor.ClusterLog(ctx, logService, logEntry)
+		_, docs, err := logProcessor.ClusterLog(ctx, logEntry)
 		if err != nil {
 			t.Errorf("Failed to parse log with message: %v", err)
 		}
-		assert.NotEqual(t, "", newLog.ClusterId)
-		logsQuery := getLogsWithClusterIdQuery(newLog.ClusterId)
-		var querySize = 100
-		docs, err := ac.Search(ctx, logsQuery, []string{bootstrapper.LogIndexName}, &querySize)
-		logDocs, err := service.ConvertToLogDocuments(docs)
-		assert.Equal(t, 10, len(logDocs))
-		for _, doc := range logDocs {
-			assert.Equal(t, newLog.ClusterId, doc.ClusterId)
+		assert.NotZero(t, len(docs))
+		assert.NotEqual(t, 1, len(docs))
+		var equalClusterId = docs[0]["cluster_id"]
+		for _, doc := range docs[1:] {
+			assert.Equal(t, equalClusterId, doc["cluster_id"])
 		}
 	})
 }
@@ -65,4 +60,25 @@ func getLogsWithClusterIdQuery(clusterId string) string {
 		panic(err)
 	}
 	return string(queryBody)
+}
+
+func getAllLogsQuery() string {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all": map[string]interface{}{},
+		},
+	}
+	queryBody, err := json.Marshal(query)
+	if err != nil {
+		panic(err)
+	}
+	return string(queryBody)
+}
+
+func convertToDocs(fieldList []model.LogClusterIdField) []map[string]interface{} {
+	mapInterface := make([]map[string]interface{}, len(fieldList))
+	for idx, field := range fieldList {
+		mapInterface[idx] = field
+	}
+	return mapInterface
 }

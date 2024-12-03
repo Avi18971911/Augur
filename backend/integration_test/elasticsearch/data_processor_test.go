@@ -10,7 +10,9 @@ import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
+	logService "github.com/Avi18971911/Augur/pkg/log/service"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
+	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -25,9 +27,11 @@ func TestDataProcessor(t *testing.T) {
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
 	cs := countService.NewCountService(ac, logger)
+	lcs := logService.NewLogClusterService(ac, logger)
+	scs := spanService.NewSpanClusterService(ac, logger)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, lcs, scs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -117,7 +121,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, lcs, scs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -207,7 +211,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, lcs, scs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -250,7 +254,7 @@ func TestDataProcessor(t *testing.T) {
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := service.NewDataProcessorService(ac, cs, logger)
+			dp := service.NewDataProcessorService(ac, cs, lcs, scs, logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -284,7 +288,7 @@ func TestDataProcessor(t *testing.T) {
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, lcs, scs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -420,7 +424,7 @@ func createSpans(
 			ActionName:   "actionName",
 			SpanKind:     "spanKind",
 			ClusterEvent: fmt.Sprintf(
-				"service=%s,operation=%s,kind=%s", "serviceName", "actionName", "spanKind",
+				"service=%s,operation=%s,kind=%s,number=%d", "serviceName", "actionName", "spanKind", i,
 			),
 			ClusterId: fmt.Sprintf("cluster-%d", i+1),
 			Attributes: map[string]string{

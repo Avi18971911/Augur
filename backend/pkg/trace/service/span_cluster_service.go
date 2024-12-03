@@ -15,7 +15,7 @@ import (
 const scTimeOut = 10 * time.Second
 
 type SpanClusterService interface {
-	ClusterSpan(ctx context.Context, span model.SpanData) ([]string, []model.SpanClusterIdField, error)
+	ClusterSpan(ctx context.Context, span model.Span) ([]string, []model.SpanClusterIdField, error)
 }
 
 type SpanClusterServiceImpl struct {
@@ -65,9 +65,8 @@ func getSpansWithClusterId(spans []model.Span) []model.Span {
 
 func (scs *SpanClusterServiceImpl) ClusterSpan(
 	ctx context.Context,
-	untypedSpan model.SpanData,
+	typedSpan model.Span,
 ) ([]string, []model.SpanClusterIdField, error) {
-	typedSpan, err := typeSpan(untypedSpan)
 	queryBody, err := json.Marshal(equalityQueryBuilder(typedSpan.ClusterEvent))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to marshal query body for elasticsearch query: %w", err)
@@ -221,12 +220,4 @@ func typeAttributes(attributes map[string]interface{}) map[string]string {
 		typedAttributes[k] = fmt.Sprintf("%v", v)
 	}
 	return typedAttributes
-}
-
-func typeSpan(span model.SpanData) (model.Span, error) {
-	typedSpan, err := ConvertToSpanDocuments([]map[string]interface{}{span})
-	if err != nil {
-		return model.Span{}, fmt.Errorf("failed to convert span to span document: %w", err)
-	}
-	return typedSpan[0], nil
 }

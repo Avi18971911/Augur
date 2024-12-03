@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
+	"github.com/Avi18971911/Augur/pkg/log/service"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
+	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 )
 
 func (dps *DataProcessorService) clusterData(
@@ -30,18 +32,22 @@ func (dps *DataProcessorService) clusterData(
 
 func (dps *DataProcessorService) clusterLogs(
 	ctx context.Context,
-	logs []logModel.LogData,
+	logs []map[string]interface{},
 ) error {
+	typedLogs, err := service.ConvertToLogDocuments(logs)
+	if err != nil {
+		return fmt.Errorf("failed to convert logs to typed logs: %w", err)
+	}
 	const clusterErrorMsg = "Failed to cluster log"
 	resultChannel := getResultsWithWorkers[
-		logModel.LogData,
+		logModel.LogEntry,
 		*logModel.LogClusterResult,
 	](
 		ctx,
-		logs,
+		typedLogs,
 		func(
 			ctx context.Context,
-			log logModel.LogData,
+			log logModel.LogEntry,
 		) (*logModel.LogClusterResult, string, error) {
 			ids, newClusterIds, err := dps.lcs.ClusterLog(ctx, log)
 			if err != nil {
@@ -56,14 +62,14 @@ func (dps *DataProcessorService) clusterLogs(
 		dps.logger,
 	)
 
-	logIds, logClusterIds := unpackLogClusterResults(resultChannel, len(logs))
+	logIds, logClusterIds := unpackLogClusterResults(resultChannel)
 	if logIds == nil || len(logIds) == 0 {
 		return nil
 	}
 
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkUpdate(updateCtx, logIds, logClusterIds, bootstrapper.LogIndexName)
+	err = dps.ac.BulkUpdate(updateCtx, logIds, logClusterIds, bootstrapper.LogIndexName)
 	if err != nil {
 		return fmt.Errorf("failed to bulk update log clusters: %w", err)
 	}
@@ -72,16 +78,15 @@ func (dps *DataProcessorService) clusterLogs(
 
 func unpackLogClusterResults(
 	resultChannel chan *logModel.LogClusterResult,
-	logCount int,
 ) ([]string, []map[string]interface{}) {
-	logIds, logClusterIds := make([]string, logCount), make([]map[string]interface{}, logCount)
+	logIds, logClusterIds := make([]string, 0), make([]map[string]interface{}, 0)
 	for result := range resultChannel {
 		if result != nil {
-			for i, id := range result.Ids {
-				logIds[i] = id
+			for _, id := range result.Ids {
+				logIds = append(logIds, id)
 			}
-			for i, clusterId := range result.NewClusterIdDocuments {
-				logClusterIds[i] = clusterId
+			for _, clusterId := range result.NewClusterIdDocuments {
+				logClusterIds = append(logClusterIds, clusterId)
 			}
 		}
 	}
@@ -90,18 +95,22 @@ func unpackLogClusterResults(
 
 func (dps *DataProcessorService) clusterSpans(
 	ctx context.Context,
-	spans []spanModel.SpanData,
+	spans []map[string]interface{},
 ) error {
+	typedSpans, err := spanService.ConvertToSpanDocuments(spans)
+	if err != nil {
+		return fmt.Errorf("failed to convert spans to typed spans: %w", err)
+	}
 	const clusterErrorMsg = "Failed to cluster span"
 	resultChannel := getResultsWithWorkers[
-		spanModel.SpanData,
+		spanModel.Span,
 		*spanModel.SpanClusterResult,
 	](
 		ctx,
-		spans,
+		typedSpans,
 		func(
 			ctx context.Context,
-			span spanModel.SpanData,
+			span spanModel.Span,
 		) (*spanModel.SpanClusterResult, string, error) {
 			ids, newClusterIds, err := dps.scs.ClusterSpan(ctx, span)
 			if err != nil {
@@ -116,14 +125,14 @@ func (dps *DataProcessorService) clusterSpans(
 		dps.logger,
 	)
 
-	spanIds, spanClusterIds := unpackSpanClusterResults(resultChannel, len(spans))
+	spanIds, spanClusterIds := unpackSpanClusterResults(resultChannel)
 	if spanIds == nil || len(spanIds) == 0 {
 		return nil
 	}
 
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkUpdate(updateCtx, spanIds, spanClusterIds, bootstrapper.SpanIndexName)
+	err = dps.ac.BulkUpdate(updateCtx, spanIds, spanClusterIds, bootstrapper.SpanIndexName)
 	if err != nil {
 		return fmt.Errorf("failed to bulk update span clusters: %w", err)
 	}
@@ -132,16 +141,15 @@ func (dps *DataProcessorService) clusterSpans(
 
 func unpackSpanClusterResults(
 	resultChannel chan *spanModel.SpanClusterResult,
-	spanCount int,
 ) ([]string, []map[string]interface{}) {
-	spanIds, spanClusterIds := make([]string, spanCount), make([]map[string]interface{}, spanCount)
+	spanIds, spanClusterIds := make([]string, 0), make([]map[string]interface{}, 0)
 	for result := range resultChannel {
 		if result != nil {
-			for i, id := range result.Ids {
-				spanIds[i] = id
+			for _, id := range result.Ids {
+				spanIds = append(spanIds, id)
 			}
-			for i, clusterId := range result.NewClusterIdDocuments {
-				spanClusterIds[i] = clusterId
+			for _, clusterId := range result.NewClusterIdDocuments {
+				spanClusterIds = append(spanClusterIds, clusterId)
 			}
 		}
 	}

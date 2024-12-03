@@ -2,8 +2,6 @@ package model
 
 import "time"
 
-type SpanData map[string]interface{}
-
 type Span struct {
 	Id           string            `json:"_id,omitempty"`
 	CreatedAt    time.Time         `json:"created_at"`
