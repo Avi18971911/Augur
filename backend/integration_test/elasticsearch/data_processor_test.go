@@ -77,7 +77,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countService.Bucket{100}
+		buckets := []countModel.Bucket{100}
 		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
@@ -167,7 +167,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countService.Bucket{100}
+		buckets := []countModel.Bucket{100}
 		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
@@ -228,7 +228,7 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
-		buckets := []countService.Bucket{countService.Bucket(overlapSize * 2)}
+		buckets := []countModel.Bucket{countModel.Bucket(overlapSize * 2)}
 		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
@@ -264,7 +264,7 @@ func TestDataProcessor(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			buckets := []countService.Bucket{countService.Bucket(overlapSize)}
+			buckets := []countModel.Bucket{countModel.Bucket(overlapSize)}
 			_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
 
 			stringQuery, err := json.Marshal(getAllQuery())
@@ -327,7 +327,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countService.Bucket{100}
+		buckets := []countModel.Bucket{100}
 		_, errors := dp.ProcessData(
 			context.Background(),
 			buckets,

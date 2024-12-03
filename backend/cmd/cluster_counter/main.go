@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
@@ -48,7 +49,7 @@ func main() {
 	err = deleteAllDocuments(es)
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cs := countService.NewCountService(ac, logger)
-	buckets := []countService.Bucket{100}
+	buckets := []countModel.Bucket{100}
 	indices := []string{bootstrapper.SpanIndexName}
 
 	start := time.Now()

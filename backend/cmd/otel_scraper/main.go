@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
@@ -107,7 +108,7 @@ func main() {
 		for range ticker.C {
 			_, errors := dp.ProcessData(
 				context.Background(),
-				[]count.Bucket{100},
+				[]countModel.Bucket{100},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
 			for _, err := range errors {
 				logger.Error("Failed to process data", zap.Error(err))

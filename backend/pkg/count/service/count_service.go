@@ -25,7 +25,7 @@ func NewCountService(ac client.AugurClient, logger *zap.Logger) *CountService {
 	}
 }
 
-func getTimeRange(timestamp time.Time, bucket Bucket) (time.Time, time.Time) {
+func getTimeRange(timestamp time.Time, bucket model.Bucket) (time.Time, time.Time) {
 	fromTime := timestamp.Add(-time.Millisecond * time.Duration(bucket/2))
 	toTime := timestamp.Add(time.Millisecond * time.Duration(bucket/2))
 	return fromTime, toTime
@@ -36,9 +36,9 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	clusterId string,
 	timeInfo model.TimeInfo,
 	indices []string,
-	buckets []Bucket,
+	buckets []model.Bucket,
 ) (*model.GetCountAndUpdateQueryDetails, error) {
-	coClusterIds, err := cs.countOccurrencesAndCoOccurrencesByCoClusterId(
+	coClusterMapCount, err := cs.countOccurrencesAndCoOccurrencesByCoClusterId(
 		ctx,
 		clusterId,
 		timeInfo,
@@ -48,8 +48,8 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	if err != nil {
 		return nil, err
 	}
-	metaMapList, documentMapList := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, coClusterIds)
-	increaseForMissesInput := getIncrementOccurrencesForMissesInput(clusterId, coClusterIds)
+	metaMapList, documentMapList := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, coClusterMapCount)
+	increaseForMissesInput := getIncrementOccurrencesForMissesInput(clusterId, coClusterMapCount)
 	result := &model.GetCountAndUpdateQueryDetails{
 		IncreaseIncrementForMissesInput: increaseForMissesInput,
 		MetaMapList:                     metaMapList,
@@ -60,24 +60,26 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 
 func getIncrementOccurrencesForMissesInput(
 	clusterId string,
-	coOccurringClusterIds []string,
+	coClusterToExcludeMapCount map[string]model.CountInfo,
 ) model.IncreaseMissesInput {
+	coClusterIdsToExclude := getCoClusterIdsFromMap(coClusterToExcludeMapCount)
 	return model.IncreaseMissesInput{
-		ClusterId:             clusterId,
-		CoClusterIdsToExclude: coOccurringClusterIds,
+		ClusterId:                 clusterId,
+		CoClusterDetailsToExclude: coClusterIdsToExclude,
 	}
 }
 
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
-	coClusterIds []string,
+	coClusterMapCount map[string]model.CountInfo,
 ) ([]client.MetaMap, []client.DocumentMap) {
-	metaMap := make([]client.MetaMap, len(coClusterIds))
-	updateMap := make([]client.DocumentMap, len(coClusterIds))
+	metaMap := make([]client.MetaMap, len(coClusterMapCount))
+	updateMap := make([]client.DocumentMap, len(coClusterMapCount))
 	i := 0
-	for _, otherClusterId := range coClusterIds {
+	for otherClusterId, coClusterDetails := range coClusterMapCount {
 		compositeId := getIDFromConstituents(clusterId, otherClusterId)
-		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId)
+		newValue := coClusterDetails.TotalTDOA / float64(coClusterDetails.Occurrences) // Calculate the average of the matching coClusters
+		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, newValue)
 		metaMap[i] = meta
 		updateMap[i] = update
 		i++
@@ -90,9 +92,9 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 	clusterId string,
 	timeInfo model.TimeInfo,
 	indices []string,
-	buckets []Bucket,
-) ([]string, error) {
-	var coOccurringClusterIds = make([]string, 0)
+	buckets []model.Bucket,
+) (map[string]model.CountInfo, error) {
+	var coClusterInfoMap = make(map[string]model.CountInfo)
 	for _, bucket := range buckets {
 		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
 		if err != nil {
@@ -113,9 +115,9 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 			)
 			return nil, err
 		}
-		coOccurringClusterIds = append(coOccurringClusterIds, getCoOccurringClusterIds(coOccurringClusters)...)
+		err = addCoOccurringClustersToCoClusterInfoMap(coClusterInfoMap, coOccurringClusters, timeInfo)
 	}
-	return coOccurringClusterIds, nil
+	return coClusterInfoMap, nil
 }
 
 func (cs *CountService) getCoOccurringCluster(
@@ -124,7 +126,7 @@ func (cs *CountService) getCoOccurringCluster(
 	indices []string,
 	fromTime time.Time,
 	toTime time.Time,
-) ([]model.Cluster, error) {
+) ([]model.ClusterQueryResult, error) {
 	queryCtx, cancel := context.WithTimeout(ctx, csTimeOut)
 	defer cancel()
 	queryBody, err := json.Marshal(buildGetCoOccurringClustersQuery(clusterId, fromTime, toTime))
@@ -181,8 +183,8 @@ func (cs *CountService) GetIncrementMissesQueryInfo(
 func (cs *CountService) getNonMatchingCoClusterIds(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
-) ([]model.Cluster, error) {
-	clusterId, coClustersToExclude := input.ClusterId, input.CoClusterIdsToExclude
+) ([]model.ClusterQueryResult, error) {
+	clusterId, coClustersToExclude := input.ClusterId, input.CoClusterDetailsToExclude
 	if coClustersToExclude == nil {
 		coClustersToExclude = []string{}
 	}
@@ -217,7 +219,7 @@ func (cs *CountService) getNonMatchingCoClusterIds(
 
 func (cs *CountService) getIncrementMissesDetails(
 	clusterId string,
-	missingCoClusterIds []model.Cluster,
+	missingCoClusterIds []model.ClusterQueryResult,
 ) ([]client.MetaMap, []client.DocumentMap) {
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
@@ -233,32 +235,73 @@ func (cs *CountService) getIncrementMissesDetails(
 	return metaMap, updateMap
 }
 
-func getCoOccurringClusterIds(clusters []model.Cluster) []string {
-	coOccurringClustersIds := make([]string, len(clusters))
-	for i, cluster := range clusters {
-		coOccurringClustersIds[i] = cluster.ClusterId
+func addCoOccurringClustersToCoClusterInfoMap(
+	coClusterInfoMap map[string]model.CountInfo,
+	clusters []model.ClusterQueryResult,
+	timeInfo model.TimeInfo,
+) error {
+	for _, cluster := range clusters {
+		TDOA, err := getTDOA(cluster, timeInfo)
+		if err != nil {
+			return fmt.Errorf("error calculating TDOA: %w", err)
+		}
+		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
+			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
+				Occurrences: 1,
+				TotalTDOA:   TDOA,
+			}
+		} else {
+			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
+				Occurrences: coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
+				TotalTDOA:   coClusterInfoMap[cluster.ClusterId].TotalTDOA + TDOA,
+			}
+		}
 	}
-	return coOccurringClustersIds
+	return nil
 }
 
-func convertDocsToClusters(res []map[string]interface{}) ([]model.Cluster, error) {
-	clusters := make([]model.Cluster, len(res))
+func convertDocsToClusters(res []map[string]interface{}) ([]model.ClusterQueryResult, error) {
+	clusters := make([]model.ClusterQueryResult, len(res))
 	for i, hit := range res {
-		doc := model.Cluster{}
+		doc := model.ClusterQueryResult{}
 		if clusterId, ok := hit["cluster_id"].(string); !ok {
 			return nil, fmt.Errorf("error parsing cluster_id")
 		} else {
 			doc.ClusterId = clusterId
+		}
+		if startTime, ok := hit["start_time"].(string); ok && hit["end_time"] != nil {
+			coClusterStartTime, err := client.NormalizeTimestampToNanoseconds(startTime)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing start_time")
+			}
+			coClusterEndTime, err := client.NormalizeTimestampToNanoseconds(hit["end_time"].(string))
+			if err != nil {
+				return nil, fmt.Errorf("error parsing end_time")
+			}
+			doc.SpanResult = &model.SpanQueryResult{
+				StartTime: coClusterStartTime,
+				EndTime:   coClusterEndTime,
+			}
+		} else if timestamp, ok := hit["timestamp"].(string); ok {
+			coClusterTimestamp, err := client.NormalizeTimestampToNanoseconds(timestamp)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing timestamp")
+			}
+			doc.LogResult = &model.LogQueryResult{
+				Timestamp: coClusterTimestamp,
+			}
+		} else {
+			return nil, fmt.Errorf("error parsing start_time or timestamp")
 		}
 		clusters[i] = doc
 	}
 	return clusters, nil
 }
 
-func convertDocsToCoClusters(res []map[string]interface{}) ([]model.Cluster, error) {
-	clusters := make([]model.Cluster, len(res))
+func convertDocsToCoClusters(res []map[string]interface{}) ([]model.ClusterQueryResult, error) {
+	clusters := make([]model.ClusterQueryResult, len(res))
 	for i, hit := range res {
-		doc := model.Cluster{}
+		doc := model.ClusterQueryResult{}
 		if coClusterId, ok := hit["co_cluster_id"].(string); !ok {
 			return nil, fmt.Errorf("error parsing co_cluster_id")
 		} else {
@@ -269,7 +312,7 @@ func convertDocsToCoClusters(res []map[string]interface{}) ([]model.Cluster, err
 	return clusters, nil
 }
 
-func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket Bucket) (model.CalculatedTimeInfo, error) {
+func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
 		return model.CalculatedTimeInfo{
 			FromTime: timeInfo.SpanInfo.FromTime.Add(-time.Millisecond * time.Duration(bucket/2)),
@@ -288,4 +331,32 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket Bucket) (model.Calcul
 
 func getIDFromConstituents(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
+}
+
+func getTDOA(coCluster model.ClusterQueryResult, clusterTimeInfo model.TimeInfo) (float64, error) {
+	var coClusterTime time.Time
+	if coCluster.SpanResult != nil {
+		coClusterTime = coCluster.SpanResult.StartTime
+	} else if coCluster.LogResult != nil {
+		coClusterTime = coCluster.LogResult.Timestamp
+	} else {
+		return 0, fmt.Errorf("coCluster.spanResult or coCluster.logResult is required")
+	}
+
+	if clusterTimeInfo.SpanInfo != nil {
+		return coClusterTime.Sub(clusterTimeInfo.SpanInfo.FromTime).Seconds(), nil
+	} else if clusterTimeInfo.LogInfo != nil {
+		return coClusterTime.Sub(clusterTimeInfo.LogInfo.Timestamp).Seconds(), nil
+	}
+	return 0, fmt.Errorf("clusterTimeInfo.spanInfo or clusterTimeInfo.logInfo is required")
+}
+
+func getCoClusterIdsFromMap(coClusterMapCount map[string]model.CountInfo) []string {
+	coClusterIds := make([]string, len(coClusterMapCount))
+	i := 0
+	for coClusterId := range coClusterMapCount {
+		coClusterIds[i] = coClusterId
+		i++
+	}
+	return coClusterIds
 }

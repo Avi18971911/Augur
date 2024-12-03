@@ -24,6 +24,12 @@ var countIndex = map[string]interface{}{
 			"co_occurrences": map[string]interface{}{
 				"type": "integer",
 			},
+			"mean_TDOA": map[string]interface{}{
+				"type": "float",
+			},
+			"variance_TDOA": map[string]interface{}{
+				"type": "float",
+			},
 		},
 	},
 }

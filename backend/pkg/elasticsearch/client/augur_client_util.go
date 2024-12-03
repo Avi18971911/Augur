@@ -63,6 +63,6 @@ func NormalizeTimestampToNanoseconds(timestamp string) (time.Time, error) {
 		timestamp += "Z"
 	}
 
-	layout := "2006-01-02T15:04:05.000000000Z"
+	layout := time.RFC3339Nano
 	return time.Parse(layout, timestamp)
 }
