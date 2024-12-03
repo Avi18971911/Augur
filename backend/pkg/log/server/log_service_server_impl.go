@@ -38,7 +38,7 @@ func (lss *LogServiceServerImpl) Export(
 		// Ignore resource logs for now
 		for _, scopeLog := range resourceLogs.ScopeLogs {
 			serviceName := scopeLog.Scope.Name
-			typedLogs := make([]model.LogEntry, 0, len(scopeLog.LogRecords))
+			typedLogs := make([]model.LogEntry, len(scopeLog.LogRecords))
 			for i, log := range scopeLog.LogRecords {
 				typedLogs[i] = typeLog(log, serviceName)
 			}
