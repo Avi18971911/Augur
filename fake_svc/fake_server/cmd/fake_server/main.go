@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 	"log"
 	"net/http"
 	"os"
@@ -41,6 +42,7 @@ func initResource() *sdkresource.Resource {
 	initResourcesOnce.Do(func() {
 		extraResources, _ := sdkresource.New(
 			context.Background(),
+			sdkresource.WithAttributes(semconv.ServiceNameKey.String("fake-server")),
 			sdkresource.WithOS(),
 			sdkresource.WithProcess(),
 			sdkresource.WithContainer(),
@@ -84,12 +86,12 @@ func main() {
 		logger.Fatalf("Failed to create log directory %s: %v", logDir, err)
 	}
 
-	logFile, err := os.OpenFile(logDir+"/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile(logDir+"/fake-server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		logger.Fatalf("Failed to open log file: %v", err)
 	}
 	defer logFile.Close()
-	logger.Info("Log directory created. Going to write to the file instead.")
+	logger.Infof("Log directory created at %s. Going to write to the file instead.", logDir)
 	logger.SetOutput(logFile)
 
 	tp := initTracerProvider()
@@ -98,7 +100,7 @@ func main() {
 			logger.Errorf("Error shutting down tracer provider: %v", err)
 		}
 	}()
-	tracer := tp.Tracer("fake_server")
+	tracer := tp.Tracer("fake-server")
 
 	ar := repository.CreateNewFakeAccountRepository(logger)
 	tra := transactional.NewFakeTransactional(logger)

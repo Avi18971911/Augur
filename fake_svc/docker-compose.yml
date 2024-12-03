@@ -12,6 +12,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317  
       - LOGS_API_ENDPOINT=http://otel-collector:3100  
       - OTEL_SERVICE_NAME=fake-service
+      - OTEL_SERVICE_NAME=fake-server
 
   loki:
     image: grafana/loki:3.1.1
@@ -50,11 +51,35 @@ services:
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_RESOURCE_ATTRIBUTES
-      - OTEL_SERVICE_NAME=fakeserver
       - LOG_DIR=/app/logs
 
+  augur:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    depends_on:
+      - elasticsearch
+    ports:
+      - "${OTEL_COLLECTOR_PORT_GRPC}"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node           # Single-node mode for local setup
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g           # Set JVM heap size to 1GB
+      - xpack.security.enabled=false         # Disable security for simplicity (only for local dev)
+    ports:
+      - "9200:9200"                          # Expose HTTP API on port 9200
+      - "9300:9300"                          # Expose transport API on port 9300
 
 volumes:
   grafana-storage:
   otel-logs:
     driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./otel-logs
