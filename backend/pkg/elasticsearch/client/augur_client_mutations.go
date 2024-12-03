@@ -85,7 +85,7 @@ func (a *AugurClientImpl) BulkIndex(
 	ctx context.Context,
 	metaInfo []MetaMap,
 	documentInfo []DocumentMap,
-	index string,
+	index *string,
 ) error {
 	var buf bytes.Buffer
 	for i, d := range documentInfo {
@@ -112,10 +112,10 @@ func (a *AugurClientImpl) BulkIndex(
 	}
 	var res *esapi.Response
 	var err error
-	if len(index) > 0 {
+	if index != nil {
 		res, err = a.es.Bulk(
 			bytes.NewReader(buf.Bytes()),
-			a.es.Bulk.WithIndex(index),
+			a.es.Bulk.WithIndex(*index),
 			a.es.Bulk.WithContext(ctx),
 			a.es.Bulk.WithRefresh(a.refreshRate),
 		)
@@ -140,7 +140,7 @@ func (a *AugurClientImpl) Index(
 	ctx context.Context,
 	metaInfo MetaMap,
 	documentInfo DocumentMap,
-	index string,
+	index *string,
 ) error {
 	if metaInfo == nil {
 		return a.BulkIndex(ctx, nil, []DocumentMap{documentInfo}, index)

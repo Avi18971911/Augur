@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var indices = []string{bootstrapper.LogIndexName, bootstrapper.CountIndexName}
+var indices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
 func TestLogCount(t *testing.T) {
 	if es == nil {
@@ -39,11 +39,11 @@ func TestLogCount(t *testing.T) {
 			Timestamp: initialTime,
 		}
 		logsOfDifferentTime := makeLogsOfSameClusterId("differentTime", initialTime.Add(time.Second), numWithinBucket)
-		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime)
+		err = loadDataIntoElasticsearch(ac, logsOfDifferentTime, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog}, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
@@ -60,7 +60,8 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -74,7 +75,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -114,11 +115,11 @@ func TestLogCount(t *testing.T) {
 			initialTime.Add(time.Second*2),
 			numOutsideBucket,
 		)
-		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog}, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadDataIntoElasticsearch(ac, append(logsOfSameTime, logsOfDifferentTime...))
+		err = loadDataIntoElasticsearch(ac, append(logsOfSameTime, logsOfDifferentTime...), bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
@@ -135,7 +136,8 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
 		}
-		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -152,7 +154,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences for misses: %v", err)
 		}
-		err = ac.BulkIndex(secondCtx, missesRes.MetaMapList, missesRes.DocumentMapList, bootstrapper.CountIndexName)
+		err = ac.BulkIndex(secondCtx, missesRes.MetaMapList, missesRes.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -194,11 +196,11 @@ func TestLogCount(t *testing.T) {
 			initialTime.Add(time.Second*2),
 			numOutsideBucket,
 		)
-		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog})
+		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog}, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		err = loadDataIntoElasticsearch(ac, append(logsOfSameTime, logsOfDifferentTime...))
+		err = loadDataIntoElasticsearch(ac, append(logsOfSameTime, logsOfDifferentTime...), bootstrapper.LogIndexName)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
@@ -252,11 +254,13 @@ func TestSpanCount(t *testing.T) {
 			initialTime.Add(time.Second*9),
 			numOutsideBucket,
 		)
-		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan})
+		err = loadDataIntoElasticsearch(ac, []spanModel.Span{newSpan}, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Error("Failed to load span into elasticsearch")
 		}
-		err = loadDataIntoElasticsearch(ac, append(overlappingSpans, nonOverlappingSpans...))
+		err = loadDataIntoElasticsearch(
+			ac, append(overlappingSpans, nonOverlappingSpans...), bootstrapper.SpanIndexName,
+		)
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
@@ -277,7 +281,8 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -292,7 +297,7 @@ func TestSpanCount(t *testing.T) {
 			indices,
 			buckets,
 		)
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -340,7 +345,11 @@ func TestAlgorithm(t *testing.T) {
 			ClusterId: "clusterId2",
 			Timestamp: initialTime.Add(time.Second),
 		}
-		err = loadDataIntoElasticsearch(ac, []model.LogEntry{newLog, logWithClusterId1, logWithClusterId2})
+		err = loadDataIntoElasticsearch(
+			ac,
+			[]model.LogEntry{newLog, logWithClusterId1, logWithClusterId2},
+			bootstrapper.LogIndexName,
+		)
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
@@ -357,7 +366,8 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, bootstrapper.CountIndexName)
+		index := bootstrapper.CountIndexName
+		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -378,20 +388,6 @@ func TestAlgorithm(t *testing.T) {
 		slices.Sort(expectedResult)
 		assert.EqualValues(t, expectedResult, coClusters)
 	})
-}
-
-func loadDataIntoElasticsearch[Data any](ac client.AugurClient, data []Data) error {
-	metaMap, dataMap, err := client.ToMetaAndDataMap(data)
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = ac.BulkIndex(ctx, metaMap, dataMap, bootstrapper.LogIndexName)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func makeLogsOfSameClusterId(clusterId string, timestamp time.Time, numberOfLogs int) []model.LogEntry {

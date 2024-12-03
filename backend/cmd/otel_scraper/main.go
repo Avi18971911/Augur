@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
+	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"net"
+	"time"
 
 	"github.com/Avi18971911/Augur/pkg/cache"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
@@ -95,6 +98,22 @@ func main() {
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
+
+	dp := dataProcessor.NewDataProcessorService(ac, countService, logger)
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for range ticker.C {
+			_, errors := dp.ProcessData(
+				context.Background(),
+				[]count.Bucket{100},
+				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
+			for _, err := range errors {
+				logger.Error("Failed to process data", zap.Error(err))
+			}
+		}
+	}()
 
 	if err := srv.Serve(listener); err != nil {
 		logger.Fatal("Failed to serve: %v", zap.Error(err))

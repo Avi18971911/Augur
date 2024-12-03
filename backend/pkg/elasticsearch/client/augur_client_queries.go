@@ -107,12 +107,12 @@ type SearchAfterParams struct {
 
 type SearchAfterResult struct {
 	Success *SearchAfterSuccess
-	Error   *error
+	Error   error
 }
 
 type SearchAfterSuccess struct {
-	CreatedAt time.Time
-	Result    []map[string]interface{}
+	ContinueParams SearchAfterParams
+	Result         []map[string]interface{}
 }
 
 func (a *AugurClientImpl) SearchAfter(
@@ -209,8 +209,10 @@ func (a *AugurClientImpl) SearchAfter(
 			}
 			finalResult := SearchAfterResult{
 				Success: &SearchAfterSuccess{
-					CreatedAt: timestampParsed,
-					Result:    results,
+					ContinueParams: SearchAfterParams{
+						CreatedAt: timestampParsed,
+					},
+					Result: results,
 				},
 			}
 			currentSearchParams = &SearchAfterParams{
@@ -318,6 +320,6 @@ func buildSearchWithPitQuery(
 func createSearchAfterFailure(err error) SearchAfterResult {
 	return SearchAfterResult{
 		Success: nil,
-		Error:   &err,
+		Error:   err,
 	}
 }

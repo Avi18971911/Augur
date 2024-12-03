@@ -176,17 +176,19 @@ func (cs *CountService) GetIncrementMissesQueryInfo(
 		DocumentMapList: documentMapList,
 	}
 	return &result, nil
-
 }
 
 func (cs *CountService) getNonMatchingCoClusterIds(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
 ) ([]model.Cluster, error) {
-	clusterId, listOfCoOccurringClusters := input.ClusterId, input.CoClusterIdsToExclude
+	clusterId, coClustersToExclude := input.ClusterId, input.CoClusterIdsToExclude
+	if coClustersToExclude == nil {
+		coClustersToExclude = []string{}
+	}
 	incrementQuery := buildGetNonMatchedCoClusterIdsQuery(
 		clusterId,
-		listOfCoOccurringClusters,
+		coClustersToExclude,
 	)
 	queryBody, err := json.Marshal(incrementQuery)
 	if err != nil {
