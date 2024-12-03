@@ -38,5 +38,29 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
 
+  augur:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      args:
+        MAIN_DIR: augur
+    depends_on:
+      - elasticsearch
+    ports:
+      - "8080:4317"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g           
+      - xpack.security.enabled=false         
+    ports:
+      - "9200:9200"                          
+      - "9300:9300"                         
+
 volumes:
   grafana-storage:
