@@ -83,10 +83,6 @@ func (scs *SpanClusterServiceImpl) ClusterSpan(
 		return nil, nil, fmt.Errorf("failed to convert search results to untypedSpan documents: %w", err)
 	}
 	totalSpans = append(totalSpans, typedSpan)
-	totalSpansClusterIds := make([]string, len(totalSpans))
-	for i, span := range totalSpans {
-		totalSpansClusterIds[i] = span.ClusterId
-	}
 
 	clusteredSpans := getSpansWithClusterId(totalSpans)
 
