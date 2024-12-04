@@ -1,17 +1,16 @@
 package model
 
-type ClusterInputType string
+type ClusterDataType string
 
 const (
-	LogClusterInputType  ClusterInputType = "log"
-	SpanClusterInputType ClusterInputType = "span"
+	LogClusterInputType  ClusterDataType = "log"
+	SpanClusterInputType ClusterDataType = "span"
 )
 
-type ClusterInput interface {
-	GetClusterId() string
-	SetClusterId(clusterId string)
-	GetType() ClusterInputType
-	GetTextualData() string
-	GetServiceName() string
-	GetId() string
+type ClusterInput struct {
+	ClusterId   string
+	DataType    ClusterDataType
+	TextualData string
+	ServiceName string
+	Id          string
 }

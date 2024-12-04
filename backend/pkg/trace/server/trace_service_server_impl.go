@@ -5,9 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
-	"github.com/Avi18971911/Augur/pkg/trace/service"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
@@ -17,10 +15,8 @@ import (
 
 type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
-	logger         *zap.Logger
-	writeBuffer    write_buffer.DatabaseWriteBuffer[model.Span]
-	clusterService service.SpanClusterService
-	countService   *count.CountService
+	writeBuffer write_buffer.DatabaseWriteBuffer[model.Span]
+	logger      *zap.Logger
 }
 
 func NewTraceServiceServerImpl(
