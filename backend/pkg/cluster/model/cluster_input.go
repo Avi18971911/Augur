@@ -8,7 +8,6 @@ const (
 )
 
 type ClusterInput struct {
-	ClusterId   string
 	DataType    ClusterDataType
 	TextualData string
 	ServiceName string

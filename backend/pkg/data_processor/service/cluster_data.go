@@ -3,66 +3,49 @@ package service
 import (
 	"context"
 	"fmt"
+	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
+	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
-	logModel "github.com/Avi18971911/Augur/pkg/log/model"
-	"github.com/Avi18971911/Augur/pkg/log/service"
-	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
-	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 )
 
 func (dps *DataProcessorService) clusterData(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
 ) error {
-	logsToCluster, spansToCluster := splitLogsAndSpans(clusterOrLogData)
-	if len(logsToCluster) > 0 {
-		err := dps.clusterLogs(ctx, logsToCluster)
-		if err != nil {
-			return fmt.Errorf("failed to cluster logs: %w", err)
-		}
+	clusterInputList, err := getClusterInput(clusterOrLogData)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster input: %w", err)
 	}
-	if len(spansToCluster) > 0 {
-		err := dps.clusterSpans(ctx, spansToCluster)
-		if err != nil {
-			return fmt.Errorf("failed to cluster spans: %w", err)
-		}
-	}
+	clusterIds
 	return nil
 }
 
-func (dps *DataProcessorService) clusterLogs(
+func (dps *DataProcessorService) clusterDataIntoLikeIds(
 	ctx context.Context,
-	logs []map[string]interface{},
+	clusterInputList []clusterModel.ClusterInput,
 ) error {
-	typedLogs, err := service.ConvertToLogDocuments(logs)
-	if err != nil {
-		return fmt.Errorf("failed to convert logs to typed logs: %w", err)
-	}
 	const clusterErrorMsg = "Failed to cluster log"
 	resultChannel := getResultsWithWorkers[
-		logModel.LogEntry,
-		*logModel.LogClusterResult,
+		clusterModel.ClusterInput,
+		[]string,
 	](
 		ctx,
-		typedLogs,
+		clusterInputList,
 		func(
 			ctx context.Context,
-			log logModel.LogEntry,
-		) (*logModel.LogClusterResult, string, error) {
-			ids, newClusterIds, err := dps.lcs.ClusterLog(ctx, log)
+			input clusterModel.ClusterInput,
+		) ([]string, string, error) {
+			ids, err := dps.cls.ClusterData(ctx, input)
 			if err != nil {
 				return nil, clusterErrorMsg, err
 			}
-			return &logModel.LogClusterResult{
-				Ids:                   ids,
-				NewClusterIdDocuments: newClusterIds,
-			}, "", nil
+			return ids, "", nil
 		},
 		workerCount,
 		dps.logger,
 	)
 
-	logIds, logClusterIds := unpackLogClusterResults(resultChannel)
+	logIds, logClusterIds := unionFind(resultChannel)
 	if logIds == nil || len(logIds) == 0 {
 		return nil
 	}
@@ -76,82 +59,112 @@ func (dps *DataProcessorService) clusterLogs(
 	return nil
 }
 
-func unpackLogClusterResults(
-	resultChannel chan *logModel.LogClusterResult,
-) ([]string, []map[string]interface{}) {
-	logIds, logClusterIds := make([]string, 0), make([]map[string]interface{}, 0)
-	for result := range resultChannel {
-		if result != nil {
-			for _, id := range result.Ids {
-				logIds = append(logIds, id)
-			}
-			for _, clusterId := range result.NewClusterIdDocuments {
-				logClusterIds = append(logClusterIds, clusterId)
-			}
-		}
-	}
-	return logIds, logClusterIds
-}
-
-func (dps *DataProcessorService) clusterSpans(
-	ctx context.Context,
-	spans []map[string]interface{},
-) error {
-	typedSpans, err := spanService.ConvertToSpanDocuments(spans)
-	if err != nil {
-		return fmt.Errorf("failed to convert spans to typed spans: %w", err)
-	}
-	const clusterErrorMsg = "Failed to cluster span"
-	resultChannel := getResultsWithWorkers[
-		spanModel.Span,
-		*spanModel.SpanClusterResult,
-	](
-		ctx,
-		typedSpans,
-		func(
-			ctx context.Context,
-			span spanModel.Span,
-		) (*spanModel.SpanClusterResult, string, error) {
-			ids, newClusterIds, err := dps.scs.ClusterSpan(ctx, span)
+func getClusterInput(data []map[string]interface{}) ([]clusterModel.ClusterInput, error) {
+	clusterInputList := make([]clusterModel.ClusterInput, len(data))
+	for i, item := range data {
+		dataType := detectDataType(item)
+		if dataType == model.Log {
+			clusterInput, err := getLogClusterDetails(item)
 			if err != nil {
-				return nil, clusterErrorMsg, err
+				return nil, fmt.Errorf("failed to get log cluster details: %w", err)
 			}
-			return &spanModel.SpanClusterResult{
-				Ids:                   ids,
-				NewClusterIdDocuments: newClusterIds,
-			}, "", nil
-		},
-		workerCount,
-		dps.logger,
-	)
-
-	spanIds, spanClusterIds := unpackSpanClusterResults(resultChannel)
-	if spanIds == nil || len(spanIds) == 0 {
-		return nil
+			clusterInputList[i] = clusterInput
+		} else if dataType == model.Span {
+			clusterInput, err := getSpanClusterDetails(item)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get span cluster details: %w", err)
+			}
+			clusterInputList[i] = clusterInput
+		}
 	}
-
-	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
-	defer updateCancel()
-	err = dps.ac.BulkUpdate(updateCtx, spanIds, spanClusterIds, bootstrapper.SpanIndexName)
-	if err != nil {
-		return fmt.Errorf("failed to bulk update span clusters: %w", err)
-	}
-	return nil
+	return clusterInputList, nil
 }
 
-func unpackSpanClusterResults(
-	resultChannel chan *spanModel.SpanClusterResult,
-) ([]string, []map[string]interface{}) {
-	spanIds, spanClusterIds := make([]string, 0), make([]map[string]interface{}, 0)
+func getLogClusterDetails(
+	log map[string]interface{},
+) (clusterModel.ClusterInput, error) {
+	message, ok := log["message"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract message from log")
+	}
+	id, ok := log["id"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract id from log")
+	}
+	serviceName, ok := log["service"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract service name from log")
+	}
+	logClusterInput := clusterModel.ClusterInput{
+		DataType:    clusterModel.LogClusterInputType,
+		TextualData: message,
+		ServiceName: serviceName,
+		Id:          id,
+	}
+	return logClusterInput, nil
+}
+
+func getSpanClusterDetails(
+	span map[string]interface{},
+) (clusterModel.ClusterInput, error) {
+	clusterEvent, ok := span["cluster_event"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract cluster event from span")
+	}
+	id, ok := span["id"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract id from span")
+	}
+	serviceName, ok := span["service_name"].(string)
+	if !ok {
+		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract service name from span")
+	}
+	spanClusterInput := clusterModel.ClusterInput{
+		DataType:    clusterModel.SpanClusterInputType,
+		TextualData: clusterEvent,
+		ServiceName: serviceName,
+		Id:          id,
+	}
+	return spanClusterInput, nil
+}
+
+func unionFind(
+	resultChannel chan []string,
+) map[string]string {
+	unionSet := make(map[string]string)
 	for result := range resultChannel {
 		if result != nil {
-			for _, id := range result.Ids {
-				spanIds = append(spanIds, id)
+			var foundId string
+			for _, id := range result {
+				if _, ok := unionSet[id]; ok {
+					foundId = unionSet[id]
+					break
+				}
 			}
-			for _, clusterId := range result.NewClusterIdDocuments {
-				spanClusterIds = append(spanClusterIds, clusterId)
+			if foundId == "" {
+				foundId = result[0]
+				unionSet[foundId] = "-1"
+			}
+			for _, id := range result {
+				mergeWithId(unionSet, id, foundId)
 			}
 		}
 	}
-	return spanIds, spanClusterIds
+	return unionSet
+}
+
+func mergeWithId(
+	unionSet map[string]string,
+	id string,
+	setId string,
+) string {
+	nextId := unionSet[id]
+	if nextId == "-1" {
+		unionSet[setId] = id
+		return id
+	} else {
+		rootId := mergeWithId(unionSet, nextId, setId)
+		unionSet[id] = rootId
+		return rootId
+	}
 }

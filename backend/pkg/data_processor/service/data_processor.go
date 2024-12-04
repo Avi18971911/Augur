@@ -3,12 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	logService "github.com/Avi18971911/Augur/pkg/log/service"
-	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -23,8 +22,7 @@ var querySize = 10000
 type DataProcessorService struct {
 	ac           client.AugurClient
 	cs           *countService.CountService
-	lcs          logService.LogClusterService
-	scs          spanService.SpanClusterService
+	cls          clusterService.ClusterService
 	logger       *zap.Logger
 	searchParams *client.SearchAfterParams
 }
@@ -32,15 +30,13 @@ type DataProcessorService struct {
 func NewDataProcessorService(
 	ac client.AugurClient,
 	cs *countService.CountService,
-	lcs logService.LogClusterService,
-	scs spanService.SpanClusterService,
+	cls clusterService.ClusterService,
 	logger *zap.Logger,
 ) *DataProcessorService {
 	return &DataProcessorService{
 		ac:           ac,
 		cs:           cs,
-		lcs:          lcs,
-		scs:          scs,
+		cls:          cls,
 		logger:       logger,
 		searchParams: nil,
 	}
@@ -164,19 +160,6 @@ func getResultsWithWorkers[
 	}()
 
 	return resultChannel
-}
-
-func splitLogsAndSpans(data []map[string]interface{}) ([]map[string]interface{}, []map[string]interface{}) {
-	logs, spans := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
-	for _, item := range data {
-		dataType := detectDataType(item)
-		if dataType == model.Log {
-			logs = append(logs, item)
-		} else if dataType == model.Span {
-			spans = append(spans, item)
-		}
-	}
-	return logs, spans
 }
 
 func detectDataType(data map[string]interface{}) model.DataType {
