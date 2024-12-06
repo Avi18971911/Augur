@@ -1,18 +1,27 @@
 package service
 
-func equalityQueryBuilder(phrase string) map[string]interface{} {
+func equalityQueryBuilder(id, phrase string) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
-			"term": map[string]interface{}{
-				"cluster_event": map[string]interface{}{
-					"value": phrase,
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"term": map[string]interface{}{
+						"cluster_event": map[string]interface{}{
+							"value": phrase,
+						},
+					},
+				},
+				"must_not": map[string]interface{}{
+					"term": map[string]interface{}{
+						"_id": id,
+					},
 				},
 			},
 		},
 	}
 }
 
-func moreLikeThisQueryBuilder(service string, phrase string) map[string]interface{} {
+func moreLikeThisQueryBuilder(id, service, phrase string) map[string]interface{} {
 	// more_like_this: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html
 	// bool: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
 	return map[string]interface{}{
@@ -31,6 +40,13 @@ func moreLikeThisQueryBuilder(service string, phrase string) map[string]interfac
 					{
 						"term": map[string]interface{}{
 							"service": service,
+						},
+					},
+				},
+				"must_not": []map[string]interface{}{
+					{
+						"term": map[string]interface{}{
+							"_id": id,
 						},
 					},
 				},

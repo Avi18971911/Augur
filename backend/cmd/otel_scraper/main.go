@@ -2,19 +2,18 @@ package main
 
 import (
 	"context"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	"net"
 	"time"
 
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
-	"github.com/Avi18971911/Augur/pkg/log/service"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
 	"github.com/elastic/go-elasticsearch/v8"
@@ -46,8 +45,7 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	logProcessorService := service.NewLogClusterService(ac, logger)
-	spanClusterService := spanService.NewSpanClusterService(ac, logger)
+	cls := clusterService.NewClusterService(ac, logger)
 	countService := count.NewCountService(ac, logger)
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
@@ -78,8 +76,7 @@ func main() {
 	dp := dataProcessor.NewDataProcessorService(
 		ac,
 		countService,
-		logProcessorService,
-		spanClusterService,
+		cls,
 		logger,
 	)
 	ticker := time.NewTicker(15 * time.Second)

@@ -37,10 +37,16 @@ func (cls *ClusterServiceImpl) ClusterData(
 	var err error
 	var queryBodyBytes []byte
 	if input.DataType == model.SpanClusterInputType {
-		queryBodyBytes, err = json.Marshal(equalityQueryBuilder(input.TextualData))
+		queryBodyBytes, err = json.Marshal(equalityQueryBuilder(input.Id, input.TextualData))
 		searchIndex = augurElasticsearch.SpanIndexName
 	} else {
-		queryBodyBytes, err = json.Marshal(moreLikeThisQueryBuilder(input.ServiceName, input.TextualData))
+		queryBodyBytes, err = json.Marshal(
+			moreLikeThisQueryBuilder(
+				input.Id,
+				input.ServiceName,
+				input.TextualData,
+			),
+		)
 		searchIndex = augurElasticsearch.LogIndexName
 	}
 	if err != nil {
@@ -54,9 +60,12 @@ func (cls *ClusterServiceImpl) ClusterData(
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for similar data in Elasticsearch: %w", err)
 	}
-	output, err := extractObjectIdAndClusterId(res)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert search results to cluster details: %w", err)
+	var output []model.ClusterOutput
+	if res != nil {
+		output, err = extractObjectIdAndClusterId(res)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert search results to cluster details: %w", err)
+		}
 	}
 
 	outputFromInput := model.ClusterOutput{
@@ -70,7 +79,7 @@ func (cls *ClusterServiceImpl) ClusterData(
 func extractObjectIdAndClusterId(data []map[string]interface{}) ([]model.ClusterOutput, error) {
 	output := make([]model.ClusterOutput, len(data))
 	for i, hit := range data {
-		id, ok := hit["id"].(string)
+		id, ok := hit["_id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to extract id from data")
 		}

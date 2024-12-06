@@ -15,8 +15,8 @@ type ClusterOutput struct {
 	Id              string
 	ClusterId       string
 	ClusterDataType ClusterDataType
-	SpanTimeDetails *SpanDetails
-	LogTimeDetails  *LogDetails
+	SpanTimeDetails SpanDetails
+	LogTimeDetails  LogDetails
 }
 
 type SpanDetails struct {
