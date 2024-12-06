@@ -7,20 +7,18 @@ import (
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	logService "github.com/Avi18971911/Augur/pkg/log/service"
-	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
 	"go.uber.org/zap"
 )
 
 func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 	ctx context.Context,
-	clusterOrLogData []map[string]interface{},
+	clusterOutput []model.ClusterOutput,
 	buckets []countModel.Bucket,
 	indices []string,
 ) error {
 	increaseMissesInput, err := dps.processCountsForOverlaps(
 		ctx,
-		clusterOrLogData,
+		clusterOutput,
 		buckets,
 		indices,
 	)
@@ -41,7 +39,7 @@ func (dps *DataProcessorService) increaseCountForOverlapsAndMisses(
 
 func (dps *DataProcessorService) processCountsForOverlaps(
 	ctx context.Context,
-	clusterOrLogData []map[string]interface{},
+	clusterOutput []model.ClusterOutput,
 	buckets []countModel.Bucket,
 	indices []string,
 ) ([]countModel.IncreaseMissesInput, error) {
@@ -50,25 +48,25 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 	const unknownErrorMsg = "Failed to process unknown data type"
 
 	resultChannel := getResultsWithWorkers[
-		map[string]interface{},
+		model.ClusterOutput,
 		*countModel.GetCountAndUpdateQueryDetails,
 	](
 		ctx,
-		clusterOrLogData,
+		clusterOutput,
 		func(
 			ctx context.Context,
-			data map[string]interface{},
+			data model.ClusterOutput,
 		) (*countModel.GetCountAndUpdateQueryDetails, string, error) {
-			dataType := detectDataType(data)
+			dataType := data.ClusterDataType
 			switch dataType {
-			case model.Log:
+			case model.LogClusterType:
 				res, err := dps.processLog(ctx, data, buckets, indices)
 				if err != nil {
 					return nil, logErrorMsg, err
 				} else {
 					return res, "", nil
 				}
-			case model.Span:
+			case model.SpanClusterType:
 				res, err := dps.processSpan(ctx, data, buckets, indices)
 				if err != nil {
 					return nil, spanErrorMsg, err
@@ -83,7 +81,7 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 		dps.logger,
 	)
 
-	increaseMissesList, metaMapList, documentMapList := dps.unpackCoClusterResults(resultChannel, len(clusterOrLogData))
+	increaseMissesList, metaMapList, documentMapList := dps.unpackCoClusterResults(resultChannel, len(clusterOutput))
 
 	if metaMapList == nil || len(metaMapList) == 0 {
 		dps.logger.Info("No co-clusters to increment")
@@ -103,24 +101,18 @@ func (dps *DataProcessorService) processCountsForOverlaps(
 
 func (dps *DataProcessorService) processLog(
 	ctx context.Context,
-	untypedLog map[string]interface{},
+	logDetails model.ClusterOutput,
 	buckets []countModel.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
-	typedLogs, err := logService.ConvertToLogDocuments([]map[string]interface{}{untypedLog})
-	if err != nil {
-		dps.logger.Error("Failed to convert log to log documents", zap.Error(err))
-		return nil, err
-	}
-	typedLog := typedLogs[0]
 	csCtx, csCancel := context.WithTimeout(ctx, timeout)
 	defer csCancel()
 	result, err := dps.cs.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
-		typedLog.ClusterId,
+		logDetails.ClusterId,
 		countModel.TimeInfo{
 			LogInfo: &countModel.LogInfo{
-				Timestamp: typedLog.Timestamp,
+				Timestamp: logDetails.LogTimeDetails.Timestamp,
 			},
 		},
 		indices,
@@ -135,25 +127,19 @@ func (dps *DataProcessorService) processLog(
 
 func (dps *DataProcessorService) processSpan(
 	ctx context.Context,
-	untypedSpan map[string]interface{},
+	spanDetails model.ClusterOutput,
 	buckets []countModel.Bucket,
 	indices []string,
 ) (*countModel.GetCountAndUpdateQueryDetails, error) {
-	typedSpans, err := spanService.ConvertToSpanDocuments([]map[string]interface{}{untypedSpan})
-	if err != nil {
-		dps.logger.Error("Failed to convert span to span documents", zap.Error(err))
-		return nil, err
-	}
-	typedSpan := typedSpans[0]
 	csCtx, csCancel := context.WithTimeout(ctx, timeout)
 	defer csCancel()
 	result, err := dps.cs.GetCountAndUpdateOccurrencesQueryConstituents(
 		csCtx,
-		typedSpan.ClusterId,
+		spanDetails.ClusterId,
 		countModel.TimeInfo{
 			SpanInfo: &countModel.SpanInfo{
-				FromTime: typedSpan.StartTime,
-				ToTime:   typedSpan.EndTime,
+				FromTime: spanDetails.SpanTimeDetails.StartTime,
+				ToTime:   spanDetails.SpanTimeDetails.EndTime,
 			},
 		},
 		indices,

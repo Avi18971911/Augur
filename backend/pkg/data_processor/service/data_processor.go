@@ -103,11 +103,11 @@ func (dps *DataProcessorService) clusterAndIncreaseCount(
 	buckets []countModel.Bucket,
 	indices []string,
 ) error {
-	err := dps.clusterData(ctx, clusterOrLogData)
+	clusterOutput, err := dps.clusterData(ctx, clusterOrLogData)
 	if err != nil {
 		return fmt.Errorf("failed to cluster data: %w", err)
 	}
-	err = dps.increaseCountForOverlapsAndMisses(ctx, clusterOrLogData, buckets, indices)
+	err = dps.increaseCountForOverlapsAndMisses(ctx, clusterOutput, buckets, indices)
 	if err != nil {
 		return fmt.Errorf("failed to increase count for overlaps and misses: %w", err)
 	}

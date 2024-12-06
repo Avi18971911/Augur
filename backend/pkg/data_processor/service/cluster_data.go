@@ -6,25 +6,30 @@ import (
 	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"go.uber.org/zap"
 )
 
 func (dps *DataProcessorService) clusterData(
 	ctx context.Context,
 	clusterOrLogData []map[string]interface{},
-) error {
+) ([]model.ClusterOutput, error) {
 	clusterInputList, err := getClusterInput(clusterOrLogData)
 	if err != nil {
-		return fmt.Errorf("failed to get cluster input: %w", err)
+		return nil, fmt.Errorf("failed to get cluster input: %w", err)
 	}
-
-	clusterIds
-	return nil
+	ids, clusterIds, err := dps.clusterDataIntoLikeIds(ctx, clusterInputList)
+	if err != nil {
+		return nil, fmt.Errorf("failed to cluster data into like ids: %w", err)
+	}
+	dataProcessorClusterOutput := dps.finalizeOutput(ids, clusterIds, clusterOrLogData)
+	return dataProcessorClusterOutput, nil
 }
 
 func (dps *DataProcessorService) clusterDataIntoLikeIds(
 	ctx context.Context,
 	clusterInputList []clusterModel.ClusterInput,
-) error {
+) ([]string, []string, error) {
 	const clusterErrorMsg = "Failed to cluster log"
 	resultChannel := getResultsWithWorkers[
 		clusterModel.ClusterInput,
@@ -46,21 +51,24 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 		dps.logger,
 	)
 
-	ids, clusterIdUpdateMap := unionFind(resultChannel)
+	ids, clusterIds := unionFind(resultChannel)
 	if ids == nil || len(ids) == 0 {
-		return nil
+		return nil, nil, nil
 	}
 
+	updateStatements := getUpdateStatementsFromClusterIds(clusterIds)
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkUpdate(updateCtx, ids, clusterIdUpdateMap, bootstrapper.LogIndexName)
+	err := dps.ac.BulkUpdate(updateCtx, ids, updateStatements, bootstrapper.LogIndexName)
 	if err != nil {
-		return fmt.Errorf("failed to bulk update clusters: %w", err)
+		return nil, nil, fmt.Errorf("failed to bulk update clusters: %w", err)
 	}
-	return nil
+	return ids, clusterIds, nil
 }
 
-func getClusterInput(data []map[string]interface{}) ([]clusterModel.ClusterInput, error) {
+func getClusterInput(
+	data []map[string]interface{},
+) ([]clusterModel.ClusterInput, error) {
 	clusterInputList := make([]clusterModel.ClusterInput, len(data))
 	for i, item := range data {
 		dataType := detectDataType(item)
@@ -96,6 +104,7 @@ func getLogClusterDetails(
 	if !ok {
 		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract service name from log")
 	}
+
 	logClusterInput := clusterModel.ClusterInput{
 		DataType:    clusterModel.LogClusterInputType,
 		TextualData: message,
@@ -131,7 +140,7 @@ func getSpanClusterDetails(
 
 func unionFind(
 	resultChannel chan []clusterModel.ClusterOutput,
-) ([]string, []map[string]interface{}) {
+) ([]string, []string) {
 	unionSet := make(map[string]string)
 	idToClusterIdMap := make(map[string]string)
 	const defaultId = "notFound"
@@ -156,18 +165,13 @@ func unionFind(
 			}
 		}
 	}
-	ids, updateStatements := make([]string, 0), make([]map[string]interface{}, 0)
+	ids, clusterIds := make([]string, 0), make([]string, 0)
 	for _, id := range unionSet {
 		respectiveClusterId := idToClusterIdMap[getRootId(unionSet, id)]
 		ids = append(ids, id)
-		updateStatement := map[string]interface{}{
-			"update": map[string]interface{}{
-				"cluster_id": respectiveClusterId,
-			},
-		}
-		updateStatements = append(updateStatements, updateStatement)
+		clusterIds = append(clusterIds, respectiveClusterId)
 	}
-	return ids, updateStatements
+	return ids, clusterIds
 }
 
 func getRootId(
@@ -192,4 +196,112 @@ func mergeWithIdToClusterOn(
 	unionSet[rootId] = getRootId(unionSet, idToClusterOn)
 	getRootId(unionSet, idToCluster)
 	return rootId
+}
+
+func getUpdateStatementsFromClusterIds(
+	clusterIds []string,
+) []map[string]interface{} {
+	updateStatements := make([]map[string]interface{}, 0, len(clusterIds))
+	for _, clusterId := range clusterIds {
+		updateStatement := map[string]interface{}{
+			"update": map[string]interface{}{
+				"cluster_id": clusterId,
+			},
+		}
+		updateStatements = append(updateStatements, updateStatement)
+	}
+	return updateStatements
+}
+
+func (dps *DataProcessorService) finalizeOutput(
+	ids []string,
+	clusterIds []string,
+	data []map[string]interface{},
+) []model.ClusterOutput {
+	output := make([]model.ClusterOutput, len(ids))
+	for i, id := range ids {
+		clusterId := clusterIds[i]
+		dataType, spanTimeDetails, logTimeDetails, err := getDetails(data[i])
+		if err != nil {
+			dps.logger.Error("failed to get details from the data", zap.Error(err))
+			continue
+		}
+		output[i] = model.ClusterOutput{
+			Id:              id,
+			ClusterId:       clusterId,
+			ClusterDataType: dataType,
+			SpanTimeDetails: spanTimeDetails,
+			LogTimeDetails:  logTimeDetails,
+		}
+	}
+	return output
+}
+
+func getDetails(
+	item map[string]interface{},
+) (
+	model.ClusterDataType,
+	*model.SpanDetails,
+	*model.LogDetails,
+	error,
+) {
+	dataType := detectDataType(item)
+	if dataType == model.Log {
+		logDetails, err := getLogOutput(item)
+		if err != nil {
+			return model.LogClusterType, nil, nil, fmt.Errorf("failed to get log output: %w", err)
+		}
+		return model.LogClusterType, nil, logDetails, nil
+	} else {
+		spanDetails, err := getSpanOutput(item)
+		if err != nil {
+			return model.SpanClusterType, nil, nil, fmt.Errorf("failed to get span output: %w", err)
+		}
+		return model.SpanClusterType, spanDetails, nil, nil
+	}
+}
+
+func getLogOutput(item map[string]interface{}) (
+	*model.LogDetails,
+	error,
+) {
+	timeStampString, ok := item["timestamp"].(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract timestamp from log")
+	}
+	timeStamp, err := client.NormalizeTimestampToNanoseconds(timeStampString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to normalize timestamp: %w", err)
+	}
+	logDetails := &model.LogDetails{
+		Timestamp: timeStamp,
+	}
+	return logDetails, nil
+}
+
+func getSpanOutput(item map[string]interface{}) (
+	*model.SpanDetails,
+	error,
+) {
+	startTimeString, ok := item["start_time"].(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract start time from span")
+	}
+	startTime, err := client.NormalizeTimestampToNanoseconds(startTimeString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to normalize start time: %w", err)
+	}
+	endTimeString, ok := item["end_time"].(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract end time from span")
+	}
+	endTime, err := client.NormalizeTimestampToNanoseconds(endTimeString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to normalize end time: %w", err)
+	}
+	spanDetails := &model.SpanDetails{
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
+	return spanDetails, nil
 }
