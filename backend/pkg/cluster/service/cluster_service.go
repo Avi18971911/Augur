@@ -62,7 +62,7 @@ func (cls *ClusterServiceImpl) ClusterData(
 	}
 	var output []model.ClusterOutput
 	if res != nil {
-		output, err = extractObjectIdAndClusterId(res)
+		output, err = extractObjectIdAndClusterId(res, input.DataType)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert search results to cluster details: %w", err)
 		}
@@ -71,12 +71,16 @@ func (cls *ClusterServiceImpl) ClusterData(
 	outputFromInput := model.ClusterOutput{
 		ObjectId:  input.Id,
 		ClusterId: input.ClusterId,
+		DataType:  input.DataType,
 	}
 	output = append(output, outputFromInput)
 	return output, nil
 }
 
-func extractObjectIdAndClusterId(data []map[string]interface{}) ([]model.ClusterOutput, error) {
+func extractObjectIdAndClusterId(
+	data []map[string]interface{},
+	dataType model.ClusterDataType,
+) ([]model.ClusterOutput, error) {
 	output := make([]model.ClusterOutput, len(data))
 	for i, hit := range data {
 		id, ok := hit["_id"].(string)
@@ -90,6 +94,7 @@ func extractObjectIdAndClusterId(data []map[string]interface{}) ([]model.Cluster
 		output[i] = model.ClusterOutput{
 			ObjectId:  id,
 			ClusterId: clusterId,
+			DataType:  dataType,
 		}
 	}
 	return output, nil

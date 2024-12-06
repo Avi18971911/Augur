@@ -41,26 +41,27 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 			ctx context.Context,
 			input clusterModel.ClusterInput,
 		) ([]clusterModel.ClusterOutput, string, error) {
-			ids, err := dps.cls.ClusterData(ctx, input)
+			outputList, err := dps.cls.ClusterData(ctx, input)
 			if err != nil {
 				return nil, clusterErrorMsg, err
 			}
-			return ids, "", nil
+			return outputList, "", nil
 		},
 		workerCount,
 		dps.logger,
 	)
 
-	ids, clusterIds := unionFind(resultChannel)
+	ids, clusterIds, dataTypes := unionFind(resultChannel)
 	if ids == nil || len(ids) == 0 {
 		return nil, nil, nil
 	}
 
-	updateStatements := getUpdateStatementsFromClusterIds(clusterIds)
+	// TODO: Segregate by index to speed up insertions
+	updateStatements := getUpdateStatements(clusterIds)
+	metaStatements := getMetaStatements(ids, dataTypes)
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	// TODO: Allow for other indices to be updated
-	err := dps.ac.BulkUpdate(updateCtx, ids, updateStatements, bootstrapper.LogIndexName)
+	err := dps.ac.BulkUpdate(updateCtx, metaStatements, updateStatements, bootstrapper.LogIndexName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to bulk update clusters: %w", err)
 	}
@@ -152,9 +153,10 @@ func getSpanClusterDetails(
 
 func unionFind(
 	resultChannel chan []clusterModel.ClusterOutput,
-) ([]string, []string) {
+) ([]string, []string, []model.ClusterDataType) {
 	unionSet := make(map[string]string)
 	idToClusterIdMap := make(map[string]string)
+	idToDataTypeMap := make(map[string]model.ClusterDataType)
 	const defaultId = "notFound"
 	for result := range resultChannel {
 		if result != nil && len(result) > 0 {
@@ -164,6 +166,7 @@ func unionFind(
 				id := clusterOutput.ObjectId
 
 				idToClusterIdMap[id] = clusterId
+				idToDataTypeMap[id] = mapClusterOutputToDataType(clusterOutput.DataType)
 				if _, ok := unionSet[id]; ok {
 					idToClusterOn = getRootId(unionSet, id)
 				} else {
@@ -179,13 +182,23 @@ func unionFind(
 			}
 		}
 	}
-	ids, clusterIds := make([]string, 0), make([]string, 0)
+	ids, clusterIds, dataTypes := make([]string, 0), make([]string, 0), make([]model.ClusterDataType, 0)
 	for id, _ := range unionSet {
 		respectiveClusterId := idToClusterIdMap[getRootId(unionSet, id)]
 		ids = append(ids, id)
 		clusterIds = append(clusterIds, respectiveClusterId)
+		dataTypes = append(dataTypes, idToDataTypeMap[id])
 	}
-	return ids, clusterIds
+	return ids, clusterIds, dataTypes
+}
+
+func mapClusterOutputToDataType(
+	dataType clusterModel.ClusterDataType,
+) model.ClusterDataType {
+	if dataType == clusterModel.SpanClusterInputType {
+		return model.SpanClusterType
+	}
+	return model.LogClusterType
 }
 
 func getRootId(
@@ -212,7 +225,7 @@ func mergeWithIdToClusterOn(
 	return rootId
 }
 
-func getUpdateStatementsFromClusterIds(
+func getUpdateStatements(
 	clusterIds []string,
 ) []map[string]interface{} {
 	updateStatements := make([]map[string]interface{}, 0, len(clusterIds))
@@ -225,6 +238,27 @@ func getUpdateStatementsFromClusterIds(
 		updateStatements = append(updateStatements, updateStatement)
 	}
 	return updateStatements
+}
+
+func getMetaStatements(
+	ids []string,
+	dataTypes []model.ClusterDataType,
+) []map[string]interface{} {
+	metaStatements := make([]map[string]interface{}, 0, len(ids))
+	for i, id := range ids {
+		var index string
+		if dataTypes[i] == model.SpanClusterType {
+			index = bootstrapper.SpanIndexName
+		} else {
+			index = bootstrapper.LogIndexName
+		}
+		metaStatement := map[string]interface{}{
+			"_id":    id,
+			"_index": index,
+		}
+		metaStatements = append(metaStatements, metaStatement)
+	}
+	return metaStatements
 }
 
 func (dps *DataProcessorService) finalizeOutput(
