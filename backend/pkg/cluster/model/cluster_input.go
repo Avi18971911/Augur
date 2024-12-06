@@ -12,4 +12,5 @@ type ClusterInput struct {
 	TextualData string
 	ServiceName string
 	Id          string
+	ClusterId   string
 }

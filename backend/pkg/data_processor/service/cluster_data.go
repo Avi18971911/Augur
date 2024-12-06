@@ -16,6 +16,7 @@ func (dps *DataProcessorService) clusterData(
 	if err != nil {
 		return fmt.Errorf("failed to get cluster input: %w", err)
 	}
+
 	clusterIds
 	return nil
 }
@@ -27,14 +28,14 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 	const clusterErrorMsg = "Failed to cluster log"
 	resultChannel := getResultsWithWorkers[
 		clusterModel.ClusterInput,
-		[]string,
+		[]clusterModel.ClusterOutput,
 	](
 		ctx,
 		clusterInputList,
 		func(
 			ctx context.Context,
 			input clusterModel.ClusterInput,
-		) ([]string, string, error) {
+		) ([]clusterModel.ClusterOutput, string, error) {
 			ids, err := dps.cls.ClusterData(ctx, input)
 			if err != nil {
 				return nil, clusterErrorMsg, err
@@ -45,16 +46,16 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 		dps.logger,
 	)
 
-	logIds, logClusterIds := unionFind(resultChannel)
-	if logIds == nil || len(logIds) == 0 {
+	ids, clusterIdUpdateMap := unionFind(resultChannel)
+	if ids == nil || len(ids) == 0 {
 		return nil
 	}
 
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err = dps.ac.BulkUpdate(updateCtx, logIds, logClusterIds, bootstrapper.LogIndexName)
+	err := dps.ac.BulkUpdate(updateCtx, ids, clusterIdUpdateMap, bootstrapper.LogIndexName)
 	if err != nil {
-		return fmt.Errorf("failed to bulk update log clusters: %w", err)
+		return fmt.Errorf("failed to bulk update clusters: %w", err)
 	}
 	return nil
 }
@@ -129,42 +130,66 @@ func getSpanClusterDetails(
 }
 
 func unionFind(
-	resultChannel chan []string,
-) map[string]string {
+	resultChannel chan []clusterModel.ClusterOutput,
+) ([]string, []map[string]interface{}) {
 	unionSet := make(map[string]string)
+	idToClusterIdMap := make(map[string]string)
+	const defaultId = "notFound"
 	for result := range resultChannel {
-		if result != nil {
-			var foundId string
-			for _, id := range result {
-				if _, ok := unionSet[id]; ok {
-					foundId = unionSet[id]
-					break
+		if result != nil && len(result) > 0 {
+			var idToClusterOn = defaultId
+			for _, clusterOutput := range result {
+				clusterId := clusterOutput.ClusterId
+				id := clusterOutput.ObjectId
+
+				idToClusterIdMap[id] = clusterId
+				if _, ok := unionSet[id]; ok && idToClusterOn == defaultId {
+					idToClusterOn = unionSet[id]
 				}
 			}
-			if foundId == "" {
-				foundId = result[0]
-				unionSet[foundId] = "-1"
+			if idToClusterOn == defaultId {
+				idToClusterOn = result[0].ObjectId
+				unionSet[idToClusterOn] = "-1"
 			}
-			for _, id := range result {
-				mergeWithId(unionSet, id, foundId)
+			for _, clusterOutput := range result {
+				mergeWithIdToClusterOn(unionSet, clusterOutput.ObjectId, idToClusterOn)
 			}
 		}
 	}
-	return unionSet
+	ids, updateStatements := make([]string, 0), make([]map[string]interface{}, 0)
+	for _, id := range unionSet {
+		respectiveClusterId := idToClusterIdMap[getRootId(unionSet, id)]
+		ids = append(ids, id)
+		updateStatement := map[string]interface{}{
+			"update": map[string]interface{}{
+				"cluster_id": respectiveClusterId,
+			},
+		}
+		updateStatements = append(updateStatements, updateStatement)
+	}
+	return ids, updateStatements
 }
 
-func mergeWithId(
+func getRootId(
 	unionSet map[string]string,
 	id string,
-	setId string,
 ) string {
 	nextId := unionSet[id]
 	if nextId == "-1" {
-		unionSet[setId] = id
 		return id
-	} else {
-		rootId := mergeWithId(unionSet, nextId, setId)
-		unionSet[id] = rootId
-		return rootId
 	}
+	rootId := getRootId(unionSet, nextId)
+	unionSet[id] = rootId
+	return rootId
+}
+
+func mergeWithIdToClusterOn(
+	unionSet map[string]string,
+	idToCluster string,
+	idToClusterOn string,
+) string {
+	rootId := getRootId(unionSet, idToCluster)
+	unionSet[rootId] = getRootId(unionSet, idToClusterOn)
+	getRootId(unionSet, idToCluster)
+	return rootId
 }

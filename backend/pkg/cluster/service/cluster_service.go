@@ -14,7 +14,7 @@ import (
 const csTimeOut = 10 * time.Second
 
 type ClusterService interface {
-	ClusterData(ctx context.Context, input model.ClusterInput) ([]string, error)
+	ClusterData(ctx context.Context, input model.ClusterInput) ([]model.ClusterOutput, error)
 }
 
 type ClusterServiceImpl struct {
@@ -32,7 +32,7 @@ func NewClusterService(ac client.AugurClient, logger *zap.Logger) ClusterService
 func (cls *ClusterServiceImpl) ClusterData(
 	ctx context.Context,
 	input model.ClusterInput,
-) ([]string, error) {
+) ([]model.ClusterOutput, error) {
 	var queryBody, searchIndex string
 	var err error
 	var queryBodyBytes []byte
@@ -54,22 +54,34 @@ func (cls *ClusterServiceImpl) ClusterData(
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for similar data in Elasticsearch: %w", err)
 	}
-	clusterIds, err := extractIds(res)
+	output, err := extractObjectIdAndClusterId(res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert search results to cluster details: %w", err)
 	}
-	clusterIds = append(clusterIds, input.Id)
-	return clusterIds, nil
+
+	outputFromInput := model.ClusterOutput{
+		ObjectId:  input.Id,
+		ClusterId: input.ClusterId,
+	}
+	output = append(output, outputFromInput)
+	return output, nil
 }
 
-func extractIds(data []map[string]interface{}) ([]string, error) {
-	ids := make([]string, len(data))
+func extractObjectIdAndClusterId(data []map[string]interface{}) ([]model.ClusterOutput, error) {
+	output := make([]model.ClusterOutput, len(data))
 	for i, hit := range data {
 		id, ok := hit["id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to extract id from data")
 		}
-		ids[i] = id
+		clusterId, ok := hit["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to extract cluster_id from data")
+		}
+		output[i] = model.ClusterOutput{
+			ObjectId:  id,
+			ClusterId: clusterId,
+		}
 	}
-	return ids, nil
+	return output, nil
 }
