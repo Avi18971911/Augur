@@ -59,6 +59,7 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 	updateStatements := getUpdateStatementsFromClusterIds(clusterIds)
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
+	// TODO: Allow for other indices to be updated
 	err := dps.ac.BulkUpdate(updateCtx, ids, updateStatements, bootstrapper.LogIndexName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to bulk update clusters: %w", err)
@@ -166,12 +167,12 @@ func unionFind(
 				if _, ok := unionSet[id]; ok {
 					idToClusterOn = getRootId(unionSet, id)
 				} else {
-					unionSet[id] = "-1"
+					unionSet[id] = id
 				}
 			}
 			if idToClusterOn == defaultId {
 				idToClusterOn = result[0].ObjectId
-				unionSet[idToClusterOn] = "-1"
+				unionSet[idToClusterOn] = idToClusterOn
 			}
 			for _, clusterOutput := range result {
 				mergeWithIdToClusterOn(unionSet, clusterOutput.ObjectId, idToClusterOn)
@@ -192,7 +193,7 @@ func getRootId(
 	id string,
 ) string {
 	nextId := unionSet[id]
-	if nextId == "-1" {
+	if nextId == id {
 		return id
 	}
 	rootId := getRootId(unionSet, nextId)
@@ -205,9 +206,6 @@ func mergeWithIdToClusterOn(
 	idToCluster string,
 	idToClusterOn string,
 ) string {
-	if idToCluster == idToClusterOn {
-		return idToCluster
-	}
 	rootId := getRootId(unionSet, idToCluster)
 	unionSet[rootId] = getRootId(unionSet, idToClusterOn)
 	getRootId(unionSet, idToCluster)
