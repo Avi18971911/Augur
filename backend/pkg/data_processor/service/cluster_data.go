@@ -7,6 +7,7 @@ import (
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -162,6 +163,9 @@ func unionFind(
 		if result != nil && len(result) > 0 {
 			var idToClusterOn = defaultId
 			for _, clusterOutput := range result {
+				if clusterOutput.ClusterId == "NOT_ASSIGNED" {
+					clusterOutput.ClusterId = uuid.NewString()
+				}
 				clusterId := clusterOutput.ClusterId
 				id := clusterOutput.ObjectId
 
@@ -231,9 +235,7 @@ func getUpdateStatements(
 	updateStatements := make([]map[string]interface{}, 0, len(clusterIds))
 	for _, clusterId := range clusterIds {
 		updateStatement := map[string]interface{}{
-			"doc": map[string]interface{}{
-				"cluster_id": clusterId,
-			},
+			"cluster_id": clusterId,
 		}
 		updateStatements = append(updateStatements, updateStatement)
 	}
