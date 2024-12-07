@@ -6,6 +6,15 @@ var logIndex = map[string]interface{}{
 	"settings": map[string]interface{}{
 		"number_of_shards":   1,
 		"number_of_replicas": 1,
+		"analysis": map[string]interface{}{
+			"analyzer": map[string]interface{}{
+				"message_analyzer": map[string]interface{}{
+					"type":      "custom",
+					"tokenizer": "standard",
+					"filter":    []string{"lowercase", "stop"},
+				},
+			},
+		},
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
@@ -22,7 +31,8 @@ var logIndex = map[string]interface{}{
 				"type": "keyword",
 			},
 			"message": map[string]interface{}{
-				"type": "text",
+				"type":     "text",
+				"analyzer": "message_analyzer",
 			},
 			"trace_id": map[string]interface{}{
 				"type": "keyword",

@@ -37,11 +37,11 @@ func (cls *ClusterServiceImpl) ClusterData(
 	var err error
 	var queryBodyBytes []byte
 	if input.DataType == model.SpanClusterInputType {
-		queryBodyBytes, err = json.Marshal(equalityQueryBuilder(input.Id, input.TextualData))
+		queryBodyBytes, err = json.Marshal(equalityOfClusterEventQueryBuilder(input.Id, input.TextualData))
 		searchIndex = augurElasticsearch.SpanIndexName
 	} else {
 		queryBodyBytes, err = json.Marshal(
-			moreLikeThisQueryBuilder(
+			similarityToLogMessageQueryBuilder(
 				input.Id,
 				input.ServiceName,
 				input.TextualData,
