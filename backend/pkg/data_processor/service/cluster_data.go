@@ -13,9 +13,9 @@ import (
 
 func (dps *DataProcessorService) clusterData(
 	ctx context.Context,
-	clusterOrLogData []map[string]interface{},
+	spanOrLogData []map[string]interface{},
 ) ([]model.ClusterOutput, error) {
-	clusterInputList, err := getClusterInput(clusterOrLogData)
+	clusterInputList, err := getClusterInput(spanOrLogData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster input: %w", err)
 	}
@@ -23,7 +23,7 @@ func (dps *DataProcessorService) clusterData(
 	if err != nil {
 		return nil, fmt.Errorf("failed to cluster data into like ids: %w", err)
 	}
-	dataProcessorClusterOutput := dps.finalizeOutput(ids, clusterIds, clusterOrLogData)
+	dataProcessorClusterOutput := dps.finalizeOutput(ids, clusterIds, spanOrLogData)
 	return dataProcessorClusterOutput, nil
 }
 
@@ -57,7 +57,7 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 		return nil, nil, nil
 	}
 
-	// TODO: Segregate by index to speed up insertions
+	// TODO: Segregate by index to speed up updates
 	updateStatements := getUpdateStatements(clusterIds)
 	metaStatements := getMetaStatements(ids, dataTypes)
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
@@ -268,9 +268,13 @@ func (dps *DataProcessorService) finalizeOutput(
 	clusterIds []string,
 	data []map[string]interface{},
 ) []model.ClusterOutput {
-	output := make([]model.ClusterOutput, len(ids))
 	dataMap := getDataMap(data)
+	output := make([]model.ClusterOutput, len(dataMap))
 	for i, id := range ids {
+		// the ids and clusterIds are from the clustering algorithm, whereas we only need to pass on new entries
+		if _, ok := dataMap[id]; !ok {
+			continue
+		}
 		clusterId := clusterIds[i]
 		dataType, spanTimeDetails, logTimeDetails, err := getDetails(dataMap[id])
 		if err != nil {

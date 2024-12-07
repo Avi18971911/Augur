@@ -34,7 +34,7 @@ func moreLikeThisQueryBuilder(id, service, phrase string) map[string]interface{}
 							"like":                 phrase,
 							"min_term_freq":        1,
 							"min_doc_freq":         1,
-							"minimum_should_match": "98%",
+							"minimum_should_match": "80%",
 						},
 					},
 					{
