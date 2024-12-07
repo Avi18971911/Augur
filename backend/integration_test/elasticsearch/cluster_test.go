@@ -168,7 +168,7 @@ func TestLogCluster(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		input := clusterModel.ClusterInput{
-			DataType:    clusterModel.SpanClusterInputType,
+			DataType:    clusterModel.LogClusterInputType,
 			TextualData: message,
 			ClusterId:   notAssigned,
 			Id:          "test",
@@ -178,6 +178,7 @@ func TestLogCluster(t *testing.T) {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
 		assert.NotZero(t, len(output))
+		assert.Equal(t, 3, len(output))
 		hasTest := output[0].ObjectId == "test"
 		firstClusterId := output[0].ClusterId
 		firstId := output[0].ObjectId
@@ -189,5 +190,48 @@ func TestLogCluster(t *testing.T) {
 			assert.NotEqual(t, firstId, cluster.ObjectId)
 		}
 		assert.True(t, hasTest)
+	})
+
+	t.Run("should be discriminatory for log messages", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		const notAssigned = "NOT_ASSIGNED"
+		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+		const firstMessage = "Login request successful with username: fake_username and password: fake_password"
+		const nonMatchingMessage = "Login request received with URL /accounts/login and method POST"
+		const serviceName = "Service"
+		logBatch := []logModel.LogEntry{
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+				Timestamp: onlyTimeStamp,
+				Message:   firstMessage,
+				Service:   serviceName,
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, logBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		input := clusterModel.ClusterInput{
+			DataType:    clusterModel.LogClusterInputType,
+			TextualData: nonMatchingMessage,
+			ClusterId:   notAssigned,
+			Id:          "Test",
+			ServiceName: serviceName,
+		}
+		output, err := cls.ClusterData(ctx, input)
+		if err != nil {
+			t.Errorf("Failed to cluster span with error: %v", err)
+		}
+		assert.NotZero(t, len(output))
+		assert.Equal(t, 1, len(output))
+		assert.Equal(t, "Test", output[0].ObjectId)
 	})
 }
