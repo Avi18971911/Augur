@@ -6,13 +6,14 @@ import (
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-func TestSpanClusterUpdates(t *testing.T) {
+func TestSpanCluster(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
@@ -127,5 +128,66 @@ func TestSpanClusterUpdates(t *testing.T) {
 		assert.NotZero(t, len(output))
 		assert.Equal(t, 1, len(output))
 		assert.Equal(t, "test", output[0].ObjectId)
+	})
+}
+
+func TestLogCluster(t *testing.T) {
+	if es == nil {
+		t.Error("es is uninitialized or otherwise nil")
+	}
+	ac := client.NewAugurClientImpl(es, client.Immediate)
+	cls := clusterService.NewClusterService(ac, logger)
+	t.Run("should be able to process and update logs of the same type", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		const notAssigned = "NOT_ASSIGNED"
+		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+		const message = "this is a log message"
+		logBatch := []logModel.LogEntry{
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+				Timestamp: onlyTimeStamp,
+				Message:   message,
+			},
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 400),
+				Timestamp: onlyTimeStamp,
+				Message:   message,
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, logBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		input := clusterModel.ClusterInput{
+			DataType:    clusterModel.SpanClusterInputType,
+			TextualData: message,
+			ClusterId:   notAssigned,
+			Id:          "test",
+		}
+		output, err := cls.ClusterData(ctx, input)
+		if err != nil {
+			t.Errorf("Failed to cluster span with error: %v", err)
+		}
+		assert.NotZero(t, len(output))
+		hasTest := output[0].ObjectId == "test"
+		firstClusterId := output[0].ClusterId
+		firstId := output[0].ObjectId
+		for _, cluster := range output[1:] {
+			if cluster.ObjectId == "test" {
+				hasTest = true
+			}
+			assert.Equal(t, firstClusterId, cluster.ClusterId)
+			assert.NotEqual(t, firstId, cluster.ObjectId)
+		}
+		assert.True(t, hasTest)
 	})
 }
