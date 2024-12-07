@@ -10,46 +10,8 @@ import (
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/elastic/go-elasticsearch/v8"
-	"os"
 	"time"
 )
-
-func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) error {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to read dump file: %w", err)
-	}
-
-	var documents []map[string]interface{}
-	if err := json.Unmarshal(data, &documents); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON data: %w", err)
-	}
-
-	for _, doc := range documents {
-		delete(doc, "_id")
-		delete(doc, "_index")
-		delete(doc, "_score")
-		delete(doc, "_ignored")
-		// elastic search doesn't like the _source field, need to move it to top-level
-		if source, ok := doc["_source"].(map[string]interface{}); ok {
-			for key, value := range source {
-				doc[key] = value
-			}
-			delete(doc, "_source")
-		}
-		docJSON, _ := json.Marshal(doc)
-		res, err := es.Index(indexName, bytes.NewReader(docJSON), es.Index.WithRefresh("true"))
-		if err != nil {
-			return fmt.Errorf("failed to index document: %w", err)
-		}
-		defer res.Body.Close()
-		if res.IsError() {
-			return fmt.Errorf("failed to index document: %s", res.String())
-		}
-	}
-
-	return nil
-}
 
 func deleteAllDocuments(es *elasticsearch.Client) error {
 	indexes := []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName, bootstrapper.CountIndexName}

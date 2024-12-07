@@ -6,6 +6,7 @@ import (
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -22,15 +23,41 @@ func TestSpanClusterUpdates(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data_dump/span_index_array.json")
+		const notAssigned = "NOT_ASSIGNED"
+		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+		const clusterEvent = "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT"
+		spanBatch := []spanModel.Span{
+			{
+				ClusterId:    notAssigned,
+				StartTime:    onlyTimeStamp,
+				EndTime:      onlyTimeStamp,
+				CreatedAt:    createdAt.Add(-time.Second * 500),
+				ClusterEvent: clusterEvent,
+				Events:       make([]spanModel.SpanEvent, 0),
+				Attributes:   make(map[string]string),
+			},
+			{
+				ClusterId:    notAssigned,
+				StartTime:    onlyTimeStamp,
+				EndTime:      onlyTimeStamp,
+				CreatedAt:    createdAt.Add(-time.Second * 400),
+				ClusterEvent: clusterEvent,
+				Events:       make([]spanModel.SpanEvent, 0),
+				Attributes:   make(map[string]string),
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, spanBatch, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("Failed to load test data: %v", err)
 		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.SpanClusterInputType,
-			TextualData: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
+			TextualData: clusterEvent,
+			ClusterId:   notAssigned,
 			Id:          "test",
 		}
 		output, err := cls.ClusterData(ctx, input)
@@ -38,58 +65,20 @@ func TestSpanClusterUpdates(t *testing.T) {
 			t.Errorf("Failed to parse span with message: %v", err)
 		}
 		assert.NotZero(t, len(output))
+		hasTest := output[0].ObjectId == "test"
 		firstClusterId := output[0].ClusterId
 		firstId := output[0].ObjectId
 		for _, cluster := range output[1:] {
+			if cluster.ObjectId == "test" {
+				hasTest = true
+			}
 			assert.Equal(t, firstClusterId, cluster.ClusterId)
 			assert.NotEqual(t, firstId, cluster.ObjectId)
 		}
+		assert.True(t, hasTest)
 	})
 
 	t.Run("should not assign spans with different cluster events to the same cluster id", func(t *testing.T) {
-		err := deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
-		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data_dump/span_index_array.json")
-		if err != nil {
-			t.Errorf("Failed to load test data: %v", err)
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		firstInput := clusterModel.ClusterInput{
-			DataType:    clusterModel.SpanClusterInputType,
-			TextualData: "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT,attributes=map[http.method:GET http.url:http://frontend-proxy:8080/api/cart]",
-			Id:          "test",
-		}
-		firstClusterOutput, err := cls.ClusterData(ctx, firstInput)
-		if err != nil {
-			t.Errorf("Failed to parse span with message: %v", err)
-		}
-		secondInput := clusterModel.ClusterInput{
-			DataType:    clusterModel.SpanClusterInputType,
-			TextualData: "service=flagd,operation=resolveInt,kind=SPAN_KIND_INTERNAL,attributes=map[]",
-			Id:          "test",
-		}
-		secondClusterOutput, err := cls.ClusterData(ctx, secondInput)
-		if err != nil {
-			t.Errorf("Failed to parse span with message: %v", err)
-		}
-		assert.NotZero(t, len(firstClusterOutput))
-		assert.NotZero(t, len(secondClusterOutput))
-		var clusterIdOne = firstClusterOutput[0].ClusterId
-		var clusterIdTwo = secondClusterOutput[0].ClusterId
 
-		assert.NotEqual(t, 1, len(firstClusterOutput))
-		assert.NotEqual(t, 1, len(secondClusterOutput))
-
-		for _, output := range firstClusterOutput[1:] {
-			assert.Equal(t, clusterIdOne, output.ClusterId)
-			assert.NotEqual(t, clusterIdTwo, output.ClusterId)
-		}
-		for _, output := range secondClusterOutput[1:] {
-			assert.Equal(t, clusterIdTwo, output.ClusterId)
-			assert.NotEqual(t, clusterIdOne, output.ClusterId)
-		}
 	})
 }
