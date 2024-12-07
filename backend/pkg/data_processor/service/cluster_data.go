@@ -270,7 +270,8 @@ func (dps *DataProcessorService) finalizeOutput(
 ) []model.ClusterOutput {
 	dataMap := getDataMap(data)
 	output := make([]model.ClusterOutput, len(dataMap))
-	for i, id := range ids {
+	i := 0
+	for _, id := range ids {
 		// the ids and clusterIds are from the clustering algorithm, whereas we only need to pass on new entries
 		if _, ok := dataMap[id]; !ok {
 			continue
@@ -288,6 +289,7 @@ func (dps *DataProcessorService) finalizeOutput(
 			SpanTimeDetails: spanTimeDetails,
 			LogTimeDetails:  logTimeDetails,
 		}
+		i++
 	}
 	return output
 }
