@@ -234,4 +234,54 @@ func TestLogCluster(t *testing.T) {
 		assert.Equal(t, 1, len(output))
 		assert.Equal(t, "Test", output[0].ObjectId)
 	})
+
+	t.Run("Should match if the variable part is exactly in order", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		const notAssigned = "NOT_ASSIGNED"
+		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+		const firstMatchingMessage = "Login request successful with username: Bob and password: Barker"
+		const secondMatchingMessage = "Login request successful with username: wew and password: lads"
+		const nonMatchingMessage = "Login successful with username: Bob and password: Barker"
+		const serviceName = "Service"
+		logBatch := []logModel.LogEntry{
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+				Timestamp: onlyTimeStamp,
+				Message:   firstMatchingMessage,
+				Service:   serviceName,
+			},
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 400),
+				Timestamp: onlyTimeStamp,
+				Message:   nonMatchingMessage,
+				Service:   serviceName,
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, logBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		input := clusterModel.ClusterInput{
+			DataType:    clusterModel.LogClusterInputType,
+			TextualData: secondMatchingMessage,
+			ClusterId:   notAssigned,
+			Id:          "Test",
+			ServiceName: serviceName,
+		}
+		output, err := cls.ClusterData(ctx, input)
+		if err != nil {
+			t.Errorf("Failed to cluster span with error: %v", err)
+		}
+		assert.NotZero(t, len(output))
+		assert.Equal(t, 2, len(output))
+	})
 }

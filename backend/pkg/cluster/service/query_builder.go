@@ -30,7 +30,6 @@ func similarityToLogMessageQueryBuilder(id, service, phrase string) map[string]i
 						"match": map[string]interface{}{
 							"message": map[string]interface{}{
 								"query":                phrase,
-								"operator":             "and",
 								"minimum_should_match": "80%",
 							},
 						},
