@@ -2,22 +2,20 @@ package main
 
 import (
 	"context"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	spanService "github.com/Avi18971911/Augur/pkg/trace/service"
+	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	"net"
 	"time"
 
-	"github.com/Avi18971911/Augur/pkg/cache"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
-	"github.com/Avi18971911/Augur/pkg/log/service"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
-	"github.com/dgraph-io/ristretto"
 	"github.com/elastic/go-elasticsearch/v8"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
@@ -47,36 +45,15 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	logProcessorService := service.NewLogProcessorService(ac, logger)
-	spanClusterService := spanService.NewSpanClusterService(ac, logger)
+	cls := clusterService.NewClusterService(ac, logger)
 	countService := count.NewCountService(ac, logger)
 
-	ristrettoTraceCache, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 10,
-		MaxCost:     1 << 5,
-		BufferItems: 2,
-	})
-	if err != nil {
-		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
-	}
-
-	ristrettoLogCache, err := ristretto.NewCache(&ristretto.Config{
-		NumCounters: 10,
-		MaxCost:     1 << 5,
-		BufferItems: 2,
-	})
-	if err != nil {
-		logger.Fatal("Failed to create ristretto cache: %v", zap.Error(err))
-	}
-
-	writeBehindTraceCache := cache.NewWriteBehindCacheImpl[traceModel.Span](
-		ristrettoTraceCache,
+	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,
 		bootstrapper.SpanIndexName,
 		logger,
 	)
-	writeBehindLogCache := cache.NewWriteBehindCacheImpl[logModel.LogEntry](
-		ristrettoLogCache,
+	logDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[logModel.LogEntry](
 		ac,
 		bootstrapper.LogIndexName,
 		logger,
@@ -85,22 +62,23 @@ func main() {
 	srv := grpc.NewServer()
 	traceServiceServer := traceServer.NewTraceServiceServerImpl(
 		logger,
-		writeBehindTraceCache,
-		spanClusterService,
-		countService,
+		traceDBBuffer,
 	)
 	logServiceServer := logsServer.NewLogServiceServerImpl(
 		logger,
-		writeBehindLogCache,
-		logProcessorService,
-		countService,
+		logDBBuffer,
 	)
 
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
 
-	dp := dataProcessor.NewDataProcessorService(ac, countService, logger)
+	dp := dataProcessor.NewDataProcessorService(
+		ac,
+		countService,
+		cls,
+		logger,
+	)
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 
@@ -111,7 +89,9 @@ func main() {
 				[]countModel.Bucket{100},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
 			for _, err := range errors {
-				logger.Error("Failed to process data", zap.Error(err))
+				if err != nil {
+					logger.Error("Failed to process data", zap.Error(err))
+				}
 			}
 		}
 	}()

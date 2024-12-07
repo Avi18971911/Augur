@@ -40,7 +40,12 @@ type AugurClient interface {
 	) <-chan SearchAfterResult
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-	BulkUpdate(ctx context.Context, ids []string, fieldList []map[string]interface{}, index string) error
+	BulkUpdate(
+		ctx context.Context,
+		metaList []map[string]interface{},
+		fieldList []map[string]interface{},
+		index string,
+	) error
 	// Upsert updates or inserts a document in the index using a script or upsert annotation
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html#upserts
 	Upsert(ctx context.Context, upsertScript map[string]interface{}, index string, id string) error

@@ -5,7 +5,6 @@ import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
-	"github.com/Avi18971911/Augur/pkg/log/service"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -52,7 +51,7 @@ func TestSearchAfter(t *testing.T) {
 			}
 		}
 		assert.Equal(t, logSize, len(results))
-		logDocs, err := service.ConvertToLogDocuments(results)
+		logDocs, err := convertToLogDocuments(results)
 		if err != nil {
 			t.Errorf("Failed to convert search results to log documents: %v", err)
 		}
@@ -119,7 +118,7 @@ func TestSearchAfter(t *testing.T) {
 			}
 		}
 		assert.Equal(t, logSize, len(results))
-		logDocs, err := service.ConvertToLogDocuments(results)
+		logDocs, err := convertToLogDocuments(results)
 		if err != nil {
 			t.Errorf("Failed to convert search results to log documents: %v", err)
 		}

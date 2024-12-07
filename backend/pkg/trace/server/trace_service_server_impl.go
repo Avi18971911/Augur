@@ -2,12 +2,11 @@ package server
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/cache"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
-	"github.com/Avi18971911/Augur/pkg/trace/service"
+	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"go.uber.org/zap"
@@ -16,24 +15,18 @@ import (
 
 type TraceServiceServerImpl struct {
 	protoTrace.UnimplementedTraceServiceServer
-	logger           *zap.Logger
-	writeBehindCache cache.WriteBehindCache[model.Span]
-	clusterService   service.SpanClusterService
-	countService     *count.CountService
+	writeBuffer write_buffer.DatabaseWriteBuffer[model.Span]
+	logger      *zap.Logger
 }
 
 func NewTraceServiceServerImpl(
 	logger *zap.Logger,
-	cache cache.WriteBehindCache[model.Span],
-	clusterService service.SpanClusterService,
-	countService *count.CountService,
+	dbWriteBuffer write_buffer.DatabaseWriteBuffer[model.Span],
 ) TraceServiceServerImpl {
 	logger.Info("Creating new TraceServiceServerImpl")
 	return TraceServiceServerImpl{
-		logger:           logger,
-		writeBehindCache: cache,
-		clusterService:   clusterService,
-		countService:     countService,
+		logger:      logger,
+		writeBuffer: dbWriteBuffer,
 	}
 }
 
@@ -48,33 +41,7 @@ func (tss TraceServiceServerImpl) Export(
 		}
 
 		typedSpans := getTypedSpans(resourceSpan, serviceName)
-		// we need to group because the spans underneath the same resource span may not have the same trace id
-		groupedSpans := groupTypedSpansByTraceID(typedSpans)
-		go func(groupedSpans map[string][]model.Span) {
-			for traceID, spans := range groupedSpans {
-				func() {
-					newSpansWithClusterId := make([]model.Span, len(spans))
-					for i, span := range spans {
-						func() {
-							clusterCtx, clusterCancel := context.WithTimeout(context.Background(), 10*time.Second)
-							defer clusterCancel()
-							newSpan, err := tss.clusterService.ClusterAndUpdateSpans(clusterCtx, span)
-							if err != nil {
-								tss.logger.Error("Failed to cluster and update spans", zap.Error(err))
-								return
-							}
-							newSpansWithClusterId[i] = newSpan
-						}()
-					}
-					putCtx, putCancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer putCancel()
-					err := tss.writeBehindCache.Put(putCtx, traceID, newSpansWithClusterId)
-					if err != nil {
-						tss.logger.Error("Failed to put span in cache", zap.Error(err))
-					}
-				}()
-			}
-		}(groupedSpans)
+		tss.writeBuffer.WriteToBuffer(typedSpans)
 	}
 
 	return &protoTrace.ExportTraceServiceResponse{}, nil
@@ -112,6 +79,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 	clusterEvent := getClusterString(serviceName, span.Name, spanKind, getAttributesString(attributes))
 
 	return model.Span{
+		Id:           generateSpanId(startTime, clusterEvent),
 		CreatedAt:    time.Now().UTC(),
 		SpanID:       spanId,
 		ParentSpanID: parentSpanId,
@@ -124,6 +92,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 		Events:       events,
 		SpanKind:     spanKind,
 		ClusterEvent: clusterEvent,
+		ClusterId:    "NOT_ASSIGNED",
 	}
 }
 
@@ -169,10 +138,8 @@ func getClusterString(serviceName string, actionName string, spanKind string, at
 	)
 }
 
-func groupTypedSpansByTraceID(spans []model.Span) map[string][]model.Span {
-	groupedSpans := make(map[string][]model.Span)
-	for _, span := range spans {
-		groupedSpans[span.TraceID] = append(groupedSpans[span.TraceID], span)
-	}
-	return groupedSpans
+func generateSpanId(timeStamp time.Time, clusterEvent string) string {
+	data := fmt.Sprintf("%s:%s", timeStamp.Format(time.StampNano), clusterEvent)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }
