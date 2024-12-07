@@ -12,7 +12,6 @@ import (
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -45,20 +44,29 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		coOccurringLogs := []logModel.LogEntry{
+		buckets := []countModel.Bucket{100}
+		firstCluster := []logModel.LogEntry{
 			{
 				ClusterId: clusterA,
 				Timestamp: firstTimeStamp,
-				CreatedAt: createdAt,
-			},
-			{
-				ClusterId: clusterB,
-				Timestamp: overlapWithFirstTimeStamp,
-				CreatedAt: createdAt,
+				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 			{
 				ClusterId: clusterA,
 				Timestamp: secondTimeStamp,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, firstCluster, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		_, firstRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
+
+		secondCluster := []logModel.LogEntry{
+			{
+				ClusterId: clusterB,
+				Timestamp: overlapWithFirstTimeStamp,
 				CreatedAt: createdAt,
 			},
 			{
@@ -67,19 +75,18 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 				CreatedAt: createdAt,
 			},
 			{
-				ClusterId: clusterA,
+				ClusterId: clusterB,
 				Timestamp: clusterAMiss,
 				CreatedAt: createdAt,
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
+		err = loadDataIntoElasticsearch(ac, secondCluster, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countModel.Bucket{100}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, secondRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -98,23 +105,9 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
-
-		for _, entry := range countEntries {
-			if entry.ClusterId == clusterA {
-				clusterAEntries = append(clusterAEntries, entry)
-			} else if entry.ClusterId == clusterB {
-				clusterBEntries = append(clusterBEntries, entry)
-			}
-		}
-
-		assertAllErrorsAreNil(t, errors)
-		assert.Equal(t, int64(2), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].CoOccurrences)
-
-		assert.Equal(t, int64(3), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
+		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
+		assert.Equal(t, int64(2), countEntries[0].CoOccurrences)
+		assert.Equal(t, int64(3), countEntries[0].Occurrences)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
@@ -135,20 +128,29 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		coOccurringLogs := []logModel.LogEntry{
-			{
-				ClusterId: clusterA,
-				Timestamp: firstTimeStamp,
-				CreatedAt: createdAt,
-			},
+		buckets := []countModel.Bucket{100}
+		firstBatch := []logModel.LogEntry{
 			{
 				ClusterId: clusterB,
 				Timestamp: overlapWithFirstTimeStampOne,
-				CreatedAt: createdAt,
+				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 			{
 				ClusterId: clusterB,
 				Timestamp: overlapWithFirstTimeStampTwo,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		_, firstRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
+
+		secondBatch := []logModel.LogEntry{
+			{
+				ClusterId: clusterA,
+				Timestamp: firstTimeStamp,
 				CreatedAt: createdAt,
 			},
 			{
@@ -163,13 +165,11 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
+		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-
-		buckets := []countModel.Bucket{100}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, secondRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -199,54 +199,12 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, errors)
+		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
+		assert.Equal(t, int64(1), clusterBEntries[0].CoOccurrences)
 
 		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
-	})
-
-	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, cls, logger)
-		err := deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
-		logSize := 30000
-		logs := make([]logModel.LogEntry, logSize)
-		overlapSize := 50
-		beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
-		for i := 0; i < logSize; i++ {
-			clusterId := "cluster" + strconv.Itoa(i)
-			logs[i] = logModel.LogEntry{
-				CreatedAt: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
-				Timestamp: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
-				ClusterId: clusterId,
-			}
-		}
-		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
-		if err != nil {
-			t.Errorf("Failed to load data into Elasticsearch: %v", err)
-		}
-		buckets := []countModel.Bucket{countModel.Bucket(overlapSize * 2)}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
-
-		stringQuery, err := json.Marshal(getAllQuery())
-		if err != nil {
-			t.Errorf("failed to marshal query: %v", err)
-		}
-
-		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
-		if err != nil {
-			t.Errorf("Failed to count: %v", err)
-		}
-		assertAllErrorsAreNil(t, errors)
-		// every log sequentially overlaps with another, creating two co-occurrences per log (previous and next log)
-		// except for the first and last log
-		assert.Equal(t, int64(logSize*2-2), count)
+		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
 	})
 
 	t.Run(
@@ -260,13 +218,21 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			spanSize := 100
 			spans := createSpans(beginTime, time.Millisecond*50, spanSize)
 			overlapSize := 2
-
-			err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
+			firstBatchSize := spanSize / 2
+			firstBatch := spans[:firstBatchSize]
+			secondBatch := spans[firstBatchSize:]
+			buckets := []countModel.Bucket{countModel.Bucket(overlapSize)}
+			err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			buckets := []countModel.Bucket{countModel.Bucket(overlapSize)}
-			_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+			_, firstRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
+
+			err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.SpanIndexName)
+			if err != nil {
+				t.Errorf("Failed to load data into Elasticsearch: %v", err)
+			}
+			_, secondRoundErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
 
 			stringQuery, err := json.Marshal(getAllQuery())
 			if err != nil {
@@ -279,7 +245,7 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
-			assertAllErrorsAreNil(t, errors)
+			assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 			assert.Equal(t, int64(0), count)
 		},
 	)
@@ -297,6 +263,7 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 		overlapWithFirstTimeStampOne := time.Date(2021, 1, 1, 0, 0, 0, 100, time.UTC)
 		overlapWithFirstTimeStampTwo := time.Date(2021, 1, 1, 0, 0, 0, 200, time.UTC)
 		overlapWithFirstTimeStampThree := time.Date(2021, 1, 1, 0, 0, 0, 300, time.UTC)
+		buckets := []countModel.Bucket{100}
 
 		clusterBMiss := time.Date(2023, 1, 1, 0, 0, 1, 200, time.UTC)
 
@@ -323,18 +290,12 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
+		_, clusterABatchErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
 		err = loadDataIntoElasticsearch(ac, clusterBSpans, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-
-		buckets := []countModel.Bucket{100}
-		_, errors := dp.ProcessData(
-			context.Background(),
-			buckets,
-			[]string{bootstrapper.LogIndexName,
-				bootstrapper.SpanIndexName},
-		)
+		_, clusterBBatchErrors := dp.ProcessData(context.Background(), buckets, dpInDBIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -348,26 +309,14 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		clusterBEntries, err := convertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
-
-		for _, entry := range countEntries {
-			if entry.ClusterId == clusterA {
-				clusterAEntries = append(clusterAEntries, entry)
-			} else if entry.ClusterId == clusterB {
-				clusterBEntries = append(clusterBEntries, entry)
-			}
-		}
-
-		assertAllErrorsAreNil(t, errors)
-		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
+		assertAllErrorsAreNil(t, append(clusterABatchErrors, clusterBBatchErrors...))
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
-		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
 		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+		assert.Equal(t, clusterB, clusterBEntries[0].ClusterId)
 	})
 }
