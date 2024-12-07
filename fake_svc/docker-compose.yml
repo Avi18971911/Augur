@@ -38,5 +38,36 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
 
+  fake-server:
+    build:
+      context: ./fake_server/
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+
+  augur:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    depends_on:
+      - elasticsearch
+    ports:
+      - "${OTEL_COLLECTOR_PORT_GRPC}"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node           # Single-node mode for local setup
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g           # Set JVM heap size to 1GB
+      - xpack.security.enabled=false         # Disable security for simplicity (only for local dev)
+    ports:
+      - "9200:9200"                          # Expose HTTP API on port 9200
+      - "9300:9300"                          # Expose transport API on port 9300
+
 volumes:
   grafana-storage:
