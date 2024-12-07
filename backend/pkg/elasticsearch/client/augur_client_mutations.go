@@ -10,16 +10,14 @@ import (
 
 func (a *AugurClientImpl) BulkUpdate(
 	ctx context.Context,
-	ids []string,
+	metaList []map[string]interface{},
 	fieldList []map[string]interface{},
 	index string,
 ) error {
 	var buf bytes.Buffer
 	for i, fields := range fieldList {
 		update := map[string]interface{}{
-			"update": map[string]interface{}{
-				"_id": ids[i],
-			},
+			"update": metaList[i],
 		}
 		metaJSON, err := json.Marshal(update)
 		if err != nil {

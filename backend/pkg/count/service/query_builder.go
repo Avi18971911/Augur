@@ -12,8 +12,8 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 			"bool": map[string]interface{}{
 				"must_not": []map[string]interface{}{
 					{
-						"term": map[string]interface{}{
-							"cluster_id": clusterId,
+						"terms": map[string]interface{}{
+							"cluster_id": []string{clusterId, "NOT_ASSIGNED"},
 						},
 					},
 				},
@@ -58,6 +58,7 @@ func buildGetNonMatchedCoClusterIdsQuery(
 	clusterId string,
 	matchedCoClusterIds []string,
 ) map[string]interface{} {
+	matchedCoClusterIds = append(matchedCoClusterIds, "NOT_ASSIGNED")
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{

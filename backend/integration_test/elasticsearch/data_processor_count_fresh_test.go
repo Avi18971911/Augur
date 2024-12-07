@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
@@ -25,9 +26,10 @@ func TestDataProcessor(t *testing.T) {
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
 	cs := countService.NewCountService(ac, logger)
+	cls := clusterService.NewClusterService(ac, logger)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, cls, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -117,7 +119,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, cls, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -207,7 +209,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, cls, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -250,7 +252,7 @@ func TestDataProcessor(t *testing.T) {
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := service.NewDataProcessorService(ac, cs, logger)
+			dp := service.NewDataProcessorService(ac, cs, cls, logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -284,7 +286,7 @@ func TestDataProcessor(t *testing.T) {
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, logger)
+		dp := service.NewDataProcessorService(ac, cs, cls, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -420,7 +422,7 @@ func createSpans(
 			ActionName:   "actionName",
 			SpanKind:     "spanKind",
 			ClusterEvent: fmt.Sprintf(
-				"service=%s,operation=%s,kind=%s", "serviceName", "actionName", "spanKind",
+				"service=%s,operation=%s,kind=%s,number=%d", "serviceName", "actionName", "spanKind", i,
 			),
 			ClusterId: fmt.Sprintf("cluster-%d", i+1),
 			Attributes: map[string]string{
