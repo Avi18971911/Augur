@@ -14,9 +14,9 @@ const (
 )
 
 type Transactional interface {
-	BeginTransaction(ctx context.Context, isolationLevel int, durabilityLevel int) (TransactionContext, error)
-	Commit(ctx context.Context) error
-	Rollback(ctx context.Context) error
+	BeginTransaction(ctx context.Context, isolationLevel int, durabilityLevel int) (TransactionContext, func(), error)
+	Commit(txnCtx TransactionContext, cancelFunc func()) error
+	Rollback(txnCtx TransactionContext, cancelFunc func()) error
 }
 
 type TransactionContext interface {

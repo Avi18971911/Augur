@@ -50,14 +50,14 @@ func (a *AccountServiceImpl) Login(
 	defer span.End()
 	fake_server_tracer.PutTracerInContext(getCtx, tracer)
 
-	txnCtx, err := a.tran.BeginTransaction(getCtx, transactional.IsolationLow, transactional.DurabilityLow)
+	txnCtx, cancelFunc, err := a.tran.BeginTransaction(getCtx, transactional.IsolationLow, transactional.DurabilityLow)
 	if err != nil {
 		a.logger.Errorf("Unable to begin transaction %v", err)
 		return nil, fmt.Errorf("unable to begin transaction with error: %w", err)
 	}
 
 	defer func() {
-		if rollErr := a.tran.Rollback(txnCtx); rollErr != nil {
+		if rollErr := a.tran.Rollback(txnCtx, cancelFunc); rollErr != nil {
 			a.logger.Errorf("Unable to rollback transaction %v", rollErr)
 		}
 	}()
