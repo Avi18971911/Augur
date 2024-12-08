@@ -86,7 +86,7 @@ func main() {
 		for range ticker.C {
 			_, errors := dp.ProcessData(
 				context.Background(),
-				[]countModel.Bucket{100},
+				[]countModel.Bucket{2000},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
 			for _, err := range errors {
 				if err != nil {

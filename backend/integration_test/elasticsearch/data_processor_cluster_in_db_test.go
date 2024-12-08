@@ -34,7 +34,6 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		}
 		const clusterAMessage = "Message in common with Cluster A"
 		const clusterBMessage = "B's message, random filler words"
-		const notAssigned = "NOT_ASSIGNED"
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		buckets := []countModel.Bucket{100}
@@ -43,13 +42,13 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
@@ -63,19 +62,19 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 
@@ -124,12 +123,12 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		for _, entry := range clusterALogs {
 			assert.Equal(t, clusterAId, entry.ClusterId)
 			assert.NotEqual(t, clusterBId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 		for _, entry := range clusterBLogs {
 			assert.Equal(t, clusterBId, entry.ClusterId)
 			assert.NotEqual(t, clusterAId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 	})
 
@@ -141,7 +140,6 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		}
 		const clusterAMessage = "Message in common with Cluster A"
 		const clusterBMessage = "B's message, random filler words"
-		const notAssigned = "NOT_ASSIGNED"
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -151,13 +149,13 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 		secondBatch := []logModel.LogEntry{
@@ -165,19 +163,19 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
@@ -231,12 +229,12 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		for _, entry := range clusterALogs {
 			assert.Equal(t, clusterAId, entry.ClusterId)
 			assert.NotEqual(t, clusterBId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 		for _, entry := range clusterBLogs {
 			assert.Equal(t, clusterBId, entry.ClusterId)
 			assert.NotEqual(t, clusterAId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 	})
 
@@ -250,7 +248,6 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		const clusterBMessage = "B's message, random filler words"
 		const clusterCEvent = "Precise 100% match for Cluster C"
 		const clusterDEvent = "Precise 100% match for Cluster D"
-		const notAssigned = "NOT_ASSIGNED"
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -260,18 +257,18 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 		firstBatchSpans := []spanModel.Span{
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt.Add(-time.Second * 500),
@@ -295,24 +292,24 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
 		secondBatchSpans := []spanModel.Span{
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt,
@@ -321,7 +318,7 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt,
@@ -330,7 +327,7 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt,
@@ -412,22 +409,22 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		for _, entry := range clusterALogs {
 			assert.Equal(t, clusterAId, entry.ClusterId)
 			assert.NotEqual(t, clusterBId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 		for _, entry := range clusterBLogs {
 			assert.Equal(t, clusterBId, entry.ClusterId)
 			assert.NotEqual(t, clusterAId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 		for _, entry := range clusterCSpans {
 			assert.Equal(t, clusterCId, entry.ClusterId)
 			assert.NotEqual(t, clusterDId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 		for _, entry := range clusterDSpans {
 			assert.Equal(t, clusterDId, entry.ClusterId)
 			assert.NotEqual(t, clusterCId, entry.ClusterId)
-			assert.NotEqual(t, notAssigned, entry.ClusterId)
+			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 	})
 }
