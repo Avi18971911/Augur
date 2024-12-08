@@ -1,7 +1,6 @@
 package bootstrapper
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -32,16 +31,8 @@ func (bs *Bootstrapper) BootstrapElasticsearch() error {
 		return fmt.Errorf("failed to connect to Elasticsearch: %w", err)
 	}
 
-	if err := bs.createPipeline(tokenLengthPipelineName, tokenLengthPipeline); err != nil {
-		return fmt.Errorf("error creating pipeline log template: %w", err)
-	}
-
 	if err := bs.createIndex(LogIndexName, logIndex); err != nil {
 		return fmt.Errorf("error creating index log template: %w", err)
-	}
-
-	if err := bs.putSettings(LogIndexName, tokenLengthSettings); err != nil {
-		return fmt.Errorf("error putting settings for log index: %w", err)
 	}
 
 	if err := bs.createIndex(SpanIndexName, spanIndex); err != nil {
@@ -90,52 +81,5 @@ func (bs *Bootstrapper) createIndex(indexName string, index map[string]interface
 	}
 
 	bs.logger.Info("Successfully created index", zap.String("template_name", indexName))
-	return nil
-}
-
-func (bs *Bootstrapper) createPipeline(pipelineName string, pipeline map[string]interface{}) error {
-	body, err := json.Marshal(pipeline)
-	if err != nil {
-		return fmt.Errorf("error marshaling pipeline input during bootstrap: %w", err)
-	}
-
-	res, err := bs.esClient.Ingest.PutPipeline(
-		pipelineName,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return fmt.Errorf("error creating pipeline during bootstrap %s: %w", pipelineName, err)
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		return fmt.Errorf("error response for pipeline %s: %s", pipelineName, res.String())
-	}
-
-	bs.logger.Info("Successfully created pipeline", zap.String("pipeline_name", pipelineName))
-	return nil
-}
-
-func (bs *Bootstrapper) putSettings(indexName string, settings map[string]interface{}) error {
-	body, err := json.Marshal(settings)
-	if err != nil {
-		return fmt.Errorf("error marshaling settings input during bootstrap: %w", err)
-	}
-
-	res, err := bs.esClient.Indices.PutSettings(
-		bytes.NewReader(body),
-		bs.esClient.Indices.PutSettings.WithIndex(indexName),
-	)
-
-	if err != nil {
-		return fmt.Errorf("error putting settings during bootstrap %s: %w", indexName, err)
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		return fmt.Errorf("error response for settings %s: %s", indexName, res.String())
-	}
-
-	bs.logger.Info("Successfully put settings", zap.String("index_name", indexName))
 	return nil
 }
