@@ -6,5 +6,5 @@ import (
 )
 
 type AccountRepository interface {
-	GetAccountDetailsFromUsername(username string, ctx context.Context) (*model.AccountDetailsOutput, error)
+	GetAccountDetailsFromUsername(ctx context.Context, username string) (*model.AccountDetailsOutput, error)
 }
