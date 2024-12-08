@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fake_svc/fake_server/pkg/fake_server_tracer"
 	"fake_svc/fake_server/pkg/repository"
 	"fake_svc/fake_server/pkg/service/model"
 	"fake_svc/fake_server/pkg/transactional"
@@ -37,8 +38,17 @@ func (a *AccountServiceImpl) Login(
 	ctx context.Context,
 ) (*model.AccountDetailsOutput, error) {
 	a.logger.Infof("Login request received with username: %s", "username")
+	tracer, err := fake_server_tracer.GetTracerFromContext(ctx)
+	if err != nil {
+		a.logger.Errorf("Unable to get tracer from context during Login %v", err)
+		return nil, fmt.Errorf("unable to login with error: %w", err)
+	}
 	getCtx, cancel := context.WithTimeout(ctx, addTimeout)
 	defer cancel()
+
+	getCtx, span := tracer.Start(getCtx, "AccountServiceLogin")
+	defer span.End()
+	fake_server_tracer.PutTracerInContext(getCtx, tracer)
 
 	txnCtx, err := a.tran.BeginTransaction(getCtx, transactional.IsolationLow, transactional.DurabilityLow)
 	if err != nil {
@@ -52,7 +62,7 @@ func (a *AccountServiceImpl) Login(
 		}
 	}()
 
-	accountDetails, err := a.ar.GetAccountDetailsFromUsername(username, getCtx)
+	accountDetails, err := a.ar.GetAccountDetailsFromUsername(getCtx, username)
 	if err != nil {
 		a.logger.Errorf("Unable to get account details %v", err)
 		if errors.Is(err, model.ErrNoMatchingUsername) {

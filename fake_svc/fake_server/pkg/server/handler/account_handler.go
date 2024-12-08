@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fake_svc/fake_server/pkg/fake_server_tracer"
 	"fake_svc/fake_server/pkg/service"
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ func AccountLoginHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("Login request received with URL %s and method %s", r.URL.Path, r.Method)
 		ctx, span := tracer.Start(ctx, "AccountLoginHandler")
+		ctx = fake_server_tracer.PutTracerInContext(ctx, tracer)
 		defer span.End()
 		span.SetAttributes(
 			attribute.String("http.url", r.URL.Path),
