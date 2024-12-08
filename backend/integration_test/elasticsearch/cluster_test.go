@@ -247,14 +247,14 @@ func TestLogCluster(t *testing.T) {
 		const serviceName = "Service"
 		logBatch := []logModel.LogEntry{
 			{
-				ClusterId: notAssigned,
+				ClusterId: "MatchingCluster",
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				Timestamp: onlyTimeStamp,
 				Message:   firstMatchingMessage,
 				Service:   serviceName,
 			},
 			{
-				ClusterId: notAssigned,
+				ClusterId: "NonMatchingCluster",
 				CreatedAt: createdAt.Add(-time.Second * 400),
 				Timestamp: onlyTimeStamp,
 				Message:   nonMatchingMessage,
@@ -281,6 +281,11 @@ func TestLogCluster(t *testing.T) {
 		}
 		assert.NotZero(t, len(output))
 		assert.Equal(t, 2, len(output))
+		if output[0].ObjectId == "Test" {
+			assert.Equal(t, "MatchingCluster", output[1].ClusterId)
+		} else {
+			assert.Equal(t, "MatchingCluster", output[0].ClusterId)
+		}
 	})
 
 	t.Run("shouldn't match with shorter terms", func(t *testing.T) {
