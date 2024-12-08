@@ -49,5 +49,8 @@ func similarityToLogMessageQueryBuilder(id, service, phrase string) map[string]i
 				},
 			},
 		},
+		"collapse": map[string]interface{}{
+			"field": "cluster_id",
+		},
 	}
 }

@@ -148,13 +148,13 @@ func TestLogCluster(t *testing.T) {
 		const message = "this is a log message"
 		logBatch := []logModel.LogEntry{
 			{
-				ClusterId: notAssigned,
+				ClusterId: "ClusterA",
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				Timestamp: onlyTimeStamp,
 				Message:   message,
 			},
 			{
-				ClusterId: notAssigned,
+				ClusterId: "ClusterA",
 				CreatedAt: createdAt.Add(-time.Second * 400),
 				Timestamp: onlyTimeStamp,
 				Message:   message,
@@ -178,15 +178,13 @@ func TestLogCluster(t *testing.T) {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
 		assert.NotZero(t, len(output))
-		assert.Equal(t, 3, len(output))
+		assert.Equal(t, 2, len(output))
 		hasTest := output[0].ObjectId == "test"
-		firstClusterId := output[0].ClusterId
 		firstId := output[0].ObjectId
 		for _, cluster := range output[1:] {
 			if cluster.ObjectId == "test" {
 				hasTest = true
 			}
-			assert.Equal(t, firstClusterId, cluster.ClusterId)
 			assert.NotEqual(t, firstId, cluster.ObjectId)
 		}
 		assert.True(t, hasTest)
@@ -283,5 +281,48 @@ func TestLogCluster(t *testing.T) {
 		}
 		assert.NotZero(t, len(output))
 		assert.Equal(t, 2, len(output))
+	})
+
+	t.Run("shouldn't match with shorter terms", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		const notAssigned = "NOT_ASSIGNED"
+		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
+		const matchingMessage = "Invalid Credentials for for username Bob and password Barker"
+		const nonMatchingMessage = "Invalid Credentials"
+		const serviceName = "Service"
+		logBatch := []logModel.LogEntry{
+			{
+				ClusterId: notAssigned,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+				Timestamp: onlyTimeStamp,
+				Message:   matchingMessage,
+				Service:   serviceName,
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, logBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to load test data: %v", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		input := clusterModel.ClusterInput{
+			DataType:    clusterModel.LogClusterInputType,
+			TextualData: nonMatchingMessage,
+			ClusterId:   notAssigned,
+			Id:          "Test",
+			ServiceName: serviceName,
+		}
+		output, err := cls.ClusterData(ctx, input)
+		if err != nil {
+			t.Errorf("Failed to cluster span with error: %v", err)
+		}
+		assert.NotZero(t, len(output))
+		assert.Equal(t, 1, len(output))
+		assert.Equal(t, "Test", output[0].ObjectId)
 	})
 }
