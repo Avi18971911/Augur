@@ -8,6 +8,7 @@ import (
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"go.uber.org/zap"
+	"strings"
 	"time"
 )
 
@@ -60,9 +61,18 @@ func (cls *ClusterServiceImpl) ClusterData(
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for similar data in Elasticsearch: %w", err)
 	}
+	var filteredResults []map[string]interface{}
+	if input.DataType == model.LogClusterInputType {
+		filteredResults, err = eliminateLogResultsWithUnequalMessageTokenLengths(res, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to filter search results based on token length: %w", err)
+		}
+	} else {
+		filteredResults = res
+	}
 	var output []model.ClusterOutput
 	if res != nil {
-		output, err = extractObjectIdAndClusterId(res, input.DataType)
+		output, err = extractObjectIdAndClusterId(filteredResults, input.DataType)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert search results to cluster details: %w", err)
 		}
@@ -75,6 +85,25 @@ func (cls *ClusterServiceImpl) ClusterData(
 	}
 	output = append(output, outputFromInput)
 	return output, nil
+}
+
+func eliminateLogResultsWithUnequalMessageTokenLengths(
+	resultData []map[string]interface{},
+	inputData model.ClusterInput,
+) ([]map[string]interface{}, error) {
+	matchingMessageTokensLength := len(strings.Fields(inputData.TextualData))
+	var filteredResults []map[string]interface{}
+	for _, result := range resultData {
+		message, ok := result["message"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to extract message from search result data")
+		}
+		tokenizedMessage := strings.Fields(message)
+		if len(tokenizedMessage) == matchingMessageTokensLength {
+			filteredResults = append(filteredResults, result)
+		}
+	}
+	return filteredResults, nil
 }
 
 func extractObjectIdAndClusterId(
