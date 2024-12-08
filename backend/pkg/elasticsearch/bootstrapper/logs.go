@@ -43,6 +43,29 @@ var logIndex = map[string]interface{}{
 			"cluster_id": map[string]interface{}{
 				"type": "keyword",
 			},
+			"token_length": map[string]interface{}{
+				"type": "integer",
+			},
+		},
+	},
+}
+
+const tokenLengthPipelineName = "token_length_pipeline"
+
+var tokenLengthSettings = map[string]interface{}{
+	"index": map[string]interface{}{
+		"default_pipeline": tokenLengthPipelineName,
+	},
+}
+
+var tokenLengthPipeline = map[string]interface{}{
+	"description": "Pipeline to process token length",
+	"processors": []map[string]interface{}{
+		{
+			"script": map[string]interface{}{
+				"source": "def tokens = ctx.message.tokenize();" +
+					"ctx.token_length = tokens.size();",
+			},
 		},
 	},
 }
