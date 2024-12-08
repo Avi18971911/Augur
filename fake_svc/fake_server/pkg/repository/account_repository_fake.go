@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fake_svc/fake_server/pkg/fake_server_tracer"
 	"fake_svc/fake_server/pkg/service/model"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
@@ -57,10 +58,19 @@ var fakeResult = &model.AccountDetailsOutput{
 }
 
 func (ar *FakeAccountRepository) GetAccountDetailsFromUsername(
-	username string,
 	ctx context.Context,
+	username string,
 ) (*model.AccountDetailsOutput, error) {
 	ar.logger.Infof("Searching for the username in the DB: %s", username)
+
+	tracer, err := fake_server_tracer.GetTracerFromContext(ctx)
+	if err != nil {
+		ar.logger.Errorf("Unable to get tracer from context during GetAccountDetailsFromUsername %v", err)
+		return nil, err
+	}
+	ctx, span := tracer.Start(ctx, "AccountRepositoryGetAccountDetailsFromUsername")
+	defer span.End()
+
 	time.Sleep(1 * time.Second)
 	ar.logger.Infof("Found the username in the DB: %s", username)
 	return fakeResult, nil
