@@ -24,13 +24,12 @@ func TestSpanCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const clusterEvent = "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT"
 		spanBatch := []spanModel.Span{
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt.Add(-time.Second * 500),
@@ -39,7 +38,7 @@ func TestSpanCluster(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt.Add(-time.Second * 400),
@@ -58,7 +57,7 @@ func TestSpanCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.SpanClusterInputType,
 			TextualData: clusterEvent,
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
 		output, err := cls.ClusterData(ctx, input)
@@ -84,13 +83,12 @@ func TestSpanCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const clusterEvent = "service=loadgenerator,operation=GET,kind=SPAN_KIND_CLIENT"
 		spanBatch := []spanModel.Span{
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt.Add(-time.Second * 500),
@@ -99,7 +97,7 @@ func TestSpanCluster(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
-				ClusterId:    notAssigned,
+				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
 				CreatedAt:    createdAt.Add(-time.Second * 400),
@@ -118,7 +116,7 @@ func TestSpanCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.SpanClusterInputType,
 			TextualData: "not the same cluster event indeed",
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
 		output, err := cls.ClusterData(ctx, input)
@@ -142,7 +140,6 @@ func TestLogCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const message = "this is a log message"
@@ -170,7 +167,7 @@ func TestLogCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.LogClusterInputType,
 			TextualData: message,
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
 		output, err := cls.ClusterData(ctx, input)
@@ -195,7 +192,6 @@ func TestLogCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const firstMessage = "Login request successful with username: fake_username and password: fake_password"
@@ -203,7 +199,7 @@ func TestLogCluster(t *testing.T) {
 		const serviceName = "Service"
 		logBatch := []logModel.LogEntry{
 			{
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				Timestamp: onlyTimeStamp,
 				Message:   firstMessage,
@@ -220,7 +216,7 @@ func TestLogCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.LogClusterInputType,
 			TextualData: nonMatchingMessage,
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "Test",
 			ServiceName: serviceName,
 		}
@@ -238,7 +234,6 @@ func TestLogCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const firstMatchingMessage = "Login request successful with username: Bob and password: Barker"
@@ -271,7 +266,7 @@ func TestLogCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.LogClusterInputType,
 			TextualData: secondMatchingMessage,
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "Test",
 			ServiceName: serviceName,
 		}
@@ -293,7 +288,6 @@ func TestLogCluster(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		const notAssigned = "NOT_ASSIGNED"
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 		const matchingMessage = "Invalid Credentials for for username Bob and password Barker"
@@ -301,7 +295,7 @@ func TestLogCluster(t *testing.T) {
 		const serviceName = "Service"
 		logBatch := []logModel.LogEntry{
 			{
-				ClusterId: notAssigned,
+				ClusterId: clusterService.DefaultClusterId,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				Timestamp: onlyTimeStamp,
 				Message:   matchingMessage,
@@ -318,7 +312,7 @@ func TestLogCluster(t *testing.T) {
 		input := clusterModel.ClusterInput{
 			DataType:    clusterModel.LogClusterInputType,
 			TextualData: nonMatchingMessage,
-			ClusterId:   notAssigned,
+			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "Test",
 			ServiceName: serviceName,
 		}

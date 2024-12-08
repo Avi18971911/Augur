@@ -13,6 +13,7 @@ import (
 )
 
 const csTimeOut = 10 * time.Second
+const DefaultClusterId = "NOT_ASSIGNED"
 
 type ClusterService interface {
 	ClusterData(ctx context.Context, input model.ClusterInput) ([]model.ClusterOutput, error)

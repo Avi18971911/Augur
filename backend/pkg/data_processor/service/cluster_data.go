@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
@@ -163,7 +164,7 @@ func unionFind(
 		if result != nil && len(result) > 0 {
 			var idToClusterOn = defaultId
 			for _, clusterOutput := range result {
-				if clusterOutput.ClusterId == "NOT_ASSIGNED" {
+				if clusterOutput.ClusterId == clusterService.DefaultClusterId {
 					clusterOutput.ClusterId = uuid.NewString()
 				}
 				clusterId := clusterOutput.ClusterId

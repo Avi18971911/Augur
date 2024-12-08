@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
@@ -92,7 +93,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 		Events:       events,
 		SpanKind:     spanKind,
 		ClusterEvent: clusterEvent,
-		ClusterId:    "NOT_ASSIGNED",
+		ClusterId:    clusterService.DefaultClusterId,
 	}
 }
 
