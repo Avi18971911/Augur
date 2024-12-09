@@ -11,13 +11,14 @@ import (
 )
 
 const timeout = 10 * time.Second
+const minimumRatio = 0.6
 
 type AnalyticsService struct {
 	ac     augurElasticsearch.AugurClient
 	logger *zap.Logger
 }
 
-func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) *InferenceService {
+func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) *AnalyticsService {
 	return &AnalyticsService{
 		ac:     ac,
 		logger: logger,
@@ -27,7 +28,7 @@ func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) 
 func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterId string,
-) {
+) ([]map[string]interface{}, []map[string]interface{}, error) {
 	stack := []string{clusterId}
 	var clusterToSucceedingClusters map[string][]string
 	visitedClusters := map[string]bool{clusterId: true}
@@ -39,16 +40,15 @@ func (as *AnalyticsService) UpdateAnalytics(
 		stack = stack[1:]
 		relatedClusters, err := as.getRelatedClusters(ctx, clusterId)
 		if err != nil {
-			as.logger.Error("failed to get related clusters", zap.Error(err))
-			return
+			return nil, nil, fmt.Errorf("failed to get related clusters: %w", err)
 		}
 		for _, cluster := range relatedClusters {
 			if cluster.MeanTDOA < 0 {
 				clusterToSucceedingClusters[cluster.ClusterId] =
 					append(clusterToSucceedingClusters[cluster.ClusterId], currentClusterId)
 			} else {
-				clusterToSucceedingClusters[cluster.ClusterId] =
-					append(clusterToSucceedingClusters[cluster.ClusterId], cluster.ClusterId)
+				clusterToSucceedingClusters[currentClusterId] =
+					append(clusterToSucceedingClusters[currentClusterId], cluster.ClusterId)
 			}
 			if _, ok := visitedClusters[cluster.ClusterId]; !ok {
 				stack = append(stack, cluster.ClusterId)
@@ -57,6 +57,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 		}
 	}
 	metaUpdate, documentUpdate := getAnalyticsUpdate(clusterToSucceedingClusters)
+	return metaUpdate, documentUpdate, nil
 }
 
 func (as *AnalyticsService) getRelatedClusters(
@@ -112,4 +113,40 @@ func parseClusters(docs []map[string]interface{}) ([]Cluster, error) {
 		clusters[i] = cluster
 	}
 	return clusters, nil
+}
+
+func pruneClusters(clusters []Cluster) []Cluster {
+	prunedClusters := make([]Cluster, 0)
+	for _, cluster := range clusters {
+		sampleRatio := float64(cluster.CoOccurrences) / float64(cluster.Occurrences)
+		if sampleRatio >= minimumRatio {
+			prunedClusters = append(prunedClusters, cluster)
+		}
+	}
+	return prunedClusters
+}
+
+func getAnalyticsUpdate(
+	clusterToSucceedingClusters map[string][]string,
+) ([]map[string]interface{}, []map[string]interface{}) {
+	metaUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
+	documentUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
+	i := 0
+	for clusterId, succeedingClusterIds := range clusterToSucceedingClusters {
+		metaUpdate := map[string]interface{}{
+			"update": map[string]interface{}{
+				"_id": clusterId,
+			},
+		}
+		documentUpdate := map[string]interface{}{
+			"doc": map[string]interface{}{
+				"causesClusters": succeedingClusterIds,
+			},
+			"doc_as_upsert": true,
+		}
+		metaUpdates[i] = metaUpdate
+		documentUpdates[i] = documentUpdate
+		i++
+	}
+	return metaUpdates, documentUpdates
 }
