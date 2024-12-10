@@ -2,10 +2,12 @@ package elasticsearch
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/inference/service"
-	"go.uber.org/zap"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -51,13 +53,51 @@ func TestUpdateAnalytics(t *testing.T) {
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.CountIndexName)
-		updateCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		meta, documents, err := as.UpdateAnalytics(updateCtx, "1")
+		meta, documents, err := as.UpdateAnalytics(context.Background(), "1")
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
-		logger.Info("Meta", zap.Any("meta", meta), zap.Any("documents", documents))
+		updateCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		var index = bootstrapper.ClusterIndexName
+		defer cancel()
+		err = ac.BulkIndex(updateCtx, meta, documents, &index)
+		if err != nil {
+			t.Errorf("Failed to bulk index: %v", err)
+		}
+		queryString, err := json.Marshal(getAllQuery())
+		if err != nil {
+			t.Errorf("Failed to marshal query: %v", err)
+		}
+		allClusterDocs, err := ac.Search(
+			context.Background(),
+			string(queryString),
+			[]string{bootstrapper.ClusterIndexName},
+			nil,
+		)
+		if err != nil {
+			t.Errorf("Failed to search: %v", err)
+		}
+		clusters, err := convertClusterDocs(allClusterDocs)
+		if err != nil {
+			t.Errorf("Failed to convert cluster docs: %v", err)
+		}
+		assert.Equal(t, 3, len(clusters))
+		var clusterOneCauses, clusterTwoCauses, clusterThreeCauses, clusterFourCauses []string
+		for _, cluster := range clusters {
+			if cluster.ClusterId == "1" {
+				clusterOneCauses = cluster.CausedClusters
+			} else if cluster.ClusterId == "2" {
+				clusterTwoCauses = cluster.CausedClusters
+			} else if cluster.ClusterId == "3" {
+				clusterThreeCauses = cluster.CausedClusters
+			} else if cluster.ClusterId == "4" {
+				clusterFourCauses = cluster.CausedClusters
+			}
+		}
+		assert.ElementsMatch(t, []string{"2"}, clusterOneCauses)
+		assert.ElementsMatch(t, []string{"3"}, clusterTwoCauses)
+		assert.ElementsMatch(t, []string{}, clusterThreeCauses)
+		assert.ElementsMatch(t, []string{"1"}, clusterFourCauses)
 	})
 
 }
@@ -69,4 +109,36 @@ type AnalyticsTestCluster struct {
 	CoOccurrences int64   `json:"co_occurrences"`
 	MeanTDOA      float64 `json:"mean_TDOA"`
 	VarianceTDOA  float64 `json:"variance_TDOA"`
+}
+
+type AnalyticsCluster struct {
+	ClusterId      string
+	CausedClusters []string
+}
+
+func convertClusterDocs(docs []map[string]interface{}) ([]AnalyticsCluster, error) {
+	clusters := make([]AnalyticsCluster, len(docs))
+	for i, doc := range docs {
+		clusterId, ok := doc["_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string: %v", doc)
+		}
+		causesClusters, ok := doc["causes_clusters"].([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("failed to convert causes_clusters to []string: %v", doc)
+		}
+		stringCausesClusters := make([]string, len(causesClusters))
+		for j, causeCluster := range causesClusters {
+			stringCauseCluster, ok := causeCluster.(string)
+			if !ok {
+				return nil, fmt.Errorf("failed to convert cause_cluster to string: %v", doc)
+			}
+			stringCausesClusters[j] = stringCauseCluster
+		}
+		clusters[i] = AnalyticsCluster{
+			ClusterId:      clusterId,
+			CausedClusters: stringCausesClusters,
+		}
+	}
+	return clusters, nil
 }

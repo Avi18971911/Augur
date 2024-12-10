@@ -28,7 +28,7 @@ func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) 
 func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterId string,
-) ([]map[string]interface{}, []map[string]interface{}, error) {
+) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap, error) {
 	stack := []string{clusterId}
 	clusterToSucceedingClusters := make(map[string][]string)
 	visitedClusters := map[string]bool{clusterId: true}
@@ -38,7 +38,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 		}
 		currentClusterId := stack[0]
 		stack = stack[1:]
-		relatedClusters, err := as.getRelatedClusters(ctx, clusterId)
+		relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get related clusters: %w", err)
 		}
@@ -128,9 +128,9 @@ func pruneClusters(clusters []Cluster) []Cluster {
 
 func getAnalyticsUpdate(
 	clusterToSucceedingClusters map[string][]string,
-) ([]map[string]interface{}, []map[string]interface{}) {
-	metaUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
-	documentUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
+) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap) {
+	metaUpdates := make([]augurElasticsearch.MetaMap, len(clusterToSucceedingClusters))
+	documentUpdates := make([]augurElasticsearch.DocumentMap, len(clusterToSucceedingClusters))
 	i := 0
 	for clusterId, succeedingClusterIds := range clusterToSucceedingClusters {
 		metaUpdate := map[string]interface{}{
@@ -140,7 +140,7 @@ func getAnalyticsUpdate(
 		}
 		documentUpdate := map[string]interface{}{
 			"doc": map[string]interface{}{
-				"causesClusters": succeedingClusterIds,
+				"causes_clusters": succeedingClusterIds,
 			},
 			"doc_as_upsert": true,
 		}
