@@ -30,7 +30,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 	clusterId string,
 ) ([]map[string]interface{}, []map[string]interface{}, error) {
 	stack := []string{clusterId}
-	var clusterToSucceedingClusters map[string][]string
+	clusterToSucceedingClusters := make(map[string][]string)
 	visitedClusters := map[string]bool{clusterId: true}
 	for {
 		if len(stack) == 0 {
@@ -81,7 +81,7 @@ func (as *AnalyticsService) getRelatedClusters(
 }
 
 func parseClusters(docs []map[string]interface{}) ([]Cluster, error) {
-	clusters := make([]Cluster, 0)
+	clusters := make([]Cluster, len(docs))
 	for i, doc := range docs {
 		clusterId, ok := doc["cluster_id"].(string)
 		if !ok {
