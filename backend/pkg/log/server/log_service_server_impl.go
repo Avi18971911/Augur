@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -57,7 +58,7 @@ func typeLog(log *v1.LogRecord, serviceName string) model.LogEntry {
 	return model.LogEntry{
 		Id:        generateLogId(timestamp, message),
 		CreatedAt: time.Now().UTC(),
-		ClusterId: "NOT_ASSIGNED",
+		ClusterId: clusterService.DefaultClusterId,
 		Timestamp: timestamp,
 		Severity:  severity,
 		Message:   message,

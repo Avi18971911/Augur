@@ -1,6 +1,7 @@
 package service
 
 import (
+	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"time"
@@ -13,7 +14,7 @@ func buildGetCoOccurringClustersQuery(clusterId string, fromTime time.Time, toTi
 				"must_not": []map[string]interface{}{
 					{
 						"terms": map[string]interface{}{
-							"cluster_id": []string{clusterId, "NOT_ASSIGNED"},
+							"cluster_id": []string{clusterId, clusterService.DefaultClusterId},
 						},
 					},
 				},
@@ -58,7 +59,7 @@ func buildGetNonMatchedCoClusterIdsQuery(
 	clusterId string,
 	matchedCoClusterIds []string,
 ) map[string]interface{} {
-	matchedCoClusterIds = append(matchedCoClusterIds, "NOT_ASSIGNED")
+	matchedCoClusterIds = append(matchedCoClusterIds, clusterService.DefaultClusterId)
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
