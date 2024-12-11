@@ -4,15 +4,65 @@ import (
 	"context"
 	"fmt"
 	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
-	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
+	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/asaskevich/EventBus"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"time"
 )
 
-func (dps *DataProcessorService) clusterData(
+const workerCount = 50
+const timeout = 10 * time.Second
+
+type ClusterDataProcessor struct {
+	ac          client.AugurClient
+	cls         ClusterService
+	bus         EventBus.Bus
+	inputTopic  string
+	outputTopic string
+	logger      *zap.Logger
+}
+
+func NewClusterDataProcessor(
+	ac client.AugurClient,
+	cls ClusterService,
+	bus EventBus.Bus,
+	inputTopic string,
+	outputTopic string,
+	logger *zap.Logger,
+) *ClusterDataProcessor {
+	return &ClusterDataProcessor{
+		ac:          ac,
+		cls:         cls,
+		bus:         bus,
+		inputTopic:  inputTopic,
+		outputTopic: outputTopic,
+		logger:      logger,
+	}
+}
+
+func (cdp *ClusterDataProcessor) Start() {
+	err := cdp.bus.SubscribeAsync(
+		cdp.inputTopic,
+		func(ctx context.Context, spanOrLogData []map[string]interface{}) {
+			clusterDataOutput, err := cdp.clusterData(ctx, spanOrLogData)
+			if err != nil {
+				cdp.logger.Error("failed to cluster data", zap.Error(err))
+				return
+			}
+			cdp.bus.Publish(cdp.outputTopic, ctx, clusterDataOutput)
+		},
+		false,
+	)
+	if err != nil {
+		cdp.logger.Error("failed to subscribe to input topic", zap.Error(err))
+	}
+}
+
+func (cdp *ClusterDataProcessor) clusterData(
 	ctx context.Context,
 	spanOrLogData []map[string]interface{},
 ) ([]model.ClusterOutput, error) {
@@ -20,20 +70,20 @@ func (dps *DataProcessorService) clusterData(
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster input: %w", err)
 	}
-	ids, clusterIds, err := dps.clusterDataIntoLikeIds(ctx, clusterInputList)
+	ids, clusterIds, err := cdp.clusterDataIntoLikeIds(ctx, clusterInputList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to cluster data into like ids: %w", err)
 	}
-	dataProcessorClusterOutput := dps.finalizeOutput(ids, clusterIds, spanOrLogData)
+	dataProcessorClusterOutput := cdp.finalizeOutput(ids, clusterIds, spanOrLogData)
 	return dataProcessorClusterOutput, nil
 }
 
-func (dps *DataProcessorService) clusterDataIntoLikeIds(
+func (cdp *ClusterDataProcessor) clusterDataIntoLikeIds(
 	ctx context.Context,
 	clusterInputList []clusterModel.ClusterInput,
 ) ([]string, []string, error) {
 	const clusterErrorMsg = "Failed to cluster log"
-	resultChannel := getResultsWithWorkers[
+	resultChannel := service.GetResultsWithWorkers[
 		clusterModel.ClusterInput,
 		[]clusterModel.ClusterOutput,
 	](
@@ -43,14 +93,14 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 			ctx context.Context,
 			input clusterModel.ClusterInput,
 		) ([]clusterModel.ClusterOutput, string, error) {
-			outputList, err := dps.cls.ClusterData(ctx, input)
+			outputList, err := cdp.cls.ClusterData(ctx, input)
 			if err != nil {
 				return nil, clusterErrorMsg, err
 			}
 			return outputList, "", nil
 		},
 		workerCount,
-		dps.logger,
+		cdp.logger,
 	)
 
 	ids, clusterIds, dataTypes := unionFind(resultChannel)
@@ -63,11 +113,42 @@ func (dps *DataProcessorService) clusterDataIntoLikeIds(
 	metaStatements := getMetaStatements(ids, dataTypes)
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	err := dps.ac.BulkUpdate(updateCtx, metaStatements, updateStatements, bootstrapper.LogIndexName)
+	err := cdp.ac.BulkUpdate(updateCtx, metaStatements, updateStatements, bootstrapper.LogIndexName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to bulk update clusters: %w", err)
 	}
 	return ids, clusterIds, nil
+}
+
+func (cdp *ClusterDataProcessor) finalizeOutput(
+	ids []string,
+	clusterIds []string,
+	data []map[string]interface{},
+) []model.ClusterOutput {
+	dataMap := getDataMap(data)
+	output := make([]model.ClusterOutput, len(dataMap))
+	i := 0
+	for _, id := range ids {
+		// the ids and clusterIds are from the clustering algorithm, whereas we only need to pass on new entries
+		if _, ok := dataMap[id]; !ok {
+			continue
+		}
+		clusterId := clusterIds[i]
+		dataType, spanTimeDetails, logTimeDetails, err := getDetails(dataMap[id])
+		if err != nil {
+			cdp.logger.Error("failed to get details from the data", zap.Error(err))
+			continue
+		}
+		output[i] = model.ClusterOutput{
+			Id:              id,
+			ClusterId:       clusterId,
+			ClusterDataType: dataType,
+			SpanTimeDetails: spanTimeDetails,
+			LogTimeDetails:  logTimeDetails,
+		}
+		i++
+	}
+	return output
 }
 
 func getClusterInput(
@@ -75,7 +156,7 @@ func getClusterInput(
 ) ([]clusterModel.ClusterInput, error) {
 	clusterInputList := make([]clusterModel.ClusterInput, len(data))
 	for i, item := range data {
-		dataType := detectDataType(item)
+		dataType := service.DetectDataType(item)
 		if dataType == model.Log {
 			clusterInput, err := getLogClusterDetails(item)
 			if err != nil {
@@ -164,7 +245,7 @@ func unionFind(
 		if result != nil && len(result) > 0 {
 			var idToClusterOn = defaultId
 			for _, clusterOutput := range result {
-				if clusterOutput.ClusterId == clusterService.DefaultClusterId {
+				if clusterOutput.ClusterId == DefaultClusterId {
 					clusterOutput.ClusterId = uuid.NewString()
 				}
 				clusterId := clusterOutput.ClusterId
@@ -264,37 +345,6 @@ func getMetaStatements(
 	return metaStatements
 }
 
-func (dps *DataProcessorService) finalizeOutput(
-	ids []string,
-	clusterIds []string,
-	data []map[string]interface{},
-) []model.ClusterOutput {
-	dataMap := getDataMap(data)
-	output := make([]model.ClusterOutput, len(dataMap))
-	i := 0
-	for _, id := range ids {
-		// the ids and clusterIds are from the clustering algorithm, whereas we only need to pass on new entries
-		if _, ok := dataMap[id]; !ok {
-			continue
-		}
-		clusterId := clusterIds[i]
-		dataType, spanTimeDetails, logTimeDetails, err := getDetails(dataMap[id])
-		if err != nil {
-			dps.logger.Error("failed to get details from the data", zap.Error(err))
-			continue
-		}
-		output[i] = model.ClusterOutput{
-			Id:              id,
-			ClusterId:       clusterId,
-			ClusterDataType: dataType,
-			SpanTimeDetails: spanTimeDetails,
-			LogTimeDetails:  logTimeDetails,
-		}
-		i++
-	}
-	return output
-}
-
 func getDetails(
 	item map[string]interface{},
 ) (
@@ -303,7 +353,7 @@ func getDetails(
 	model.LogDetails,
 	error,
 ) {
-	dataType := detectDataType(item)
+	dataType := service.DetectDataType(item)
 	if dataType == model.Log {
 		logDetails, err := getLogOutput(item)
 		if err != nil {

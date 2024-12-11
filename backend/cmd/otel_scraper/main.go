@@ -9,6 +9,7 @@ import (
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
+	"github.com/asaskevich/EventBus"
 	"net"
 	"time"
 
@@ -47,6 +48,11 @@ func main() {
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cls := clusterService.NewClusterService(ac, logger)
 	countService := count.NewCountService(ac, logger)
+	inputClusterBus := EventBus.New()
+	outputClusterBus := EventBus.New()
+	inputCountBus := EventBus.New()
+	outputCountBus := EventBus.New()
+	inputAnalyticsBus := EventBus.New()
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,

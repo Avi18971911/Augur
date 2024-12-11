@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/asaskevich/EventBus"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -23,6 +23,8 @@ type DataProcessorService struct {
 	ac           client.AugurClient
 	cs           *countService.CountService
 	cls          clusterService.ClusterService
+	bus          EventBus.Bus
+	outputTopic  string
 	logger       *zap.Logger
 	searchParams *client.SearchAfterParams
 }
@@ -31,12 +33,16 @@ func NewDataProcessorService(
 	ac client.AugurClient,
 	cs *countService.CountService,
 	cls clusterService.ClusterService,
+	bus EventBus.Bus,
+	outputTopic string,
 	logger *zap.Logger,
 ) *DataProcessorService {
 	return &DataProcessorService{
 		ac:           ac,
 		cs:           cs,
 		cls:          cls,
+		bus:          bus,
+		outputTopic:  outputTopic,
 		logger:       logger,
 		searchParams: nil,
 	}
@@ -44,7 +50,6 @@ func NewDataProcessorService(
 
 func (dps *DataProcessorService) ProcessData(
 	ctx context.Context,
-	buckets []countModel.Bucket,
 	indices []string,
 ) ([]bool, []error) {
 	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
@@ -58,7 +63,6 @@ func (dps *DataProcessorService) ProcessData(
 		&querySize,
 	)
 	successes, errors := make([]bool, 0), make([]error, 0)
-	i := 0
 	for result := range resultChannel {
 		if result.Error != nil {
 			dps.logger.Error("Error in search after", zap.Error(result.Error))
@@ -72,49 +76,16 @@ func (dps *DataProcessorService) ProcessData(
 			if len(result.Success.Result) == 0 {
 				break
 			}
-			err := dps.clusterAndIncreaseCount(
-				ctx,
-				result.Success.Result,
-				buckets,
-				indices,
-			)
-			if err != nil {
-				dps.logger.Error(
-					"Failed to increase count for overlaps and misses for the given parameters",
-					zap.Error(err),
-					zap.Int("page", i),
-				)
-				errors = append(errors, fmt.Errorf("failed to increase count for overlaps and misses: %w", err))
-				successes = append(successes, false)
-			} else {
-				successes = append(successes, true)
-				errors = append(errors, nil)
-			}
+			dps.bus.Publish(dps.outputTopic, ctx, result.Success.Result)
 			dps.searchParams = &result.Success.ContinueParams
+			errors = append(errors, nil)
+			successes = append(successes, true)
 		}
-		i++
 	}
 	return successes, errors
 }
 
-func (dps *DataProcessorService) clusterAndIncreaseCount(
-	ctx context.Context,
-	clusterOrLogData []map[string]interface{},
-	buckets []countModel.Bucket,
-	indices []string,
-) error {
-	clusterOutput, err := dps.clusterData(ctx, clusterOrLogData)
-	if err != nil {
-		return fmt.Errorf("failed to cluster data: %w", err)
-	}
-	err = dps.increaseCountForOverlapsAndMisses(ctx, clusterOutput, buckets, indices)
-	if err != nil {
-		return fmt.Errorf("failed to increase count for overlaps and misses: %w", err)
-	}
-	return nil
-}
-
-func getResultsWithWorkers[
+func GetResultsWithWorkers[
 	inputType any,
 	outputType any,
 ](
@@ -162,7 +133,7 @@ func getResultsWithWorkers[
 	return resultChannel
 }
 
-func detectDataType(data map[string]interface{}) model.DataType {
+func DetectDataType(data map[string]interface{}) model.DataType {
 	if _, ok := data["start_time"]; ok && data["end_time"] != nil {
 		return model.Span
 	}
