@@ -38,21 +38,24 @@ func (as *AnalyticsService) UpdateAnalytics(
 		}
 		currentClusterId := stack[0]
 		stack = stack[1:]
+		if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
+			clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
+		}
 		relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get related clusters: %w", err)
 		}
-		for _, cluster := range relatedClusters {
-			if cluster.MeanTDOA < 0 {
-				clusterToSucceedingClusters[cluster.ClusterId] =
-					append(clusterToSucceedingClusters[cluster.ClusterId], currentClusterId)
+		for _, relatedCluster := range relatedClusters {
+			if relatedCluster.MeanTDOA > 0 {
+				clusterToSucceedingClusters[relatedCluster.ClusterId] =
+					append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
 			} else {
 				clusterToSucceedingClusters[currentClusterId] =
-					append(clusterToSucceedingClusters[currentClusterId], cluster.ClusterId)
+					append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
 			}
-			if _, ok := visitedClusters[cluster.ClusterId]; !ok {
-				stack = append(stack, cluster.ClusterId)
-				visitedClusters[cluster.ClusterId] = true
+			if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
+				stack = append(stack, relatedCluster.ClusterId)
+				visitedClusters[relatedCluster.ClusterId] = true
 			}
 		}
 	}
