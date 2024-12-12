@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/asaskevich/EventBus"
 	"go.uber.org/zap"
 	"time"
 )
@@ -14,21 +15,48 @@ const timeout = 10 * time.Second
 const minimumRatio = 0.6
 
 type AnalyticsService struct {
-	ac     augurElasticsearch.AugurClient
-	logger *zap.Logger
+	ac         augurElasticsearch.AugurClient
+	bus        EventBus.Bus
+	inputTopic string
+	logger     *zap.Logger
 }
 
-func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) *AnalyticsService {
+func NewAnalyticsService(
+	ac augurElasticsearch.AugurClient,
+	bus EventBus.Bus,
+	inputTopic string,
+	logger *zap.Logger,
+) *AnalyticsService {
 	return &AnalyticsService{
-		ac:     ac,
-		logger: logger,
+		ac:         ac,
+		bus:        bus,
+		inputTopic: inputTopic,
+		logger:     logger,
 	}
 }
 
-func (as *AnalyticsService) UpdateAnalytics(
+func (as *AnalyticsService) Start() error {
+	err := as.bus.SubscribeAsync(
+		as.inputTopic,
+		func(ctx context.Context, clusterId string) {
+			err := as.updateAnalytics(ctx, clusterId)
+			if err != nil {
+				as.logger.Error("Failed to update analytics", zap.Error(err))
+				return
+			}
+		},
+		false,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to input topic for Analytics Service: %w", err)
+	}
+	return nil
+}
+
+func (as *AnalyticsService) updateAnalytics(
 	ctx context.Context,
 	clusterId string,
-) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap, error) {
+) error {
 	stack := []string{clusterId}
 	clusterToSucceedingClusters := make(map[string][]string)
 	visitedClusters := map[string]bool{clusterId: true}
@@ -43,7 +71,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 		}
 		relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to get related clusters: %w", err)
+			return fmt.Errorf("failed to get related clusters: %w", err)
 		}
 		for _, relatedCluster := range relatedClusters {
 			if relatedCluster.MeanTDOA > 0 {
@@ -59,8 +87,14 @@ func (as *AnalyticsService) UpdateAnalytics(
 			}
 		}
 	}
-	metaUpdate, documentUpdate := getAnalyticsUpdate(clusterToSucceedingClusters)
-	return metaUpdate, documentUpdate, nil
+	metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
+	updateCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
+	if err != nil {
+		return fmt.Errorf("failed to bulk update analytics: %w", err)
+	}
+	return nil
 }
 
 func (as *AnalyticsService) getRelatedClusters(
@@ -129,11 +163,11 @@ func pruneClusters(clusters []Cluster) []Cluster {
 	return prunedClusters
 }
 
-func getAnalyticsUpdate(
+func getAnalyticsUpdateStatement(
 	clusterToSucceedingClusters map[string][]string,
-) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap) {
-	metaUpdates := make([]augurElasticsearch.MetaMap, len(clusterToSucceedingClusters))
-	documentUpdates := make([]augurElasticsearch.DocumentMap, len(clusterToSucceedingClusters))
+) ([]map[string]interface{}, []map[string]interface{}) {
+	metaUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
+	documentUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
 	i := 0
 	for clusterId, succeedingClusterIds := range clusterToSucceedingClusters {
 		metaUpdate := map[string]interface{}{

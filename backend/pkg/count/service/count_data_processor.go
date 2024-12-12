@@ -49,44 +49,47 @@ func NewCountDataProcessorService(
 	}
 }
 
-func (cdp *CountDataProcessorService) Start() {
+func (cdp *CountDataProcessorService) Start() error {
 	err := cdp.bus.SubscribeAsync(
 		cdp.inputTopic,
 		func(ctx context.Context, clusterOutput []model.ClusterOutput) {
-			err := cdp.increaseCountForOverlapsAndMisses(ctx, clusterOutput)
+			alteredClusterIds, err := cdp.increaseCountForOverlapsAndMisses(ctx, clusterOutput)
 			if err != nil {
 				cdp.logger.Error("Failed to process clusters", zap.Error(err))
+				return
 			}
-			cdp.bus.Publish(cdp.outputTopic, ctx)
+			cdp.bus.Publish(cdp.outputTopic, ctx, alteredClusterIds)
 		},
 		false,
 	)
 	if err != nil {
-		cdp.logger.Error("Failed to subscribe to input topic", zap.Error(err))
+		return fmt.Errorf("failed to subscribe to input topic for count data processor: %w", err)
 	}
+	return nil
 }
 
 func (cdp *CountDataProcessorService) increaseCountForOverlapsAndMisses(
 	ctx context.Context,
 	clusterOutput []model.ClusterOutput,
-) error {
+) ([]string, error) {
 	increaseMissesInput, err := cdp.processCountsForOverlaps(
 		ctx,
 		clusterOutput,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to process clusters: %w", err)
+		return nil, fmt.Errorf("failed to process clusters: %w", err)
 	}
 
 	if increaseMissesInput != nil && len(increaseMissesInput) > 0 {
 		err = cdp.processIncrementsForMisses(ctx, increaseMissesInput)
 		if err != nil {
-			return fmt.Errorf("failed to process increments for misses: %w", err)
+			return nil, fmt.Errorf("failed to process increments for misses: %w", err)
 		}
 	} else {
 		cdp.logger.Info("No misses to increment")
 	}
-	return nil
+	alteredClusterIds := getAlteredClusterIdsFromIncreaseMissesInput(increaseMissesInput)
+	return alteredClusterIds, nil
 }
 
 func (cdp *CountDataProcessorService) processCountsForOverlaps(
@@ -135,7 +138,7 @@ func (cdp *CountDataProcessorService) processCountsForOverlaps(
 
 	if metaMapList == nil || len(metaMapList) == 0 {
 		cdp.logger.Info("No co-clusters to increment")
-		return nil, nil
+		return increaseMissesList, nil
 	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
@@ -291,4 +294,12 @@ func (cdp *CountDataProcessorService) unpackMissResults(
 		}
 	}
 	return metaMapList, documentMapList
+}
+
+func getAlteredClusterIdsFromIncreaseMissesInput(increaseMissesInput []countModel.IncreaseMissesInput) []string {
+	alteredClusterIds := make([]string, 0, len(increaseMissesInput))
+	for _, input := range increaseMissesInput {
+		alteredClusterIds = append(alteredClusterIds, input.ClusterId)
+	}
+	return alteredClusterIds
 }

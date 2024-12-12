@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/asaskevich/EventBus"
@@ -15,14 +13,11 @@ import (
 
 const timeout = 10 * time.Second
 const searchAfterTimeout = 60 * time.Second
-const workerCount = 50
 
 var querySize = 10000
 
 type DataProcessorService struct {
 	ac           client.AugurClient
-	cs           *countService.CountService
-	cls          clusterService.ClusterService
 	bus          EventBus.Bus
 	outputTopic  string
 	logger       *zap.Logger
@@ -31,16 +26,12 @@ type DataProcessorService struct {
 
 func NewDataProcessorService(
 	ac client.AugurClient,
-	cs *countService.CountService,
-	cls clusterService.ClusterService,
 	bus EventBus.Bus,
 	outputTopic string,
 	logger *zap.Logger,
 ) *DataProcessorService {
 	return &DataProcessorService{
 		ac:           ac,
-		cs:           cs,
-		cls:          cls,
 		bus:          bus,
 		outputTopic:  outputTopic,
 		logger:       logger,

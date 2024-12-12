@@ -44,7 +44,7 @@ func NewClusterDataProcessor(
 	}
 }
 
-func (cdp *ClusterDataProcessor) Start() {
+func (cdp *ClusterDataProcessor) Start() error {
 	err := cdp.bus.SubscribeAsync(
 		cdp.inputTopic,
 		func(ctx context.Context, spanOrLogData []map[string]interface{}) {
@@ -58,8 +58,9 @@ func (cdp *ClusterDataProcessor) Start() {
 		false,
 	)
 	if err != nil {
-		cdp.logger.Error("failed to subscribe to input topic", zap.Error(err))
+		return fmt.Errorf("failed to subscribe to input topic for ClusterDataProcessor: %w", err)
 	}
+	return nil
 }
 
 func (cdp *ClusterDataProcessor) clusterData(

@@ -8,6 +8,7 @@ import (
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	"github.com/asaskevich/EventBus"
 	"net"
@@ -48,11 +49,46 @@ func main() {
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cls := clusterService.NewClusterService(ac, logger)
 	countService := count.NewCountService(ac, logger)
-	inputClusterBus := EventBus.New()
-	outputClusterBus := EventBus.New()
-	inputCountBus := EventBus.New()
-	outputCountBus := EventBus.New()
-	inputAnalyticsBus := EventBus.New()
+	eventBus := EventBus.New()
+
+	codp := count.NewCountDataProcessorService(
+		ac,
+		countService,
+		eventBus,
+		"cluster_output",
+		"count_output",
+		[]countModel.Bucket{2500},
+		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
+		logger,
+	)
+	err = codp.Start()
+	if err != nil {
+		logger.Fatal("Failed to start count data processor", zap.Error(err))
+	}
+
+	cldp := clusterService.NewClusterDataProcessor(
+		ac,
+		cls,
+		eventBus,
+		"cluster_input",
+		"cluster_output",
+		logger,
+	)
+	err = cldp.Start()
+	if err != nil {
+		logger.Fatal("Failed to start cluster data processor", zap.Error(err))
+	}
+
+	andp := analyticsService.NewAnalyticsService(
+		ac,
+		eventBus,
+		"cluster_output",
+		logger,
+	)
+	err = andp.Start()
+	if err != nil {
+		logger.Fatal("Failed to start analytics service", zap.Error(err))
+	}
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,
@@ -81,8 +117,8 @@ func main() {
 
 	dp := dataProcessor.NewDataProcessorService(
 		ac,
-		countService,
-		cls,
+		eventBus,
+		"cluster_input",
 		logger,
 	)
 	ticker := time.NewTicker(15 * time.Second)
@@ -92,7 +128,6 @@ func main() {
 		for range ticker.C {
 			_, errors := dp.ProcessData(
 				context.Background(),
-				[]countModel.Bucket{2000},
 				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
 			for _, err := range errors {
 				if err != nil {
