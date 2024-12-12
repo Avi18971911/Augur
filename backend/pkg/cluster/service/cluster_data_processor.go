@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
@@ -53,9 +54,14 @@ func (cdp *ClusterDataProcessor) Start() error {
 				cdp.logger.Error("failed to cluster data", zap.Error(err))
 				return
 			}
-			cdp.bus.Publish(cdp.outputTopic, ctx, clusterDataOutput)
+			jsonOutput, err := json.Marshal(clusterDataOutput)
+			if err != nil {
+				cdp.logger.Error("failed to marshal cluster data output", zap.Error(err))
+				return
+			}
+			cdp.bus.Publish(cdp.outputTopic, ctx, string(jsonOutput))
 		},
-		false,
+		true,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to input topic for ClusterDataProcessor: %w", err)

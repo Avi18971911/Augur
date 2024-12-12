@@ -38,14 +38,14 @@ func NewAnalyticsService(
 func (as *AnalyticsService) Start() error {
 	err := as.bus.SubscribeAsync(
 		as.inputTopic,
-		func(ctx context.Context, clusterId string) {
-			err := as.updateAnalytics(ctx, clusterId)
+		func(ctx context.Context, clusterIds []string) {
+			err := as.updateAnalytics(ctx, clusterIds)
 			if err != nil {
 				as.logger.Error("Failed to update analytics", zap.Error(err))
 				return
 			}
 		},
-		false,
+		true,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to input topic for Analytics Service: %w", err)
@@ -55,44 +55,47 @@ func (as *AnalyticsService) Start() error {
 
 func (as *AnalyticsService) updateAnalytics(
 	ctx context.Context,
-	clusterId string,
+	clusterIds []string,
 ) error {
-	stack := []string{clusterId}
-	clusterToSucceedingClusters := make(map[string][]string)
-	visitedClusters := map[string]bool{clusterId: true}
-	for {
-		if len(stack) == 0 {
-			break
+	for _, clusterId := range clusterIds {
+		stack := []string{clusterId}
+		clusterToSucceedingClusters := make(map[string][]string)
+		visitedClusters := map[string]bool{clusterId: true}
+		for {
+			if len(stack) == 0 {
+				break
+			}
+			currentClusterId := stack[0]
+			stack = stack[1:]
+			if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
+				clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
+			}
+			relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
+			if err != nil {
+				return fmt.Errorf("failed to get related clusters: %w", err)
+			}
+			for _, relatedCluster := range relatedClusters {
+				if relatedCluster.MeanTDOA > 0 {
+					clusterToSucceedingClusters[relatedCluster.ClusterId] =
+						append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
+				} else {
+					clusterToSucceedingClusters[currentClusterId] =
+						append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
+				}
+				if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
+					stack = append(stack, relatedCluster.ClusterId)
+					visitedClusters[relatedCluster.ClusterId] = true
+				}
+			}
 		}
-		currentClusterId := stack[0]
-		stack = stack[1:]
-		if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
-			clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
-		}
-		relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
+		metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
+		as.logger.Info("Updating analytics", zap.Any("metaUpdate", metaUpdate), zap.Any("documentUpdate", documentUpdate))
+		updateCtx, cancel := context.WithTimeout(ctx, timeout)
+		err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
+		cancel()
 		if err != nil {
-			return fmt.Errorf("failed to get related clusters: %w", err)
+			return fmt.Errorf("failed to bulk update analytics: %w", err)
 		}
-		for _, relatedCluster := range relatedClusters {
-			if relatedCluster.MeanTDOA > 0 {
-				clusterToSucceedingClusters[relatedCluster.ClusterId] =
-					append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
-			} else {
-				clusterToSucceedingClusters[currentClusterId] =
-					append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
-			}
-			if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
-				stack = append(stack, relatedCluster.ClusterId)
-				visitedClusters[relatedCluster.ClusterId] = true
-			}
-		}
-	}
-	metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
-	updateCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
-	if err != nil {
-		return fmt.Errorf("failed to bulk update analytics: %w", err)
 	}
 	return nil
 }

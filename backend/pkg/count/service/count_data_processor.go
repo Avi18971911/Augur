@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
@@ -52,15 +53,21 @@ func NewCountDataProcessorService(
 func (cdp *CountDataProcessorService) Start() error {
 	err := cdp.bus.SubscribeAsync(
 		cdp.inputTopic,
-		func(ctx context.Context, clusterOutput []model.ClusterOutput) {
-			alteredClusterIds, err := cdp.increaseCountForOverlapsAndMisses(ctx, clusterOutput)
+		func(ctx context.Context, clusterOutput string) {
+			var typedClusterOutput []model.ClusterOutput
+			err := json.Unmarshal([]byte(clusterOutput), &typedClusterOutput)
+			if err != nil {
+				cdp.logger.Error("Failed to unmarshal cluster output", zap.Error(err))
+				return
+			}
+			alteredClusterIds, err := cdp.increaseCountForOverlapsAndMisses(ctx, typedClusterOutput)
 			if err != nil {
 				cdp.logger.Error("Failed to process clusters", zap.Error(err))
 				return
 			}
 			cdp.bus.Publish(cdp.outputTopic, ctx, alteredClusterIds)
 		},
-		false,
+		true,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to input topic for count data processor: %w", err)
