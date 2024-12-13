@@ -326,7 +326,9 @@ func getUpdateStatements(
 	updateStatements := make([]map[string]interface{}, 0, len(clusterIds))
 	for _, clusterId := range clusterIds {
 		updateStatement := map[string]interface{}{
-			"cluster_id": clusterId,
+			"doc": map[string]interface{}{
+				"cluster_id": clusterId,
+			},
 		}
 		updateStatements = append(updateStatements, updateStatement)
 	}
@@ -346,8 +348,10 @@ func getMetaStatements(
 			index = bootstrapper.LogIndexName
 		}
 		metaStatement := map[string]interface{}{
-			"_id":    id,
-			"_index": index,
+			"update": map[string]interface{}{
+				"_id":    id,
+				"_index": index,
+			},
 		}
 		metaStatements = append(metaStatements, metaStatement)
 	}
