@@ -1,32 +1,27 @@
 package main
 
 import (
-	"context"
-	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
-	"github.com/Avi18971911/Augur/pkg/data_processor/model"
+	"github.com/Avi18971911/Augur/pkg/data_pipeline/service"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
-	"github.com/Avi18971911/Augur/pkg/write_buffer"
-	"github.com/asaskevich/EventBus"
-	"net"
-	"time"
-
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
+	"github.com/Avi18971911/Augur/pkg/write_buffer"
+	"github.com/asaskevich/EventBus"
 	"github.com/elastic/go-elasticsearch/v8"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
+	"net"
 )
 
 func main() {
@@ -54,61 +49,42 @@ func main() {
 	countService := count.NewCountService(ac, logger)
 	eventBus := EventBus.New()
 
-	dataProcessorEventBus := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](eventBus, logger)
-
-	clusterProcessorEventBus := event_bus.NewAugurEventBus[
-		model.DataProcessorOutput,
-		clusterModel.ClusterProcessorOutput,
-	](eventBus, logger)
-
-	countProcessorEventBus := event_bus.NewAugurEventBus[
-		clusterModel.ClusterProcessorOutput,
-		countModel.CountProcessorOutput,
-	](eventBus, logger)
-
-	analyticsProcessorEventBus := event_bus.NewAugurEventBus[
-		countModel.CountProcessorOutput,
-		any,
-	](eventBus, logger)
-
 	codp := count.NewCountDataProcessorService(
 		ac,
 		countService,
-		countProcessorEventBus,
-		"cluster_output",
-		"count_output",
 		[]countModel.Bucket{2500},
 		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
 		logger,
 	)
-	err = codp.Start()
-	if err != nil {
-		logger.Fatal("Failed to start count data processor", zap.Error(err))
-	}
 
 	cldp := clusterService.NewClusterDataProcessor(
 		ac,
 		cls,
-		clusterProcessorEventBus,
-		"cluster_input",
-		"cluster_output",
 		logger,
 	)
-	err = cldp.Start()
-	if err != nil {
-		logger.Fatal("Failed to start cluster data processor", zap.Error(err))
-	}
 
 	andp := analyticsService.NewAnalyticsService(
 		ac,
-		analyticsProcessorEventBus,
-		"count_output",
 		logger,
 	)
-	err = andp.Start()
+
+	dp := dataProcessor.NewDataProcessorService(
+		ac,
+		logger,
+	)
+
+	dataPipeline := service.NewDataPipeline(
+		dp,
+		cldp,
+		codp,
+		andp,
+		logger,
+	)
+	pipelineCleanup, err := dataPipeline.Start(eventBus)
 	if err != nil {
-		logger.Fatal("Failed to start analytics service", zap.Error(err))
+		logger.Fatal("Failed to start data pipeline: %v", zap.Error(err))
 	}
+	defer pipelineCleanup()
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,
@@ -134,28 +110,6 @@ func main() {
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
-
-	dp := dataProcessor.NewDataProcessorService(
-		ac,
-		dataProcessorEventBus,
-		"cluster_input",
-		logger,
-	)
-	ticker := time.NewTicker(15 * time.Second)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			_, errors := dp.ProcessData(
-				context.Background(),
-				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
-			for _, err := range errors {
-				if err != nil {
-					logger.Error("Failed to process data", zap.Error(err))
-				}
-			}
-		}
-	}()
 
 	if err := srv.Serve(listener); err != nil {
 		logger.Fatal("Failed to serve: %v", zap.Error(err))

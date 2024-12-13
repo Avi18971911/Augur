@@ -8,7 +8,6 @@ import (
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"time"
@@ -18,63 +17,28 @@ const workerCount = 50
 const timeout = 10 * time.Second
 
 type ClusterDataProcessor struct {
-	ac          client.AugurClient
-	cls         ClusterService
-	bus         event_bus.AugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput]
-	inputTopic  string
-	outputTopic string
-	logger      *zap.Logger
+	ac     client.AugurClient
+	cls    ClusterService
+	logger *zap.Logger
 }
 
 func NewClusterDataProcessor(
 	ac client.AugurClient,
 	cls ClusterService,
-	bus event_bus.AugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput],
-	inputTopic string,
-	outputTopic string,
 	logger *zap.Logger,
 ) *ClusterDataProcessor {
 	return &ClusterDataProcessor{
-		ac:          ac,
-		cls:         cls,
-		bus:         bus,
-		inputTopic:  inputTopic,
-		outputTopic: outputTopic,
-		logger:      logger,
+		ac:     ac,
+		cls:    cls,
+		logger: logger,
 	}
 }
 
-func (cdp *ClusterDataProcessor) Start() error {
-	err := cdp.bus.Subscribe(
-		cdp.inputTopic,
-		func(input model.DataProcessorOutput) error {
-			ctx := context.Background()
-			spanOrLogData := input.SpanOrLogData
-			clusterDataOutput, err := cdp.clusterData(ctx, spanOrLogData)
-			if err != nil {
-				return fmt.Errorf("failed to cluster data: %w", err)
-			}
-			clusterProcessorOutput := clusterModel.ClusterProcessorOutput{
-				ClusterOutput: clusterDataOutput,
-			}
-			err = cdp.bus.Publish(cdp.outputTopic, clusterProcessorOutput)
-			if err != nil {
-				return fmt.Errorf("failed to publish cluster processor output: %w", err)
-			}
-			return nil
-		},
-		true,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to subscribe to input topic for ClusterDataProcessor: %w", err)
-	}
-	return nil
-}
-
-func (cdp *ClusterDataProcessor) clusterData(
+func (cdp *ClusterDataProcessor) ClusterData(
 	ctx context.Context,
 	spanOrLogData []map[string]interface{},
 ) ([]model.ClusterOutput, error) {
+	cdp.logger.Info("Clustering data")
 	clusterInputList, err := getClusterInput(spanOrLogData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster input: %w", err)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -13,27 +12,22 @@ import (
 
 const timeout = 10 * time.Second
 const searchAfterTimeout = 60 * time.Second
+const dpWorkerCount = 5
 
 var querySize = 10000
 
 type DataProcessorService struct {
 	ac           client.AugurClient
-	bus          event_bus.AugurEventBus[any, model.DataProcessorOutput]
-	outputTopic  string
 	logger       *zap.Logger
 	searchParams *client.SearchAfterParams
 }
 
 func NewDataProcessorService(
 	ac client.AugurClient,
-	bus event_bus.AugurEventBus[any, model.DataProcessorOutput],
-	outputTopic string,
 	logger *zap.Logger,
 ) *DataProcessorService {
 	return &DataProcessorService{
 		ac:           ac,
-		bus:          bus,
-		outputTopic:  outputTopic,
 		logger:       logger,
 		searchParams: nil,
 	}
@@ -42,9 +36,14 @@ func NewDataProcessorService(
 func (dps *DataProcessorService) ProcessData(
 	ctx context.Context,
 	indices []string,
-) ([]bool, []error) {
+) chan model.DataProcessorOutput {
+	dps.logger.Info("Processing data")
 	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
 	defer cancel()
+
+	outputChannel := make(chan model.DataProcessorOutput, 100)
+	var wg sync.WaitGroup
+	wg.Add(dpWorkerCount)
 
 	resultChannel := dps.ac.SearchAfter(
 		searchCtx,
@@ -53,40 +52,36 @@ func (dps *DataProcessorService) ProcessData(
 		dps.searchParams,
 		&querySize,
 	)
-	successes, errors := make([]bool, 0), make([]error, 0)
 	for result := range resultChannel {
 		if result.Error != nil {
 			dps.logger.Error("Error in search after", zap.Error(result.Error))
-			errors = append(errors, fmt.Errorf("error in search after: %w", result.Error))
-			successes = append(successes, false)
+			outputChannel <- model.DataProcessorOutput{
+				Error: result.Error,
+			}
 		} else if result.Success == nil {
 			dps.logger.Error("Result of SearchAfter is nil")
-			errors = append(errors, fmt.Errorf("result of SearchAfter is nil"))
-			successes = append(successes, false)
+			outputChannel <- model.DataProcessorOutput{
+				Error: fmt.Errorf("result of SearchAfter is nil"),
+			}
 		} else {
 			if len(result.Success.Result) == 0 {
 				break
 			}
 			output := model.DataProcessorOutput{
 				SpanOrLogData: result.Success.Result,
+				Error:         nil,
 			}
-			err := dps.bus.Publish(dps.outputTopic, output)
-			if err != nil {
-				dps.logger.Error(
-					"Failed to publish output for topic",
-					zap.String("topic", dps.outputTopic),
-					zap.Error(err),
-				)
-				errors = append(errors, fmt.Errorf("failed to publish output: %w", err))
-				successes = append(successes, false)
-				continue
-			}
+			outputChannel <- output
 			dps.searchParams = &result.Success.ContinueParams
-			errors = append(errors, nil)
-			successes = append(successes, true)
 		}
 	}
-	return successes, errors
+
+	go func() {
+		wg.Wait()
+		close(outputChannel)
+	}()
+
+	return outputChannel
 }
 
 func GetResultsWithWorkers[

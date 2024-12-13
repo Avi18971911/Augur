@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"go.uber.org/zap"
 	"time"
 )
@@ -16,50 +14,25 @@ const timeout = 10 * time.Second
 const minimumRatio = 0.6
 
 type AnalyticsService struct {
-	ac         augurElasticsearch.AugurClient
-	bus        event_bus.AugurEventBus[model.CountProcessorOutput, any]
-	inputTopic string
-	logger     *zap.Logger
+	ac     augurElasticsearch.AugurClient
+	logger *zap.Logger
 }
 
 func NewAnalyticsService(
 	ac augurElasticsearch.AugurClient,
-	bus event_bus.AugurEventBus[model.CountProcessorOutput, any],
-	inputTopic string,
 	logger *zap.Logger,
 ) *AnalyticsService {
 	return &AnalyticsService{
-		ac:         ac,
-		bus:        bus,
-		inputTopic: inputTopic,
-		logger:     logger,
+		ac:     ac,
+		logger: logger,
 	}
-}
-
-func (as *AnalyticsService) Start() error {
-	err := as.bus.Subscribe(
-		as.inputTopic,
-		func(input model.CountProcessorOutput) error {
-			ctx := context.Background()
-			clusterIds := input.ModifiedClusters
-			err := as.UpdateAnalytics(ctx, clusterIds)
-			if err != nil {
-				return fmt.Errorf("failed to update analytics: %w", err)
-			}
-			return nil
-		},
-		true,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to subscribe to input topic for Analytics Service: %w", err)
-	}
-	return nil
 }
 
 func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterIds []string,
 ) error {
+	as.logger.Info("Updating analytics")
 	for _, clusterId := range clusterIds {
 		stack := []string{clusterId}
 		clusterToSucceedingClusters := make(map[string][]string)
