@@ -2,14 +2,14 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/asaskevich/EventBus"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"go.uber.org/zap"
 	"time"
 )
@@ -20,7 +20,7 @@ const workerCount = 50
 type CountDataProcessorService struct {
 	ac          client.AugurClient
 	cs          *CountService
-	bus         EventBus.Bus
+	bus         event_bus.AugurEventBus[clusterModel.ClusterProcessorOutput, countModel.CountProcessorOutput]
 	inputTopic  string
 	outputTopic string
 	buckets     []countModel.Bucket
@@ -31,7 +31,7 @@ type CountDataProcessorService struct {
 func NewCountDataProcessorService(
 	ac client.AugurClient,
 	cs *CountService,
-	bus EventBus.Bus,
+	bus event_bus.AugurEventBus[clusterModel.ClusterProcessorOutput, countModel.CountProcessorOutput],
 	inputTopic string,
 	outputTopic string,
 	buckets []countModel.Bucket,
@@ -51,21 +51,23 @@ func NewCountDataProcessorService(
 }
 
 func (cdp *CountDataProcessorService) Start() error {
-	err := cdp.bus.SubscribeAsync(
+	err := cdp.bus.Subscribe(
 		cdp.inputTopic,
-		func(ctx context.Context, clusterOutput string) {
-			var typedClusterOutput []model.ClusterOutput
-			err := json.Unmarshal([]byte(clusterOutput), &typedClusterOutput)
-			if err != nil {
-				cdp.logger.Error("Failed to unmarshal cluster output", zap.Error(err))
-				return
-			}
+		func(input clusterModel.ClusterProcessorOutput) error {
+			ctx := context.Background()
+			typedClusterOutput := input.ClusterOutput
 			alteredClusterIds, err := cdp.increaseCountForOverlapsAndMisses(ctx, typedClusterOutput)
 			if err != nil {
-				cdp.logger.Error("Failed to process clusters", zap.Error(err))
-				return
+				return fmt.Errorf("failed to increase count for overlaps and misses: %w", err)
 			}
-			cdp.bus.Publish(cdp.outputTopic, ctx, alteredClusterIds)
+			output := countModel.CountProcessorOutput{
+				ModifiedClusters: alteredClusterIds,
+			}
+			err = cdp.bus.Publish(cdp.outputTopic, output)
+			if err != nil {
+				return fmt.Errorf("failed to publish count processor output: %w", err)
+			}
+			return nil
 		},
 		true,
 	)

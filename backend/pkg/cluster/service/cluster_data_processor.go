@@ -2,14 +2,13 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/asaskevich/EventBus"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"time"
@@ -21,7 +20,7 @@ const timeout = 10 * time.Second
 type ClusterDataProcessor struct {
 	ac          client.AugurClient
 	cls         ClusterService
-	bus         EventBus.Bus
+	bus         event_bus.AugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput]
 	inputTopic  string
 	outputTopic string
 	logger      *zap.Logger
@@ -30,7 +29,7 @@ type ClusterDataProcessor struct {
 func NewClusterDataProcessor(
 	ac client.AugurClient,
 	cls ClusterService,
-	bus EventBus.Bus,
+	bus event_bus.AugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput],
 	inputTopic string,
 	outputTopic string,
 	logger *zap.Logger,
@@ -46,20 +45,23 @@ func NewClusterDataProcessor(
 }
 
 func (cdp *ClusterDataProcessor) Start() error {
-	err := cdp.bus.SubscribeAsync(
+	err := cdp.bus.Subscribe(
 		cdp.inputTopic,
-		func(ctx context.Context, spanOrLogData []map[string]interface{}) {
+		func(input model.DataProcessorOutput) error {
+			ctx := context.Background()
+			spanOrLogData := input.SpanOrLogData
 			clusterDataOutput, err := cdp.clusterData(ctx, spanOrLogData)
 			if err != nil {
-				cdp.logger.Error("failed to cluster data", zap.Error(err))
-				return
+				return fmt.Errorf("failed to cluster data: %w", err)
 			}
-			jsonOutput, err := json.Marshal(clusterDataOutput)
+			clusterProcessorOutput := clusterModel.ClusterProcessorOutput{
+				ClusterOutput: clusterDataOutput,
+			}
+			err = cdp.bus.Publish(cdp.outputTopic, clusterProcessorOutput)
 			if err != nil {
-				cdp.logger.Error("failed to marshal cluster data output", zap.Error(err))
-				return
+				return fmt.Errorf("failed to publish cluster processor output: %w", err)
 			}
-			cdp.bus.Publish(cdp.outputTopic, ctx, string(jsonOutput))
+			return nil
 		},
 		true,
 	)

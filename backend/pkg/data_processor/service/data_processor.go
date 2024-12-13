@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/asaskevich/EventBus"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -18,7 +18,7 @@ var querySize = 10000
 
 type DataProcessorService struct {
 	ac           client.AugurClient
-	bus          EventBus.Bus
+	bus          event_bus.AugurEventBus[any, model.DataProcessorOutput]
 	outputTopic  string
 	logger       *zap.Logger
 	searchParams *client.SearchAfterParams
@@ -26,7 +26,7 @@ type DataProcessorService struct {
 
 func NewDataProcessorService(
 	ac client.AugurClient,
-	bus EventBus.Bus,
+	bus event_bus.AugurEventBus[any, model.DataProcessorOutput],
 	outputTopic string,
 	logger *zap.Logger,
 ) *DataProcessorService {
@@ -67,7 +67,20 @@ func (dps *DataProcessorService) ProcessData(
 			if len(result.Success.Result) == 0 {
 				break
 			}
-			dps.bus.Publish(dps.outputTopic, ctx, result.Success.Result)
+			output := model.DataProcessorOutput{
+				SpanOrLogData: result.Success.Result,
+			}
+			err := dps.bus.Publish(dps.outputTopic, output)
+			if err != nil {
+				dps.logger.Error(
+					"Failed to publish output for topic",
+					zap.String("topic", dps.outputTopic),
+					zap.Error(err),
+				)
+				errors = append(errors, fmt.Errorf("failed to publish output: %w", err))
+				successes = append(successes, false)
+				continue
+			}
 			dps.searchParams = &result.Success.ContinueParams
 			errors = append(errors, nil)
 			successes = append(successes, true)

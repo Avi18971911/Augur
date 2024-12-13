@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	clusterModel "github.com/Avi18971911/Augur/pkg/cluster/model"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
+	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
 	"github.com/Avi18971911/Augur/pkg/write_buffer"
 	"github.com/asaskevich/EventBus"
@@ -51,10 +54,27 @@ func main() {
 	countService := count.NewCountService(ac, logger)
 	eventBus := EventBus.New()
 
+	dataProcessorEventBus := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](eventBus, logger)
+
+	clusterProcessorEventBus := event_bus.NewAugurEventBus[
+		model.DataProcessorOutput,
+		clusterModel.ClusterProcessorOutput,
+	](eventBus, logger)
+
+	countProcessorEventBus := event_bus.NewAugurEventBus[
+		clusterModel.ClusterProcessorOutput,
+		countModel.CountProcessorOutput,
+	](eventBus, logger)
+
+	analyticsProcessorEventBus := event_bus.NewAugurEventBus[
+		countModel.CountProcessorOutput,
+		any,
+	](eventBus, logger)
+
 	codp := count.NewCountDataProcessorService(
 		ac,
 		countService,
-		eventBus,
+		countProcessorEventBus,
 		"cluster_output",
 		"count_output",
 		[]countModel.Bucket{2500},
@@ -69,7 +89,7 @@ func main() {
 	cldp := clusterService.NewClusterDataProcessor(
 		ac,
 		cls,
-		eventBus,
+		clusterProcessorEventBus,
 		"cluster_input",
 		"cluster_output",
 		logger,
@@ -81,8 +101,8 @@ func main() {
 
 	andp := analyticsService.NewAnalyticsService(
 		ac,
-		eventBus,
-		"cluster_output",
+		analyticsProcessorEventBus,
+		"count_output",
 		logger,
 	)
 	err = andp.Start()
@@ -117,7 +137,7 @@ func main() {
 
 	dp := dataProcessor.NewDataProcessorService(
 		ac,
-		eventBus,
+		dataProcessorEventBus,
 		"cluster_input",
 		logger,
 	)

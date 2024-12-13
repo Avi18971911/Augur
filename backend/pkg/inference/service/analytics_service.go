@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/asaskevich/EventBus"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"go.uber.org/zap"
 	"time"
 )
@@ -16,14 +17,14 @@ const minimumRatio = 0.6
 
 type AnalyticsService struct {
 	ac         augurElasticsearch.AugurClient
-	bus        EventBus.Bus
+	bus        event_bus.AugurEventBus[model.CountProcessorOutput, any]
 	inputTopic string
 	logger     *zap.Logger
 }
 
 func NewAnalyticsService(
 	ac augurElasticsearch.AugurClient,
-	bus EventBus.Bus,
+	bus event_bus.AugurEventBus[model.CountProcessorOutput, any],
 	inputTopic string,
 	logger *zap.Logger,
 ) *AnalyticsService {
@@ -36,14 +37,16 @@ func NewAnalyticsService(
 }
 
 func (as *AnalyticsService) Start() error {
-	err := as.bus.SubscribeAsync(
+	err := as.bus.Subscribe(
 		as.inputTopic,
-		func(ctx context.Context, clusterIds []string) {
+		func(input model.CountProcessorOutput) error {
+			ctx := context.Background()
+			clusterIds := input.ModifiedClusters
 			err := as.updateAnalytics(ctx, clusterIds)
 			if err != nil {
-				as.logger.Error("Failed to update analytics", zap.Error(err))
-				return
+				return fmt.Errorf("failed to update analytics: %w", err)
 			}
+			return nil
 		},
 		true,
 	)
