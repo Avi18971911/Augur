@@ -42,7 +42,7 @@ func (as *AnalyticsService) Start() error {
 		func(input model.CountProcessorOutput) error {
 			ctx := context.Background()
 			clusterIds := input.ModifiedClusters
-			err := as.updateAnalytics(ctx, clusterIds)
+			err := as.UpdateAnalytics(ctx, clusterIds)
 			if err != nil {
 				return fmt.Errorf("failed to update analytics: %w", err)
 			}
@@ -56,7 +56,7 @@ func (as *AnalyticsService) Start() error {
 	return nil
 }
 
-func (as *AnalyticsService) updateAnalytics(
+func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterIds []string,
 ) error {

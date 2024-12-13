@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"github.com/Avi18971911/Augur/pkg/inference/service"
+	"github.com/asaskevich/EventBus"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
-	"time"
 )
 
 func TestUpdateAnalytics(t *testing.T) {
@@ -18,7 +21,21 @@ func TestUpdateAnalytics(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	as := service.NewAnalyticsService(ac, logger)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		t.Errorf("Failed to create logger: %v", err)
+	}
+	eventBus := EventBus.New()
+	eb := event_bus.NewAugurEventBus[model.CountProcessorOutput, any](
+		eventBus,
+		logger,
+	)
+	as := service.NewAnalyticsService(
+		ac,
+		eb,
+		"test",
+		logger,
+	)
 
 	t.Run("should insert the entire graph if it doesn't exist", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -53,16 +70,9 @@ func TestUpdateAnalytics(t *testing.T) {
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.CountIndexName)
-		meta, documents, err := as.UpdateAnalytics(context.Background(), "1")
+		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
-		}
-		updateCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		var index = bootstrapper.ClusterIndexName
-		defer cancel()
-		err = ac.BulkIndex(updateCtx, meta, documents, &index)
-		if err != nil {
-			t.Errorf("Failed to bulk index: %v", err)
 		}
 		queryString, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -133,16 +143,9 @@ func TestUpdateAnalytics(t *testing.T) {
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.CountIndexName)
-		meta, documents, err := as.UpdateAnalytics(context.Background(), "1")
+		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
-		}
-		updateCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		var index = bootstrapper.ClusterIndexName
-		defer cancel()
-		err = ac.BulkIndex(updateCtx, meta, documents, &index)
-		if err != nil {
-			t.Errorf("Failed to bulk index: %v", err)
 		}
 
 		err = deleteAllDocuments(es)
@@ -176,13 +179,9 @@ func TestUpdateAnalytics(t *testing.T) {
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, newCountInput, bootstrapper.CountIndexName)
-		meta, documents, err = as.UpdateAnalytics(context.Background(), "1")
+		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
-		}
-		err = ac.BulkIndex(updateCtx, meta, documents, &index)
-		if err != nil {
-			t.Errorf("Failed to bulk index: %v", err)
 		}
 
 		queryString, err := json.Marshal(getAllQuery())

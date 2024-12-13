@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
-	countService "github.com/Avi18971911/Augur/pkg/count/service"
+	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	"github.com/Avi18971911/Augur/pkg/event_bus"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
+	"github.com/asaskevich/EventBus"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -25,11 +26,11 @@ func TestDataProcessor(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
-	cls := clusterService.NewClusterService(ac, logger)
+	eventBus := EventBus.New()
+	eb := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](eventBus, logger)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, cls, logger)
+		dp := service.NewDataProcessorService(ac, eb, "test_out", logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -79,8 +80,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countModel.Bucket{100}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -119,7 +119,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, cls, logger)
+		dp := service.NewDataProcessorService(ac, eb, "output_test", logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -169,8 +169,7 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countModel.Bucket{100}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -209,7 +208,7 @@ func TestDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, cls, logger)
+		dp := service.NewDataProcessorService(ac, eb, "output_test", logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -230,8 +229,7 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
-		buckets := []countModel.Bucket{countModel.Bucket(overlapSize * 2)}
-		_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+		_, errors := dp.ProcessData(context.Background(), dpIndices)
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -252,7 +250,7 @@ func TestDataProcessor(t *testing.T) {
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := service.NewDataProcessorService(ac, cs, cls, logger)
+			dp := service.NewDataProcessorService(ac, eb, "output_test", logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -260,14 +258,12 @@ func TestDataProcessor(t *testing.T) {
 			beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
 			spanSize := 100
 			spans := createSpans(beginTime, time.Millisecond*50, spanSize)
-			overlapSize := 2
 
 			err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			buckets := []countModel.Bucket{countModel.Bucket(overlapSize)}
-			_, errors := dp.ProcessData(context.Background(), buckets, dpIndices)
+			_, errors := dp.ProcessData(context.Background(), dpIndices)
 
 			stringQuery, err := json.Marshal(getAllQuery())
 			if err != nil {
@@ -286,7 +282,7 @@ func TestDataProcessor(t *testing.T) {
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, cs, cls, logger)
+		dp := service.NewDataProcessorService(ac, eb, "output_test", logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -329,10 +325,8 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		buckets := []countModel.Bucket{100}
 		_, errors := dp.ProcessData(
 			context.Background(),
-			buckets,
 			[]string{bootstrapper.LogIndexName,
 				bootstrapper.SpanIndexName},
 		)
