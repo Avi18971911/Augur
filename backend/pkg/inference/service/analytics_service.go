@@ -32,7 +32,6 @@ func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterIds []string,
 ) error {
-	as.logger.Info("Updating analytics")
 	for _, clusterId := range clusterIds {
 		stack := []string{clusterId}
 		clusterToSucceedingClusters := make(map[string][]string)
@@ -65,7 +64,6 @@ func (as *AnalyticsService) UpdateAnalytics(
 			}
 		}
 		metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
-		as.logger.Info("Updating analytics", zap.Any("metaUpdate", metaUpdate), zap.Any("documentUpdate", documentUpdate))
 		updateCtx, cancel := context.WithTimeout(ctx, timeout)
 		err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
 		cancel()

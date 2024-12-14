@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
 	"net"
+	"time"
 )
 
 func main() {
@@ -78,13 +79,16 @@ func main() {
 		cldp,
 		codp,
 		andp,
+		eventBus,
 		logger,
 	)
-	pipelineCleanup, err := dataPipeline.Start(eventBus)
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	err = dataPipeline.Start(ticker)
 	if err != nil {
 		logger.Fatal("Failed to start data pipeline: %v", zap.Error(err))
 	}
-	defer pipelineCleanup()
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,

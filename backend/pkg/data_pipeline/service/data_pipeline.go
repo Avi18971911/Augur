@@ -8,7 +8,7 @@ import (
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
-	service2 "github.com/Avi18971911/Augur/pkg/data_processor/service"
+	dataProcessorService "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/event_bus"
 	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
@@ -22,45 +22,68 @@ const clusterOutputTopic = "cluster_output"
 const countOutputTopic = "count_output"
 
 type DataPipeline struct {
-	dataProcessorService    *service2.DataProcessorService
+	dataProcessorService    *dataProcessorService.DataProcessorService
+	dataProcessorBus        event_bus.AugurEventBus[any, model.DataProcessorOutput]
 	clusterProcessorService *clusterService.ClusterDataProcessor
+	clusterProcessorBus     event_bus.AugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput]
 	countProcessorService   *countService.CountDataProcessorService
+	countProcessorBus       event_bus.AugurEventBus[clusterModel.ClusterProcessorOutput, countModel.CountProcessorOutput]
 	analyticsService        *analyticsService.AnalyticsService
+	analyticsBus            event_bus.AugurEventBus[countModel.CountProcessorOutput, any]
 	logger                  *zap.Logger
 }
 
 func NewDataPipeline(
-	dataProcessorService *service2.DataProcessorService,
+	dataProcessorService *dataProcessorService.DataProcessorService,
 	clusterProcessorService *clusterService.ClusterDataProcessor,
 	countProcessorService *countService.CountDataProcessorService,
 	analyticsService *analyticsService.AnalyticsService,
+	eventBus EventBus.Bus,
 	logger *zap.Logger,
 ) *DataPipeline {
+	dpAugurBus := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](
+		eventBus,
+		logger,
+	)
+	cpAugurBus := event_bus.NewAugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput](
+		eventBus,
+		logger,
+	)
+	countAugurBus := event_bus.NewAugurEventBus[clusterModel.ClusterProcessorOutput, countModel.CountProcessorOutput](
+		eventBus,
+		logger,
+	)
+	analyticsAugurBus := event_bus.NewAugurEventBus[countModel.CountProcessorOutput, any](
+		eventBus,
+		logger,
+	)
+
 	return &DataPipeline{
 		dataProcessorService:    dataProcessorService,
+		dataProcessorBus:        dpAugurBus,
 		clusterProcessorService: clusterProcessorService,
+		clusterProcessorBus:     cpAugurBus,
 		countProcessorService:   countProcessorService,
+		countProcessorBus:       countAugurBus,
 		analyticsService:        analyticsService,
+		analyticsBus:            analyticsAugurBus,
 		logger:                  logger,
 	}
 }
 
-func (dp *DataPipeline) Start(eventBus EventBus.Bus) (func(), error) {
-	err := dp.startClusterProcessor(eventBus)
+func (dp *DataPipeline) Start(ticker *time.Ticker) error {
+	err := dp.startClusterProcessor()
 	if err != nil {
-		return nil, fmt.Errorf("failed to start cluster processor: %w", err)
+		return fmt.Errorf("failed to start cluster processor: %w", err)
 	}
-	err = dp.startCountProcessor(eventBus)
+	err = dp.startCountProcessor()
 	if err != nil {
-		return nil, fmt.Errorf("failed to start count processor: %w", err)
+		return fmt.Errorf("failed to start count processor: %w", err)
 	}
-	err = dp.startAnalyticsService(eventBus)
+	err = dp.startAnalyticsService()
 	if err != nil {
-		return nil, fmt.Errorf("failed to start analytics service: %w", err)
+		return fmt.Errorf("failed to start analytics service: %w", err)
 	}
-	dpAugurBus := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](eventBus, dp.logger)
-
-	ticker := time.NewTicker(15 * time.Second)
 
 	go func() {
 		for range ticker.C {
@@ -71,7 +94,7 @@ func (dp *DataPipeline) Start(eventBus EventBus.Bus) (func(), error) {
 				if dpOutput.Error != nil {
 					dp.logger.Error("Failed to process data", zap.Error(dpOutput.Error))
 				} else {
-					err := dpAugurBus.Publish(dataProcessorOutputTopic, dpOutput)
+					err := dp.dataProcessorBus.Publish(dataProcessorOutputTopic, dpOutput)
 					if err != nil {
 						dp.logger.Error("Failed to publish data processor output", zap.Error(err))
 					}
@@ -79,17 +102,11 @@ func (dp *DataPipeline) Start(eventBus EventBus.Bus) (func(), error) {
 			}
 		}
 	}()
-
-	return ticker.Stop, nil
+	return nil
 }
 
-func (dp *DataPipeline) startClusterProcessor(eventBus EventBus.Bus) error {
-	augurBus := event_bus.NewAugurEventBus[model.DataProcessorOutput, clusterModel.ClusterProcessorOutput](
-		eventBus,
-		dp.logger,
-	)
-
-	err := augurBus.Subscribe(
+func (dp *DataPipeline) startClusterProcessor() error {
+	err := dp.clusterProcessorBus.Subscribe(
 		dataProcessorOutputTopic,
 		func(input model.DataProcessorOutput) error {
 			ctx := context.Background()
@@ -101,7 +118,7 @@ func (dp *DataPipeline) startClusterProcessor(eventBus EventBus.Bus) error {
 			clusterProcessorOutput := clusterModel.ClusterProcessorOutput{
 				ClusterOutput: clusterDataOutput,
 			}
-			err = augurBus.Publish(clusterOutputTopic, clusterProcessorOutput)
+			err = dp.clusterProcessorBus.Publish(clusterOutputTopic, clusterProcessorOutput)
 			if err != nil {
 				return fmt.Errorf("failed to publish cluster processor output: %w", err)
 			}
@@ -115,13 +132,8 @@ func (dp *DataPipeline) startClusterProcessor(eventBus EventBus.Bus) error {
 	return nil
 }
 
-func (dp *DataPipeline) startCountProcessor(eventBus EventBus.Bus) error {
-	augurBus := event_bus.NewAugurEventBus[clusterModel.ClusterProcessorOutput, countModel.CountProcessorOutput](
-		eventBus,
-		dp.logger,
-	)
-
-	err := augurBus.Subscribe(
+func (dp *DataPipeline) startCountProcessor() error {
+	err := dp.countProcessorBus.Subscribe(
 		clusterOutputTopic,
 		func(input clusterModel.ClusterProcessorOutput) error {
 			ctx := context.Background()
@@ -133,7 +145,7 @@ func (dp *DataPipeline) startCountProcessor(eventBus EventBus.Bus) error {
 			countProcessorOutput := countModel.CountProcessorOutput{
 				ModifiedClusters: countDataOutput,
 			}
-			err = augurBus.Publish(countOutputTopic, countProcessorOutput)
+			err = dp.countProcessorBus.Publish(countOutputTopic, countProcessorOutput)
 			if err != nil {
 				return fmt.Errorf("failed to publish count processor output: %w", err)
 			}
@@ -147,13 +159,8 @@ func (dp *DataPipeline) startCountProcessor(eventBus EventBus.Bus) error {
 	return nil
 }
 
-func (dp *DataPipeline) startAnalyticsService(eventBus EventBus.Bus) error {
-	augurBus := event_bus.NewAugurEventBus[countModel.CountProcessorOutput, any](
-		eventBus,
-		dp.logger,
-	)
-
-	err := augurBus.Subscribe(
+func (dp *DataPipeline) startAnalyticsService() error {
+	err := dp.analyticsBus.Subscribe(
 		countOutputTopic,
 		func(input countModel.CountProcessorOutput) error {
 			ctx := context.Background()

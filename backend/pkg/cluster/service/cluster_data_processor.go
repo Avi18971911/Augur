@@ -38,7 +38,6 @@ func (cdp *ClusterDataProcessor) ClusterData(
 	ctx context.Context,
 	spanOrLogData []map[string]interface{},
 ) ([]model.ClusterOutput, error) {
-	cdp.logger.Info("Clustering data")
 	clusterInputList, err := getClusterInput(spanOrLogData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster input: %w", err)

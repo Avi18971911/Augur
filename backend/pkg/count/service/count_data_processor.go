@@ -43,7 +43,6 @@ func (cdp *CountDataProcessorService) IncreaseCountForOverlapsAndMisses(
 	ctx context.Context,
 	clusterOutput []model.ClusterOutput,
 ) ([]string, error) {
-	cdp.logger.Info("Processing counts for overlaps and misses")
 	increaseMissesInput, err := cdp.processCountsForOverlaps(
 		ctx,
 		clusterOutput,

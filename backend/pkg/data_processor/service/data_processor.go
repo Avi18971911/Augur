@@ -37,48 +37,42 @@ func (dps *DataProcessorService) ProcessData(
 	ctx context.Context,
 	indices []string,
 ) chan model.DataProcessorOutput {
-	dps.logger.Info("Processing data")
-	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
-	defer cancel()
-
-	outputChannel := make(chan model.DataProcessorOutput, 100)
-	var wg sync.WaitGroup
-	wg.Add(dpWorkerCount)
-
-	resultChannel := dps.ac.SearchAfter(
-		searchCtx,
-		getAllDocumentsQuery(),
-		indices,
-		dps.searchParams,
-		&querySize,
-	)
-	for result := range resultChannel {
-		if result.Error != nil {
-			dps.logger.Error("Error in search after", zap.Error(result.Error))
-			outputChannel <- model.DataProcessorOutput{
-				Error: result.Error,
-			}
-		} else if result.Success == nil {
-			dps.logger.Error("Result of SearchAfter is nil")
-			outputChannel <- model.DataProcessorOutput{
-				Error: fmt.Errorf("result of SearchAfter is nil"),
-			}
-		} else {
-			if len(result.Success.Result) == 0 {
-				break
-			}
-			output := model.DataProcessorOutput{
-				SpanOrLogData: result.Success.Result,
-				Error:         nil,
-			}
-			outputChannel <- output
-			dps.searchParams = &result.Success.ContinueParams
-		}
-	}
-
+	outputChannel := make(chan model.DataProcessorOutput)
 	go func() {
-		wg.Wait()
-		close(outputChannel)
+		defer close(outputChannel)
+		searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
+		defer cancel()
+		resultChannel := dps.ac.SearchAfter(
+			searchCtx,
+			getAllDocumentsQuery(),
+			indices,
+			dps.searchParams,
+			&querySize,
+		)
+
+		for result := range resultChannel {
+			if result.Error != nil {
+				dps.logger.Error("Error in search after", zap.Error(result.Error))
+				outputChannel <- model.DataProcessorOutput{
+					Error: result.Error,
+				}
+			} else if result.Success == nil {
+				dps.logger.Error("Result of SearchAfter is nil")
+				outputChannel <- model.DataProcessorOutput{
+					Error: fmt.Errorf("result of SearchAfter is nil"),
+				}
+			} else {
+				if len(result.Success.Result) == 0 {
+					break
+				}
+				output := model.DataProcessorOutput{
+					SpanOrLogData: result.Success.Result,
+					Error:         nil,
+				}
+				outputChannel <- output
+				dps.searchParams = &result.Success.ContinueParams
+			}
+		}
 	}()
 
 	return outputChannel
