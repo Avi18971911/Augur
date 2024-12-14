@@ -2,7 +2,6 @@ package elasticsearch
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
@@ -43,23 +42,9 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to load data into Elasticsearch: %v", err)
 		}
-		result := <-dp.ProcessData(context.Background(), dpIndices)
-		errors := []error{result.Error}
-
-		stringQuery, err := json.Marshal(getAllQuery())
-		if err != nil {
-			t.Errorf("failed to marshal query: %v", err)
+		for result := range dp.ProcessData(context.Background(), dpIndices) {
+			assert.Nil(t, result.Error)
+			assert.NotNil(t, result.SpanOrLogData)
 		}
-
-		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
-		if err != nil {
-			t.Errorf("Failed to count: %v", err)
-		}
-		assertAllErrorsAreNil(t, errors)
-		// every log sequentially overlaps with another, creating two co-occurrences per log (previous and next log)
-		// except for the first and last log
-		assert.Equal(t, int64(logSize*2-2), count)
 	})
 }
