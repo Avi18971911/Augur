@@ -16,14 +16,15 @@ import (
 
 var dpClusterInDBIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
-func TestDataProcessorClusterDataInDB(t *testing.T) {
+func TestClusterDataProcessorDataInDB(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
+	cs := clusterService.NewClusterService(ac, logger)
 
 	t.Run("should cluster new groups with the old", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := clusterService.NewClusterDataProcessor(ac, cs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -34,52 +35,64 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		firstBatch := []logModel.LogEntry{
 			{
+				Id:        "1",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "2",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		firstBatchData := convertLogToSpanOrLogData(firstBatch)
+
 		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		firstRoundErrors := []error{firstRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), firstBatchData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		secondBatch := []logModel.LogEntry{
 			{
+				Id:        "3",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "4",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "5",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		secondBatchData := convertLogToSpanOrLogData(secondBatch)
 
 		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		secondRoundErrors := []error{secondRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), secondBatchData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -109,7 +122,6 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, 2, len(clusterALogs))
 		assert.Equal(t, 3, len(clusterBLogs))
 		assert.Equal(t, len(logEntries), len(clusterALogs)+len(clusterBLogs))
@@ -426,4 +438,35 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 			assert.NotEqual(t, clusterService.DefaultClusterId, entry.ClusterId)
 		}
 	})
+}
+
+func convertLogToSpanOrLogData(logs []logModel.LogEntry) []map[string]interface{} {
+	result := make([]map[string]interface{}, len(logs))
+	for i, log := range logs {
+		timeStampString := log.Timestamp.Format(time.RFC3339Nano)
+		result[i] = map[string]interface{}{
+			"_id":        log.Id,
+			"service":    log.Service,
+			"message":    log.Message,
+			"timestamp":  timeStampString,
+			"created_at": log.CreatedAt,
+			"cluster_id": log.ClusterId,
+		}
+	}
+	return result
+}
+
+func convertSpanToSpanOrLogData(spans []spanModel.Span) []map[string]interface{} {
+	result := make([]map[string]interface{}, len(spans))
+	for i, span := range spans {
+		result[i] = map[string]interface{}{
+			"_id":           span.Id,
+			"cluster_event": span.ClusterEvent,
+			"start_time":    span.StartTime,
+			"end_time":      span.EndTime,
+			"created_at":    span.CreatedAt,
+			"cluster_id":    span.ClusterId,
+		}
+	}
+	return result
 }
