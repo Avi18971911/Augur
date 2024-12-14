@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
-	"github.com/Avi18971911/Augur/pkg/data_processor/service"
+	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
@@ -16,14 +16,16 @@ import (
 
 var dpInDBIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
-func TestDataProcessorWithDataInDB(t *testing.T) {
+func TestCountDataProcessorWithDataInDB(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
+	cs := countService.NewCountService(ac, logger)
+	buckets := []countModel.Bucket{100}
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -52,12 +54,16 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 		}
+		firstClusterOutput := createClusterOutputFromLogs(firstCluster)
+
 		err = loadDataIntoElasticsearch(ac, firstCluster, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		firstRoundErrors := []error{firstRoundResult.Error}
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), firstClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 
 		secondCluster := []logModel.LogEntry{
 			{
@@ -77,14 +83,16 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			},
 		}
 
+		secondClusterOutput := createClusterOutputFromLogs(secondCluster)
 		err = loadDataIntoElasticsearch(ac, secondCluster, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		secondRoundErrors := []error{secondRoundResult.Error}
-
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), secondClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
 			t.Errorf("failed to marshal query: %v", err)
@@ -102,13 +110,12 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, int64(2), countEntries[0].CoOccurrences)
 		assert.Equal(t, int64(3), countEntries[0].Occurrences)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -137,12 +144,16 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 		}
+		firstClusterOutput := createClusterOutputFromLogs(firstBatch)
+
 		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		firstRoundResults := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		firstRoundErrors := []error{firstRoundResults.Error}
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), firstClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 
 		secondBatch := []logModel.LogEntry{
 			{
@@ -161,13 +172,16 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 				CreatedAt: createdAt,
 			},
 		}
+		secondClusterOutput := createClusterOutputFromLogs(secondBatch)
 
 		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		secondRoundErrors := []error{secondRoundResult.Error}
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), secondClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -197,7 +211,6 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
 		assert.Equal(t, int64(1), clusterBEntries[0].CoOccurrences)
 
@@ -207,7 +220,7 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := service.NewDataProcessorService(ac, logger)
+			dp := countService.NewCountDataProcessorService(ac, cs, []countModel.Bucket{10}, dpInDBIndices, logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -218,19 +231,26 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			firstBatchSize := spanSize / 2
 			firstBatch := spans[:firstBatchSize]
 			secondBatch := spans[firstBatchSize:]
+			firstBatchClusterOutput := createClusterOutputFromSpans(firstBatch)
+			secondBatchClusterOutput := createClusterOutputFromSpans(secondBatch)
+
 			err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-			firstRoundErrors := []error{firstRoundResult.Error}
+			_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), firstBatchClusterOutput)
+			if err != nil {
+				t.Errorf("Failed to process clusters: %v", err)
+			}
 
 			err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-			secondRoundErrors := []error{secondRoundResult.Error}
+			_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), secondBatchClusterOutput)
+			if err != nil {
+				t.Errorf("Failed to process clusters: %v", err)
+			}
 
 			stringQuery, err := json.Marshal(getAllQuery())
 			if err != nil {
@@ -243,13 +263,12 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
-			assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 			assert.Equal(t, int64(0), count)
 		},
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -273,6 +292,7 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 				CreatedAt: createdAt,
 			},
 		}
+		clusterAClusterOutput := createClusterOutputFromLogs(clusterALogs)
 
 		clusterBSpans := []spanModel.Span{
 			createSpan(clusterB, overlapWithFirstTimeStampOne, overlapWithFirstTimeStampOne.Add(time.Millisecond*50)),
@@ -282,19 +302,24 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			),
 			createSpan(clusterB, clusterBMiss, clusterBMiss.Add(time.Millisecond*50)),
 		}
+		clusterBClusterOutput := createClusterOutputFromSpans(clusterBSpans)
 
 		err = loadDataIntoElasticsearch(ac, clusterALogs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		clusterABatchResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		clusterABatchErrors := []error{clusterABatchResult.Error}
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterAClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 		err = loadDataIntoElasticsearch(ac, clusterBSpans, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		clusterBBatchResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		clusterBBatchErrors := []error{clusterBBatchResult.Error}
+		_, err = dp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterBClusterOutput)
+		if err != nil {
+			t.Errorf("failed to process clusters: %v", err)
+		}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -313,7 +338,6 @@ func TestDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assertAllErrorsAreNil(t, append(clusterABatchErrors, clusterBBatchErrors...))
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
 		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
 		assert.Equal(t, clusterB, clusterBEntries[0].ClusterId)
