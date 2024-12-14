@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
@@ -13,8 +12,6 @@ import (
 	"testing"
 	"time"
 )
-
-var dpClusterInDBIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
 func TestClusterDataProcessorDataInDB(t *testing.T) {
 	if es == nil {
@@ -142,7 +139,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 	})
 
 	t.Run("should add a new cluster if there are no entries of the old one", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := clusterService.NewClusterDataProcessor(ac, cs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -154,51 +151,62 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		firstBatch := []logModel.LogEntry{
 			{
+				Id:        "1",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "2",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		firstBatchData := convertLogToSpanOrLogData(firstBatch)
 		secondBatch := []logModel.LogEntry{
 			{
+				Id:        "3",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "4",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "5",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		secondBatchData := convertLogToSpanOrLogData(secondBatch)
 		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		firstRoundErrors := []error{firstRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), firstBatchData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
-		secondRoundErrors := []error{secondRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), secondBatchData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -228,7 +236,6 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, 3, len(clusterALogs))
 		assert.Equal(t, 2, len(clusterBLogs))
 		assert.Equal(t, len(logEntries), len(clusterALogs)+len(clusterBLogs))
@@ -249,7 +256,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 	})
 
 	t.Run("should be able to cluster both logs and spans at the same time", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
+		dp := clusterService.NewClusterDataProcessor(ac, cs, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -263,20 +270,24 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		onlyTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 		firstBatchLogs := []logModel.LogEntry{
 			{
+				Id:        "1",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "2",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt.Add(-time.Second * 500),
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		firstBatchLogData := convertLogToSpanOrLogData(firstBatchLogs)
 		firstBatchSpans := []spanModel.Span{
 			{
+				Id:           "3",
 				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
@@ -286,39 +297,51 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 		}
+		firstBatchSpanData := convertSpanToSpanOrLogData(firstBatchSpans)
 		err = loadDataIntoElasticsearch(ac, firstBatchLogs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		_, err = dp.ClusterData(context.Background(), firstBatchLogData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
 		}
 		err = loadDataIntoElasticsearch(ac, firstBatchSpans, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		firstRoundResult := <-dp.ProcessData(context.Background(), dpClusterInDBIndices)
-		firstRoundErrors := []error{firstRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), firstBatchSpanData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		secondBatchLogs := []logModel.LogEntry{
 			{
+				Id:        "4",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "5",
 				Message:   clusterBMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 			{
+				Id:        "6",
 				Message:   clusterAMessage,
 				Timestamp: onlyTimeStamp,
 				CreatedAt: createdAt,
 				ClusterId: clusterService.DefaultClusterId,
 			},
 		}
+		secondBatchLogData := convertLogToSpanOrLogData(secondBatchLogs)
 		secondBatchSpans := []spanModel.Span{
 			{
+				Id:           "7",
 				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
@@ -328,6 +351,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
+				Id:           "8",
 				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
@@ -337,6 +361,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 			{
+				Id:           "9",
 				ClusterId:    clusterService.DefaultClusterId,
 				StartTime:    onlyTimeStamp,
 				EndTime:      onlyTimeStamp,
@@ -346,16 +371,23 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 				Attributes:   make(map[string]string),
 			},
 		}
+		secondBatchSpanData := convertSpanToSpanOrLogData(secondBatchSpans)
 		err = loadDataIntoElasticsearch(ac, secondBatchLogs, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		_, err = dp.ClusterData(context.Background(), secondBatchLogData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
 		}
 		err = loadDataIntoElasticsearch(ac, secondBatchSpans, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		secondRoundResult := <-dp.ProcessData(context.Background(), dpClusterInDBIndices)
-		secondRoundErrors := []error{secondRoundResult.Error}
+		_, err = dp.ClusterData(context.Background(), secondBatchSpanData)
+		if err != nil {
+			t.Errorf("failed to cluster data: %v", err)
+		}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -404,7 +436,6 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, 3, len(clusterALogs))
 		assert.Equal(t, 2, len(clusterBLogs))
 		assert.Equal(t, 2, len(clusterCSpans))
@@ -461,6 +492,7 @@ func convertSpanToSpanOrLogData(spans []spanModel.Span) []map[string]interface{}
 	for i, span := range spans {
 		result[i] = map[string]interface{}{
 			"_id":           span.Id,
+			"service_name":  span.ServiceName,
 			"cluster_event": span.ClusterEvent,
 			"start_time":    span.StartTime,
 			"end_time":      span.EndTime,
