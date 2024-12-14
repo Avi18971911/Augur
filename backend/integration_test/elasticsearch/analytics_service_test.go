@@ -4,12 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	"github.com/Avi18971911/Augur/pkg/inference/service"
-	"github.com/asaskevich/EventBus"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
@@ -25,15 +22,8 @@ func TestUpdateAnalytics(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create logger: %v", err)
 	}
-	eventBus := EventBus.New()
-	eb := event_bus.NewAugurEventBus[model.CountProcessorOutput, any](
-		eventBus,
-		logger,
-	)
 	as := service.NewAnalyticsService(
 		ac,
-		eb,
-		"test",
 		logger,
 	)
 

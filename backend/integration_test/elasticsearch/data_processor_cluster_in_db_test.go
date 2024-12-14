@@ -4,14 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/event_bus"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
-	"github.com/asaskevich/EventBus"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -24,14 +21,9 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	eventBus := EventBus.New()
-	eb := event_bus.NewAugurEventBus[any, model.DataProcessorOutput](
-		eventBus,
-		logger,
-	)
 
 	t.Run("should cluster new groups with the old", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, eb, "test", logger)
+		dp := service.NewDataProcessorService(ac, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -58,7 +50,8 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, firstRoundErrors := dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundErrors := []error{firstRoundResult.Error}
 
 		secondBatch := []logModel.LogEntry{
 			{
@@ -85,7 +78,8 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, secondRoundErrors := dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundErrors := []error{secondRoundResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -136,7 +130,7 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 	})
 
 	t.Run("should add a new cluster if there are no entries of the old one", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, eb, "test", logger)
+		dp := service.NewDataProcessorService(ac, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -184,13 +178,15 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, firstRoundErrors := dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundErrors := []error{firstRoundResult.Error}
 
 		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, secondRoundErrors := dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundErrors := []error{secondRoundResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -241,7 +237,7 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 	})
 
 	t.Run("should be able to cluster both logs and spans at the same time", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, eb, "test", logger)
+		dp := service.NewDataProcessorService(ac, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -286,7 +282,8 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, firstRoundErrors := dp.ProcessData(context.Background(), dpClusterInDBIndices)
+		firstRoundResult := <-dp.ProcessData(context.Background(), dpClusterInDBIndices)
+		firstRoundErrors := []error{firstRoundResult.Error}
 
 		secondBatchLogs := []logModel.LogEntry{
 			{
@@ -345,7 +342,8 @@ func TestDataProcessorClusterDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-		_, secondRoundErrors := dp.ProcessData(context.Background(), dpClusterInDBIndices)
+		secondRoundResult := <-dp.ProcessData(context.Background(), dpClusterInDBIndices)
+		secondRoundErrors := []error{secondRoundResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
