@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const WriteQueueSize = 1
+const WriteQueueSize = 30
 const flushTimeOut = 10 * time.Second
 
 type DatabaseWriteBuffer[ValueType any] interface {
