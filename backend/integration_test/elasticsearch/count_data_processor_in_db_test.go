@@ -3,7 +3,6 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
@@ -11,14 +10,13 @@ import (
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 	"testing"
 	"time"
 )
 
-var dpIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
+var dpInDBIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
-func TestDataProcessor(t *testing.T) {
+func TestDataProcessorWithDataInDB(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
@@ -42,20 +40,29 @@ func TestDataProcessor(t *testing.T) {
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		coOccurringLogs := []logModel.LogEntry{
+		firstCluster := []logModel.LogEntry{
 			{
 				ClusterId: clusterA,
 				Timestamp: firstTimeStamp,
-				CreatedAt: createdAt,
-			},
-			{
-				ClusterId: clusterB,
-				Timestamp: overlapWithFirstTimeStamp,
-				CreatedAt: createdAt,
+				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 			{
 				ClusterId: clusterA,
 				Timestamp: secondTimeStamp,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, firstCluster, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundErrors := []error{firstRoundResult.Error}
+
+		secondCluster := []logModel.LogEntry{
+			{
+				ClusterId: clusterB,
+				Timestamp: overlapWithFirstTimeStamp,
 				CreatedAt: createdAt,
 			},
 			{
@@ -64,19 +71,19 @@ func TestDataProcessor(t *testing.T) {
 				CreatedAt: createdAt,
 			},
 			{
-				ClusterId: clusterA,
+				ClusterId: clusterB,
 				Timestamp: clusterAMiss,
 				CreatedAt: createdAt,
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
+		err = loadDataIntoElasticsearch(ac, secondCluster, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
 
-		result := <-dp.ProcessData(context.Background(), dpIndices)
-		errors := []error{result.Error}
+		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundErrors := []error{secondRoundResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -95,23 +102,9 @@ func TestDataProcessor(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
-
-		for _, entry := range countEntries {
-			if entry.ClusterId == clusterA {
-				clusterAEntries = append(clusterAEntries, entry)
-			} else if entry.ClusterId == clusterB {
-				clusterBEntries = append(clusterBEntries, entry)
-			}
-		}
-
-		assertAllErrorsAreNil(t, errors)
-		assert.Equal(t, int64(2), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].CoOccurrences)
-
-		assert.Equal(t, int64(3), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
+		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
+		assert.Equal(t, int64(2), countEntries[0].CoOccurrences)
+		assert.Equal(t, int64(3), countEntries[0].Occurrences)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
@@ -132,20 +125,29 @@ func TestDataProcessor(t *testing.T) {
 
 		createdAt := time.Date(1992, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		coOccurringLogs := []logModel.LogEntry{
-			{
-				ClusterId: clusterA,
-				Timestamp: firstTimeStamp,
-				CreatedAt: createdAt,
-			},
+		firstBatch := []logModel.LogEntry{
 			{
 				ClusterId: clusterB,
 				Timestamp: overlapWithFirstTimeStampOne,
-				CreatedAt: createdAt,
+				CreatedAt: createdAt.Add(-time.Second * 500),
 			},
 			{
 				ClusterId: clusterB,
 				Timestamp: overlapWithFirstTimeStampTwo,
+				CreatedAt: createdAt.Add(-time.Second * 500),
+			},
+		}
+		err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("failed to load data into Elasticsearch: %v", err)
+		}
+		firstRoundResults := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		firstRoundErrors := []error{firstRoundResults.Error}
+
+		secondBatch := []logModel.LogEntry{
+			{
+				ClusterId: clusterA,
+				Timestamp: firstTimeStamp,
 				CreatedAt: createdAt,
 			},
 			{
@@ -160,13 +162,12 @@ func TestDataProcessor(t *testing.T) {
 			},
 		}
 
-		err = loadDataIntoElasticsearch(ac, coOccurringLogs, bootstrapper.LogIndexName)
+		err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.LogIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-
-		result := <-dp.ProcessData(context.Background(), dpIndices)
-		errors := []error{result.Error}
+		secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		secondRoundErrors := []error{secondRoundResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -196,54 +197,12 @@ func TestDataProcessor(t *testing.T) {
 			}
 		}
 
-		assertAllErrorsAreNil(t, errors)
+		assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
+		assert.Equal(t, int64(1), clusterBEntries[0].CoOccurrences)
 
 		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
-	})
-
-	t.Run("should be able to scroll through a huge list of logs/spans", func(t *testing.T) {
-		dp := service.NewDataProcessorService(ac, logger)
-		err := deleteAllDocuments(es)
-		if err != nil {
-			t.Errorf("Failed to delete all documents: %v", err)
-		}
-		logSize := 30000
-		logs := make([]logModel.LogEntry, logSize)
-		overlapSize := 50
-		beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
-		for i := 0; i < logSize; i++ {
-			clusterId := "cluster" + strconv.Itoa(i)
-			logs[i] = logModel.LogEntry{
-				CreatedAt: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
-				Timestamp: beginTime.Add(time.Duration(i) * time.Millisecond * time.Duration(overlapSize)),
-				ClusterId: clusterId,
-			}
-		}
-		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
-		if err != nil {
-			t.Errorf("Failed to load data into Elasticsearch: %v", err)
-		}
-		result := <-dp.ProcessData(context.Background(), dpIndices)
-		errors := []error{result.Error}
-
-		stringQuery, err := json.Marshal(getAllQuery())
-		if err != nil {
-			t.Errorf("failed to marshal query: %v", err)
-		}
-
-		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
-		if err != nil {
-			t.Errorf("Failed to count: %v", err)
-		}
-		assertAllErrorsAreNil(t, errors)
-		// every log sequentially overlaps with another, creating two co-occurrences per log (previous and next log)
-		// except for the first and last log
-		assert.Equal(t, int64(logSize*2-2), count)
+		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
 	})
 
 	t.Run(
@@ -255,14 +214,23 @@ func TestDataProcessor(t *testing.T) {
 			}
 			beginTime := time.Date(2021, 1, 1, 0, 0, 0, 32, time.UTC)
 			spanSize := 100
-			spans := createSpans(beginTime, time.Millisecond*50, spanSize)
-
-			err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
+			spans, _ := createSpans(beginTime, time.Millisecond*50, spanSize)
+			firstBatchSize := spanSize / 2
+			firstBatch := spans[:firstBatchSize]
+			secondBatch := spans[firstBatchSize:]
+			err = loadDataIntoElasticsearch(ac, firstBatch, bootstrapper.SpanIndexName)
 			if err != nil {
 				t.Errorf("Failed to load data into Elasticsearch: %v", err)
 			}
-			result := <-dp.ProcessData(context.Background(), dpIndices)
-			errors := []error{result.Error}
+			firstRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+			firstRoundErrors := []error{firstRoundResult.Error}
+
+			err = loadDataIntoElasticsearch(ac, secondBatch, bootstrapper.SpanIndexName)
+			if err != nil {
+				t.Errorf("Failed to load data into Elasticsearch: %v", err)
+			}
+			secondRoundResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+			secondRoundErrors := []error{secondRoundResult.Error}
 
 			stringQuery, err := json.Marshal(getAllQuery())
 			if err != nil {
@@ -275,7 +243,7 @@ func TestDataProcessor(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
-			assertAllErrorsAreNil(t, errors)
+			assertAllErrorsAreNil(t, append(firstRoundErrors, secondRoundErrors...))
 			assert.Equal(t, int64(0), count)
 		},
 	)
@@ -319,17 +287,14 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
+		clusterABatchResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		clusterABatchErrors := []error{clusterABatchResult.Error}
 		err = loadDataIntoElasticsearch(ac, clusterBSpans, bootstrapper.SpanIndexName)
 		if err != nil {
 			t.Errorf("failed to load data into Elasticsearch: %v", err)
 		}
-
-		result := <-dp.ProcessData(
-			context.Background(),
-			[]string{bootstrapper.LogIndexName,
-				bootstrapper.SpanIndexName},
-		)
-		errors := []error{result.Error}
+		clusterBBatchResult := <-dp.ProcessData(context.Background(), dpInDBIndices)
+		clusterBBatchErrors := []error{clusterBBatchResult.Error}
 
 		stringQuery, err := json.Marshal(getAllQuery())
 		if err != nil {
@@ -343,95 +308,14 @@ func TestDataProcessor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		clusterBEntries, err := convertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
-
-		for _, entry := range countEntries {
-			if entry.ClusterId == clusterA {
-				clusterAEntries = append(clusterAEntries, entry)
-			} else if entry.ClusterId == clusterB {
-				clusterBEntries = append(clusterBEntries, entry)
-			}
-		}
-
-		assertAllErrorsAreNil(t, errors)
-		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
+		assertAllErrorsAreNil(t, append(clusterABatchErrors, clusterBBatchErrors...))
 		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
-		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
 		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+		assert.Equal(t, clusterB, clusterBEntries[0].ClusterId)
 	})
-}
-
-func createSpan(
-	clusterId string,
-	startTime time.Time,
-	endTime time.Time,
-) spanModel.Span {
-	return spanModel.Span{
-		CreatedAt:    startTime,
-		SpanID:       clusterId,
-		ParentSpanID: clusterId,
-		TraceID:      "trace-12345",
-		ServiceName:  "serviceName",
-		StartTime:    startTime,
-		EndTime:      endTime,
-		ActionName:   "actionName",
-		SpanKind:     "spanKind",
-		ClusterEvent: fmt.Sprintf(
-			"service=%s,operation=%s,kind=%s", "serviceName", "actionName", "spanKind",
-		),
-		ClusterId: clusterId,
-		Attributes: map[string]string{
-			"http.method": "GET",
-			"user.id":     clusterId,
-		},
-		Events: []spanModel.SpanEvent{},
-	}
-}
-
-func createSpans(
-	baseTime time.Time,
-	interval time.Duration,
-	numSpans int,
-) []spanModel.Span {
-	spans := make([]spanModel.Span, numSpans)
-	for i := 0; i < numSpans; i++ {
-		startTime := baseTime.Add(time.Duration(i) * interval)
-		endTime := startTime.Add(interval / 2)
-
-		span := spanModel.Span{
-			Id:           fmt.Sprintf("span-%d", i+1),
-			CreatedAt:    startTime,
-			SpanID:       fmt.Sprintf("span-%d", i+1),
-			ParentSpanID: fmt.Sprintf("span-%d", i),
-			TraceID:      "trace-12345",
-			ServiceName:  "serviceName",
-			StartTime:    startTime,
-			EndTime:      endTime,
-			ActionName:   "actionName",
-			SpanKind:     "spanKind",
-			ClusterEvent: fmt.Sprintf(
-				"service=%s,operation=%s,kind=%s,number=%d", "serviceName", "actionName", "spanKind", i,
-			),
-			ClusterId: fmt.Sprintf("cluster-%d", i+1),
-			Attributes: map[string]string{
-				"http.method": "GET",
-				"user.id":     fmt.Sprintf("user-%d", i+1),
-			},
-			Events: []spanModel.SpanEvent{},
-		}
-		spans[i] = span
-	}
-	return spans
-}
-
-func assertAllErrorsAreNil(t *testing.T, errors []error) {
-	for _, err := range errors {
-		assert.Nil(t, err)
-	}
 }
