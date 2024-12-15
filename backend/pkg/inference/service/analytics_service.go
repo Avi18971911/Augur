@@ -329,8 +329,12 @@ func (as *AnalyticsService) getMostLikelySequence(
 			NextNodes:    make([]*model.ClusterNode, 0),
 		},
 	}
+	visitedNodes := map[string]bool{clusterIdToSearchOn: true}
 	nodesToDoMLEOn[0].NextNodes = append(nodesToDoMLEOn[0].NextNodes, clusterGraph[clusterIdToSearchOn].Predecessors...)
 	nodesToDoMLEOn[0].NextNodes = append(nodesToDoMLEOn[0].NextNodes, clusterGraph[clusterIdToSearchOn].Successors...)
+	for _, node := range nodesToDoMLEOn[0].NextNodes {
+		visitedNodes[node.ClusterId] = true
+	}
 
 	for {
 		if len(nodesToDoMLEOn) == 0 {
@@ -367,6 +371,26 @@ func (as *AnalyticsService) getMostLikelySequence(
 				)
 			} else {
 				currentNode.LogOrSpanData = mostLikelyLogOrSpan
+			}
+
+			for _, successor := range currentNode.Successors {
+				if _, ok := visitedNodes[successor.ClusterId]; !ok {
+					nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
+						PreviousNode: currentNode,
+						NextNodes:    currentNode.Successors,
+					})
+					visitedNodes[successor.ClusterId] = true
+				}
+			}
+
+			for _, predecessor := range currentNode.Predecessors {
+				if _, ok := visitedNodes[predecessor.ClusterId]; !ok {
+					nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
+						PreviousNode: currentNode,
+						NextNodes:    currentNode.Predecessors,
+					})
+					visitedNodes[predecessor.ClusterId] = true
+				}
 			}
 		}
 	}
