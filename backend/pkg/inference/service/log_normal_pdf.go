@@ -31,7 +31,7 @@ func uniformPDF(t, a, b float64) float64 {
 	return 0.0
 }
 
-func bayesianInference(t, mu, sigma, a, b, priorH1, priorH0 float64) float64 {
+func bayesianInference(t, mu, sigma, a, b, priorH1, priorH0 float64) (bayesResult float64, probability float64) {
 	// Likelihoods
 	likelihoodH1 := logNormalPDF(t, mu, sigma)
 	likelihoodH0 := uniformPDF(t, a, b)
@@ -41,10 +41,16 @@ func bayesianInference(t, mu, sigma, a, b, priorH1, priorH0 float64) float64 {
 	numeratorH0 := likelihoodH0 * priorH0
 	posteriorH1 := numeratorH1 / (numeratorH1 + numeratorH0)
 
-	return posteriorH1
+	return posteriorH1, likelihoodH1
 }
 
-func DetermineCausality(sampleTDOA, meanTDOA, varianceTDOA float64, coOccurrences, occurrences int64) bool {
+func DetermineCausality(
+	sampleTDOA,
+	meanTDOA,
+	varianceTDOA float64,
+	coOccurrences,
+	occurrences int64,
+) (isCausal bool, withProbability float64) {
 	mu, sigmaSquared := fitLogNormal(meanTDOA, varianceTDOA)
 	sigma := math.Sqrt(sigmaSquared)
 	a := 0.0
@@ -52,5 +58,7 @@ func DetermineCausality(sampleTDOA, meanTDOA, varianceTDOA float64, coOccurrence
 	priorH1 := float64(coOccurrences) / float64(occurrences)
 	priorH0 := 1 - priorH1
 
-	return bayesianInference(sampleTDOA, mu, sigma, a, b, priorH1, priorH0) > 0.5
+	bayesResult, probability := bayesianInference(sampleTDOA, mu, sigma, a, b, priorH1, priorH0)
+	fulfillsHypothesis := bayesResult > 0.5
+	return fulfillsHypothesis, probability
 }

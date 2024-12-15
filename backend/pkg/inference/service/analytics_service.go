@@ -175,7 +175,7 @@ func getAnalyticsUpdateStatement(
 func (as *AnalyticsService) GetChainOfEvents(
 	ctx context.Context,
 	logOrSpanData model.LogOrSpanData,
-) (mleSequence, error) {
+) (mleSequence map[string]*model.ClusterNode, err error) {
 	clusterToSearchOn := logOrSpanData.ClusterId
 	clusterGraph, err := as.getClusterGraph(ctx, clusterToSearchOn)
 	if err != nil {
@@ -187,11 +187,16 @@ func (as *AnalyticsService) GetChainOfEvents(
 	} else {
 		clusterGraph[clusterToSearchOn].LogOrSpanData.LogDetails = logOrSpanData.LogDetails
 	}
-	mleSequence := as.getMostLikelySequence(
+	mleSequence, err = as.getMostLikelySequence(
 		ctx,
 		clusterToSearchOn,
 		clusterGraph,
 	)
+	if err != nil {
+		as.logger.Error("failed to get most likely sequence", zap.Error(err))
+		return nil, err
+	}
+	return mleSequence, nil
 }
 
 func (as *AnalyticsService) getClusterGraph(
@@ -286,7 +291,7 @@ func (as *AnalyticsService) getMostLikelySequence(
 	ctx context.Context,
 	clusterIdToSearchOn string,
 	clusterGraph map[string]*model.ClusterNode,
-) ([]model.LogOrSpanData, error) {
+) (map[string]*model.ClusterNode, error) {
 	startNode := clusterGraph[clusterIdToSearchOn]
 	nodesToDoMLEOn := []model.MostLikelyEstimatorPair{
 		{
@@ -321,12 +326,21 @@ func (as *AnalyticsService) getMostLikelySequence(
 			}
 			mostLikelyLogOrSpan := as.getMostLikelyLogOrSpan(
 				spanOrLogDetailsOfCurrentNode,
+				*previousNode.LogOrSpanData,
+				countClusterDetails,
 			)
 			if mostLikelyLogOrSpan != nil {
-
+				as.logger.Warn(
+					"Could not find suitable candidate for MLE",
+					zap.String("cluster_id", currentNode.ClusterId),
+					zap.String("preceding_cluster_id", previousNode.ClusterId),
+				)
+			} else {
+				currentNode.LogOrSpanData = mostLikelyLogOrSpan
 			}
 		}
 	}
+	return clusterGraph, nil
 }
 
 func (as *AnalyticsService) getCountClusterDetails(
@@ -391,6 +405,55 @@ func (as *AnalyticsService) getSpanOrLogDetails(
 		return nil, fmt.Errorf("failed to convert docs to log or span data: %w", err)
 	}
 	return logOrSpanData, nil
+}
+
+func (as *AnalyticsService) getMostLikelyLogOrSpan(
+	spanOrLogDetails []model.LogOrSpanData,
+	previousSpanOrLogDetails model.LogOrSpanData,
+	clusterDetails CountCluster,
+) *model.LogOrSpanData {
+	probabilities := make([]float64, len(spanOrLogDetails))
+	var previousTime time.Time
+	var TDOA float64
+	if previousSpanOrLogDetails.SpanDetails != nil {
+		previousTime = previousSpanOrLogDetails.SpanDetails.StartTime
+	} else {
+		previousTime = previousSpanOrLogDetails.LogDetails.Timestamp
+	}
+	for i, logOrSpanData := range spanOrLogDetails {
+		if logOrSpanData.SpanDetails != nil {
+			span := logOrSpanData.SpanDetails
+			TDOA = span.StartTime.Sub(previousTime).Seconds()
+		} else {
+			log := logOrSpanData.LogDetails
+			TDOA = log.Timestamp.Sub(previousTime).Seconds()
+		}
+		isCausal, probability := DetermineCausality(
+			TDOA,
+			clusterDetails.MeanTDOA,
+			clusterDetails.VarianceTDOA,
+			clusterDetails.CoOccurrences,
+			clusterDetails.Occurrences,
+		)
+		if !isCausal {
+			probabilities[i] = 0.0
+		} else {
+			probabilities[i] = probability
+		}
+	}
+	maxProbability := 0.0
+	maxIndex := -1
+	for i, probability := range probabilities {
+		if probability > maxProbability {
+			maxProbability = probability
+			maxIndex = i
+		}
+	}
+	if maxIndex == -1 {
+		return nil
+	} else {
+		return &spanOrLogDetails[maxIndex]
+	}
 }
 
 func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.ClusterNode, error) {
