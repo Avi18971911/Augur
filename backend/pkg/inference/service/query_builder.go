@@ -16,7 +16,7 @@ func buildGetRelatedClustersQuery(clusterId string) map[string]interface{} {
 	}
 }
 
-func getSuceedingClusterIdsQuery(clusterId string) map[string]interface{} {
+func getSucceedingClusterIdsQuery(clusterId string) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -32,11 +32,21 @@ func getSuceedingClusterIdsQuery(clusterId string) map[string]interface{} {
 	}
 }
 
-func getPreceedingClusterIdsQuery(clusterId string) map[string]interface{} {
+func getPrecedingClusterIdsQuery(clusterId string) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"term": map[string]interface{}{
 				"causes_clusters": clusterId,
+			},
+		},
+	}
+}
+
+func getCountClusterDetailsQuery(countId string) map[string]interface{} {
+	return map[string]interface{}{
+		"query": map[string]interface{}{
+			"term": map[string]interface{}{
+				"_id": countId,
 			},
 		},
 	}

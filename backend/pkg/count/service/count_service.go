@@ -77,7 +77,7 @@ func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	updateMap := make([]client.DocumentMap, len(coClusterMapCount))
 	i := 0
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
-		compositeId := getIDFromConstituents(clusterId, otherClusterId)
+		compositeId := GetIDFromConstituents(clusterId, otherClusterId)
 		newValue := coClusterDetails.TotalTDOA / float64(coClusterDetails.Occurrences) // Calculate the average of the matching coClusters
 		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, newValue)
 		metaMap[i] = meta
@@ -224,7 +224,7 @@ func (cs *CountService) getIncrementMissesDetails(
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
 	for i, missingCoClusterId := range missingCoClusterIds {
-		compositeKey := getIDFromConstituents(clusterId, missingCoClusterId.CoClusterId)
+		compositeKey := GetIDFromConstituents(clusterId, missingCoClusterId.CoClusterId)
 		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
@@ -329,7 +329,7 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.
 	}
 }
 
-func getIDFromConstituents(clusterId, coClusterId string) string {
+func GetIDFromConstituents(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
 }
 

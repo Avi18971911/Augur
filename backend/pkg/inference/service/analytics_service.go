@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
+	"github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/inference/model"
@@ -176,7 +177,8 @@ func (as *AnalyticsService) GetChainOfEvents(ctx context.Context, logOrSpanData 
 		as.logger.Error("failed to get cluster graph", zap.Error(err))
 		return nil, err
 	}
-	mleSequence := getMostLikelySequence(
+	mleSequence := as.getMostLikelySequence(
+		ctx,
 		clusterToSearchOn,
 		clusterGraph,
 		logOrSpanData.SpanTimeDetails,
@@ -238,7 +240,7 @@ func (as *AnalyticsService) getSucceedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]model.ClusterNode, error) {
-	query := getSuceedingClusterIdsQuery(clusterId)
+	query := getSucceedingClusterIdsQuery(clusterId)
 	return as.getClusterSubGraph(ctx, query)
 }
 
@@ -246,7 +248,7 @@ func (as *AnalyticsService) getPrecedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]model.ClusterNode, error) {
-	query := getPreceedingClusterIdsQuery(clusterId)
+	query := getPrecedingClusterIdsQuery(clusterId)
 	return as.getClusterSubGraph(ctx, query)
 }
 
@@ -272,6 +274,105 @@ func (as *AnalyticsService) getClusterSubGraph(
 	return clusters, nil
 }
 
+func (as *AnalyticsService) getMostLikelySequence(
+	ctx context.Context,
+	clusterIdToSearchOn string,
+	clusterGraph map[string]*model.ClusterNode,
+	spanTimeDetails *model.SpanTimeDetails,
+	logTimeDetails *model.LogTimeDetails,
+) []model.LogOrSpanData {
+	startNode := clusterGraph[clusterIdToSearchOn]
+	nodesToDoMLEOn := []model.MostLikelyEstimatorPair{
+		{
+			PreviousNode: startNode,
+			NextNodes:    make([]*model.ClusterNode, 0),
+		},
+	}
+	nodesToDoMLEOn[0].NextNodes = append(nodesToDoMLEOn[0].NextNodes, clusterGraph[clusterIdToSearchOn].Predecessors...)
+	nodesToDoMLEOn[0].NextNodes = append(nodesToDoMLEOn[0].NextNodes, clusterGraph[clusterIdToSearchOn].Successors...)
+
+	for {
+		if len(nodesToDoMLEOn) == 0 {
+			break
+		}
+		currentPair := nodesToDoMLEOn[0]
+		nodesToDoMLEOn = nodesToDoMLEOn[1:]
+		previousNode := currentPair.PreviousNode
+		nextNodes := currentPair.NextNodes
+		for _, currentNode := range nextNodes {
+			clusterDetails := as.getClusterDetails(ctx, previousNode.ClusterId, currentNode.ClusterId)
+			spanOrLogDetailsOfCurrentNode := as.getSpanOrLogDetails(currentNode.ClusterId)
+			mostLikelyLogOrSpan := as.getMostLikelyLogOrSpan(spanTimeDetails, logTimeDetails, spanOrLogDetailsOfCurrentNode)
+			if mostLikelyLogOrSpan != nil {
+
+			}
+		}
+	}
+}
+
+func (as *AnalyticsService) getClusterDetails(
+	ctx context.Context,
+	previousClusterId string,
+	nextClusterId string,
+) ([]CountCluster, error) {
+	countId := service.GetIDFromConstituents(nextClusterId, previousClusterId)
+	query := getCountClusterDetailsQuery(countId)
+	queryJSON, err := json.Marshal(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal cluster details query: %w", err)
+	}
+	queryCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	docs, err := as.ac.Search(queryCtx, string(queryJSON), []string{bootstrapper.CountIndexName}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search for cluster details: %w", err)
+	}
+	countClusters, err := convertDocsToCountClusters(docs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert docs to count clusters: %w", err)
+	}
+	return countClusters, nil
+}
+
+func (as *AnalyticsService) getSpanOrLogDetails(clusterId string) *model.LogOrSpanData {
+
+}
+
+func convertDocsToCountClusters(docs []map[string]interface{}) ([]CountCluster, error) {
+	clusters := make([]CountCluster, len(docs))
+	for i, doc := range docs {
+		clusterId, ok := doc["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string: %v", doc)
+		}
+		occurrences, ok := doc["occurrences"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert occurrences to float64: %v", doc)
+		}
+		coOccurrences, ok := doc["co_occurrences"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert co_occurrences to float64: %v", doc)
+		}
+		meanTDOA, ok := doc["mean_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert mean_tdoa to float64: %v", doc)
+		}
+		varianceTDOA, ok := doc["variance_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert variance_tdoa to float64: %v", doc)
+		}
+		cluster := CountCluster{
+			ClusterId:     clusterId,
+			Occurrences:   int64(occurrences),
+			CoOccurrences: int64(coOccurrences),
+			MeanTDOA:      meanTDOA,
+			VarianceTDOA:  varianceTDOA,
+		}
+		clusters[i] = cluster
+	}
+	return clusters, nil
+}
+
 func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.ClusterNode, error) {
 	clusters := make([]model.ClusterNode, len(docs))
 	for i, doc := range docs {
@@ -285,12 +386,4 @@ func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.ClusterNo
 		clusters[i] = cluster
 	}
 	return clusters, nil
-}
-
-func getMostLikelySequence(
-	clusterGraph []model.ClusterNode,
-	spanTimeDetails *model.SpanTimeDetails,
-	logTimeDetails *model.LogTimeDetails,
-) []model.LogOrSpanData {
-
 }
