@@ -84,7 +84,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 func (as *AnalyticsService) getRelatedClusters(
 	ctx context.Context,
 	clusterId string,
-) ([]CountCluster, error) {
+) ([]model.CountCluster, error) {
 	queryJSON, err := json.Marshal(buildGetRelatedClustersQuery(clusterId))
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal get related cluster query: %w", err)
@@ -101,8 +101,8 @@ func (as *AnalyticsService) getRelatedClusters(
 	return prunedClusters, nil
 }
 
-func parseClusters(docs []map[string]interface{}) ([]CountCluster, error) {
-	clusters := make([]CountCluster, len(docs))
+func parseClusters(docs []map[string]interface{}) ([]model.CountCluster, error) {
+	clusters := make([]model.CountCluster, len(docs))
 	for i, doc := range docs {
 		clusterId, ok := doc["cluster_id"].(string)
 		if !ok {
@@ -124,7 +124,7 @@ func parseClusters(docs []map[string]interface{}) ([]CountCluster, error) {
 		if !ok {
 			return nil, fmt.Errorf("failed to convert variance_tdoa to float64: %v", doc)
 		}
-		cluster := CountCluster{
+		cluster := model.CountCluster{
 			ClusterId:     clusterId,
 			Occurrences:   int64(occurrences),
 			CoOccurrences: int64(coOccurrences),
@@ -136,8 +136,8 @@ func parseClusters(docs []map[string]interface{}) ([]CountCluster, error) {
 	return clusters, nil
 }
 
-func pruneClusters(clusters []CountCluster) []CountCluster {
-	prunedClusters := make([]CountCluster, 0)
+func pruneClusters(clusters []model.CountCluster) []model.CountCluster {
+	prunedClusters := make([]model.CountCluster, 0)
 	for _, cluster := range clusters {
 		sampleRatio := float64(cluster.CoOccurrences) / float64(cluster.Occurrences)
 		if sampleRatio >= minimumRatio {
@@ -254,7 +254,25 @@ func (as *AnalyticsService) getSucceedingClusters(
 	clusterId string,
 ) ([]model.ClusterNode, error) {
 	query := getSucceedingClusterIdsQuery(clusterId)
-	return as.getClusterSubGraph(ctx, query)
+	clusters, err := as.getClusterSubGraph(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster sub graph: %w", err)
+	}
+	if len(clusters) == 0 {
+		return nil, fmt.Errorf("no clusters found for cluster id: %s", clusterId)
+	} else if len(clusters) != 1 {
+		return nil, fmt.Errorf("expected 1 cluster, got %d", len(clusters))
+	}
+	cluster := clusters[0]
+	clusterNodes := make([]model.ClusterNode, len(cluster.CausesClusters))
+	for i, causeCluster := range cluster.CausesClusters {
+		clusterNodes[i] = model.ClusterNode{
+			ClusterId:    causeCluster,
+			Successors:   make([]*model.ClusterNode, 0),
+			Predecessors: make([]*model.ClusterNode, 0),
+		}
+	}
+	return clusterNodes, nil
 }
 
 func (as *AnalyticsService) getPrecedingClusters(
@@ -262,13 +280,25 @@ func (as *AnalyticsService) getPrecedingClusters(
 	clusterId string,
 ) ([]model.ClusterNode, error) {
 	query := getPrecedingClusterIdsQuery(clusterId)
-	return as.getClusterSubGraph(ctx, query)
+	clusters, err := as.getClusterSubGraph(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster sub graph: %w", err)
+	}
+	clusterNodes := make([]model.ClusterNode, len(clusters))
+	for i, cluster := range clusters {
+		clusterNodes[i] = model.ClusterNode{
+			ClusterId:    cluster.ClusterId,
+			Successors:   make([]*model.ClusterNode, 0),
+			Predecessors: make([]*model.ClusterNode, 0),
+		}
+	}
+	return clusterNodes, nil
 }
 
 func (as *AnalyticsService) getClusterSubGraph(
 	ctx context.Context,
 	query map[string]interface{},
-) ([]model.ClusterNode, error) {
+) ([]model.Cluster, error) {
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal preceding cluster query: %w", err)
@@ -347,25 +377,25 @@ func (as *AnalyticsService) getCountClusterDetails(
 	ctx context.Context,
 	previousClusterId string,
 	nextClusterId string,
-) (CountCluster, error) {
+) (model.CountCluster, error) {
 	countId := service.GetIDFromConstituents(previousClusterId, nextClusterId)
 	query := getCountClusterDetailsQuery(countId)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
-		return CountCluster{}, fmt.Errorf("failed to marshal cluster details query: %w", err)
+		return model.CountCluster{}, fmt.Errorf("failed to marshal cluster details query: %w", err)
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	docs, err := as.ac.Search(queryCtx, string(queryJSON), []string{bootstrapper.CountIndexName}, nil)
 	if err != nil {
-		return CountCluster{}, fmt.Errorf("failed to search for cluster details: %w", err)
+		return model.CountCluster{}, fmt.Errorf("failed to search for cluster details: %w", err)
 	}
 	countClusters, err := parseClusters(docs)
 	if err != nil {
-		return CountCluster{}, fmt.Errorf("failed to convert docs to count clusters: %w", err)
+		return model.CountCluster{}, fmt.Errorf("failed to convert docs to count clusters: %w", err)
 	}
 	if len(countClusters) != 1 {
-		return CountCluster{}, fmt.Errorf("expected 1 count cluster from composite ID, got %d", len(countClusters))
+		return model.CountCluster{}, fmt.Errorf("expected 1 count cluster from composite ID, got %d", len(countClusters))
 	}
 	return countClusters[0], nil
 }
@@ -374,7 +404,7 @@ func (as *AnalyticsService) getSpanOrLogDetails(
 	ctx context.Context,
 	clusterId string,
 	previousLogOrSpanData *model.LogOrSpanData,
-	countClusterDetails CountCluster,
+	countClusterDetails model.CountCluster,
 ) ([]model.LogOrSpanData, error) {
 	var timeStart time.Time
 	if previousLogOrSpanData.SpanDetails != nil {
@@ -410,7 +440,7 @@ func (as *AnalyticsService) getSpanOrLogDetails(
 func (as *AnalyticsService) getMostLikelyLogOrSpan(
 	spanOrLogDetails []model.LogOrSpanData,
 	previousSpanOrLogDetails model.LogOrSpanData,
-	clusterDetails CountCluster,
+	clusterDetails model.CountCluster,
 ) *model.LogOrSpanData {
 	probabilities := make([]float64, len(spanOrLogDetails))
 	var previousTime time.Time
@@ -456,15 +486,20 @@ func (as *AnalyticsService) getMostLikelyLogOrSpan(
 	}
 }
 
-func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.ClusterNode, error) {
-	clusters := make([]model.ClusterNode, len(docs))
+func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.Cluster, error) {
+	clusters := make([]model.Cluster, len(docs))
 	for i, doc := range docs {
 		clusterId, ok := doc["cluster_id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert cluster_id to string: %v", doc)
 		}
-		cluster := model.ClusterNode{
-			ClusterId: clusterId,
+		causesClusters, ok := doc["causes_clusters"].([]string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert causes_clusters to []string: %v", doc)
+		}
+		cluster := model.Cluster{
+			ClusterId:      clusterId,
+			CausesClusters: causesClusters,
 		}
 		clusters[i] = cluster
 	}
