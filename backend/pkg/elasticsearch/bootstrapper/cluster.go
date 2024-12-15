@@ -9,26 +9,8 @@ var clusterIndex = map[string]interface{}{
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
-			"created_at": map[string]interface{}{
-				"type": "date",
-			},
-			"cluster_id": map[string]interface{}{
+			"causes_clusters": map[string]interface{}{
 				"type": "keyword",
-			},
-			"co_cluster_id": map[string]interface{}{
-				"type": "keyword",
-			},
-			"occurrences": map[string]interface{}{
-				"type": "integer",
-			},
-			"co_occurrences": map[string]interface{}{
-				"type": "integer",
-			},
-			"mean_TDOA": map[string]interface{}{
-				"type": "float",
-			},
-			"variance_TDOA": map[string]interface{}{
-				"type": "float",
 			},
 		},
 	},
