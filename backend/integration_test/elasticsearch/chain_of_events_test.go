@@ -160,6 +160,42 @@ func TestChainOfEvents(t *testing.T) {
 		}
 		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
 		assert.Nil(t, err)
-		assert.NotNil(t, graph)
+
+		clusterASuccessors := make([]string, 0)
+		clusterAPredecessors := make([]string, 0)
+		clusterBSuccessors := make([]string, 0)
+		clusterBPredecessors := make([]string, 0)
+		clusterCSuccessors := make([]string, 0)
+		clusterCPredecessors := make([]string, 0)
+
+		for _, node := range graph[clusterIdA].Successors {
+			clusterASuccessors = append(clusterASuccessors, node.ClusterId)
+		}
+		for _, node := range graph[clusterIdA].Predecessors {
+			clusterAPredecessors = append(clusterAPredecessors, node.ClusterId)
+		}
+		for _, node := range graph[clusterIdB].Successors {
+			clusterBSuccessors = append(clusterBSuccessors, node.ClusterId)
+		}
+		for _, node := range graph[clusterIdB].Predecessors {
+			clusterBPredecessors = append(clusterBPredecessors, node.ClusterId)
+		}
+		for _, node := range graph[clusterIdC].Successors {
+			clusterCSuccessors = append(clusterCSuccessors, node.ClusterId)
+		}
+		for _, node := range graph[clusterIdC].Predecessors {
+			clusterCPredecessors = append(clusterCPredecessors, node.ClusterId)
+		}
+
+		assert.EqualValues(t, []string{clusterIdB, clusterIdC}, clusterASuccessors)
+		assert.EqualValues(t, []string{}, clusterAPredecessors)
+		assert.EqualValues(t, []string{clusterIdC}, clusterBSuccessors)
+		assert.EqualValues(t, []string{clusterIdA}, clusterBPredecessors)
+		assert.EqualValues(t, []string{}, clusterCSuccessors)
+		assert.EqualValues(t, []string{clusterIdA, clusterIdB}, clusterCPredecessors)
+
+		assert.Equal(t, logs[0], graph[clusterIdA].LogOrSpanData.LogDetails)
+		assert.Equal(t, logs[1], graph[clusterIdB].LogOrSpanData.LogDetails)
+		assert.Equal(t, logs[2], graph[clusterIdC].LogOrSpanData.LogDetails)
 	})
 }
