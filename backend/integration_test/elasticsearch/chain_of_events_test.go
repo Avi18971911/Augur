@@ -12,6 +12,7 @@ import (
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"sort"
 	"testing"
 	"time"
 )
@@ -187,15 +188,26 @@ func TestChainOfEvents(t *testing.T) {
 			clusterCPredecessors = append(clusterCPredecessors, node.ClusterId)
 		}
 
-		assert.EqualValues(t, []string{clusterIdB, clusterIdC}, clusterASuccessors)
-		assert.EqualValues(t, []string{}, clusterAPredecessors)
-		assert.EqualValues(t, []string{clusterIdC}, clusterBSuccessors)
-		assert.EqualValues(t, []string{clusterIdA}, clusterBPredecessors)
-		assert.EqualValues(t, []string{}, clusterCSuccessors)
-		assert.EqualValues(t, []string{clusterIdA, clusterIdB}, clusterCPredecessors)
+		expectedClusterASuccessors := []string{clusterIdB, clusterIdC}
+		sort.Strings(expectedClusterASuccessors)
+		sort.Strings(clusterASuccessors)
+		expectedClusterAPredecessors := []string{}
+		expectedClusterBSuccessors := []string{clusterIdC}
+		expectedClusterBPredecessors := []string{clusterIdA}
+		expectedClusterCSuccessors := []string{}
+		expectedClusterCPredecessors := []string{clusterIdA, clusterIdB}
+		sort.Strings(expectedClusterCPredecessors)
+		sort.Strings(clusterCPredecessors)
 
-		assert.Equal(t, logs[0], graph[clusterIdA].LogOrSpanData.LogDetails)
-		assert.Equal(t, logs[1], graph[clusterIdB].LogOrSpanData.LogDetails)
-		assert.Equal(t, logs[2], graph[clusterIdC].LogOrSpanData.LogDetails)
+		assert.EqualValues(t, expectedClusterASuccessors, clusterASuccessors)
+		assert.EqualValues(t, expectedClusterAPredecessors, clusterAPredecessors)
+		assert.EqualValues(t, expectedClusterBSuccessors, clusterBSuccessors)
+		assert.EqualValues(t, expectedClusterBPredecessors, clusterBPredecessors)
+		assert.EqualValues(t, expectedClusterCSuccessors, clusterCSuccessors)
+		assert.EqualValues(t, expectedClusterCPredecessors, clusterCPredecessors)
+
+		assert.Equal(t, logs[0], *graph[clusterIdA].LogOrSpanData.LogDetails)
+		assert.Equal(t, logs[1], *graph[clusterIdB].LogOrSpanData.LogDetails)
+		assert.Equal(t, logs[2], *graph[clusterIdC].LogOrSpanData.LogDetails)
 	})
 }
