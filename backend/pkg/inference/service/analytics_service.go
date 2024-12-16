@@ -192,9 +192,17 @@ func (as *AnalyticsService) GetChainOfEvents(
 		return nil, err
 	}
 	if logOrSpanData.SpanDetails != nil {
-		clusterGraph[clusterToSearchOn].LogOrSpanData.SpanDetails = logOrSpanData.SpanDetails
+		clusterGraph[clusterToSearchOn].LogOrSpanData = &model.LogOrSpanData{
+			Id:          logOrSpanData.Id,
+			ClusterId:   logOrSpanData.ClusterId,
+			SpanDetails: logOrSpanData.SpanDetails,
+		}
 	} else if logOrSpanData.LogDetails != nil {
-		clusterGraph[clusterToSearchOn].LogOrSpanData.LogDetails = logOrSpanData.LogDetails
+		clusterGraph[clusterToSearchOn].LogOrSpanData = &model.LogOrSpanData{
+			Id:         logOrSpanData.Id,
+			ClusterId:  logOrSpanData.ClusterId,
+			LogDetails: logOrSpanData.LogDetails,
+		}
 	} else {
 		return nil, fmt.Errorf("log or span data is nil for cluster: %s", clusterToSearchOn)
 	}
@@ -381,27 +389,35 @@ func (as *AnalyticsService) getMostLikelySequence(
 					zap.String("preceding_cluster_id", previousNode.ClusterId),
 				)
 			} else {
-				currentNode.LogOrSpanData = *mostLikelyLogOrSpan
+				currentNode.LogOrSpanData = mostLikelyLogOrSpan
 			}
 
+			successorsNextNodes := make([]*model.ClusterNode, 0)
 			for _, successor := range currentNode.Successors {
 				if _, ok := visitedNodes[successor.ClusterId]; !ok {
-					nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
-						PreviousNode: currentNode,
-						NextNodes:    currentNode.Successors,
-					})
+					successorsNextNodes = append(successorsNextNodes, successor)
 					visitedNodes[successor.ClusterId] = true
 				}
 			}
+			if len(successorsNextNodes) > 0 {
+				nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
+					PreviousNode: currentNode,
+					NextNodes:    successorsNextNodes,
+				})
+			}
 
+			predecessorsNextNodes := make([]*model.ClusterNode, 0)
 			for _, predecessor := range currentNode.Predecessors {
 				if _, ok := visitedNodes[predecessor.ClusterId]; !ok {
-					nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
-						PreviousNode: currentNode,
-						NextNodes:    currentNode.Predecessors,
-					})
+					predecessorsNextNodes = append(predecessorsNextNodes, predecessor)
 					visitedNodes[predecessor.ClusterId] = true
 				}
+			}
+			if len(predecessorsNextNodes) > 0 {
+				nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
+					PreviousNode: currentNode,
+					NextNodes:    predecessorsNextNodes,
+				})
 			}
 		}
 	}
@@ -438,7 +454,7 @@ func (as *AnalyticsService) getCountClusterDetails(
 func (as *AnalyticsService) getSpanOrLogDetails(
 	ctx context.Context,
 	clusterId string,
-	previousLogOrSpanData model.LogOrSpanData,
+	previousLogOrSpanData *model.LogOrSpanData,
 	countClusterDetails model.CountCluster,
 ) ([]model.LogOrSpanData, error) {
 	var timeStart time.Time
@@ -475,7 +491,7 @@ func (as *AnalyticsService) getSpanOrLogDetails(
 
 func (as *AnalyticsService) getMostLikelyLogOrSpan(
 	spanOrLogDetails []model.LogOrSpanData,
-	previousSpanOrLogDetails model.LogOrSpanData,
+	previousSpanOrLogDetails *model.LogOrSpanData,
 	clusterDetails model.CountCluster,
 ) *model.LogOrSpanData {
 	probabilities := make([]float64, len(spanOrLogDetails))
