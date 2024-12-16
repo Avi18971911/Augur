@@ -209,7 +209,6 @@ func TestUpdateAnalytics(t *testing.T) {
 		assert.ElementsMatch(t, []string{"2"}, clusterThreeCauses)
 		assert.ElementsMatch(t, []string{}, clusterFourCauses)
 	})
-
 }
 
 type AnalyticsTestCluster struct {

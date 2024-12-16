@@ -6,7 +6,9 @@ import (
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
+	logHelper "github.com/Avi18971911/Augur/pkg/log/helper"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
+	spanHelper "github.com/Avi18971911/Augur/pkg/trace/helper"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -103,7 +105,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		logEntries, err := convertToLogDocuments(docs)
+		logEntries, err := logHelper.ConvertFromDocuments(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -220,7 +222,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		logEntries, err := convertToLogDocuments(docs)
+		logEntries, err := logHelper.ConvertFromDocuments(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -401,7 +403,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for logs: %v", err)
 		}
-		logEntries, err := convertToLogDocuments(logDocs)
+		logEntries, err := logHelper.ConvertFromDocuments(logDocs)
 		if err != nil {
 			t.Errorf("Failed to convert log docs to log entries: %v", err)
 		}
@@ -410,7 +412,7 @@ func TestClusterDataProcessorDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for spans: %v", err)
 		}
-		spanEntries, err := convertToSpanDocuments(spanDocs)
+		spanEntries, err := spanHelper.ConvertFromDocuments(spanDocs)
 		if err != nil {
 			t.Errorf("Failed to convert span docs to span entries: %v", err)
 		}

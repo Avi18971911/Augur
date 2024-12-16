@@ -184,8 +184,10 @@ func (as *AnalyticsService) GetChainOfEvents(
 	}
 	if logOrSpanData.SpanDetails != nil {
 		clusterGraph[clusterToSearchOn].LogOrSpanData.SpanDetails = logOrSpanData.SpanDetails
-	} else {
+	} else if logOrSpanData.LogDetails != nil {
 		clusterGraph[clusterToSearchOn].LogOrSpanData.LogDetails = logOrSpanData.LogDetails
+	} else {
+		return nil, fmt.Errorf("log or span data is nil for cluster: %s", clusterToSearchOn)
 	}
 	mleSequence, err = as.getMostLikelySequence(
 		ctx,
@@ -360,7 +362,7 @@ func (as *AnalyticsService) getMostLikelySequence(
 			}
 			mostLikelyLogOrSpan := as.getMostLikelyLogOrSpan(
 				spanOrLogDetailsOfCurrentNode,
-				*previousNode.LogOrSpanData,
+				previousNode.LogOrSpanData,
 				countClusterDetails,
 			)
 			if mostLikelyLogOrSpan != nil {
@@ -370,7 +372,7 @@ func (as *AnalyticsService) getMostLikelySequence(
 					zap.String("preceding_cluster_id", previousNode.ClusterId),
 				)
 			} else {
-				currentNode.LogOrSpanData = mostLikelyLogOrSpan
+				currentNode.LogOrSpanData = *mostLikelyLogOrSpan
 			}
 
 			for _, successor := range currentNode.Successors {
@@ -427,15 +429,16 @@ func (as *AnalyticsService) getCountClusterDetails(
 func (as *AnalyticsService) getSpanOrLogDetails(
 	ctx context.Context,
 	clusterId string,
-	previousLogOrSpanData *model.LogOrSpanData,
+	previousLogOrSpanData model.LogOrSpanData,
 	countClusterDetails model.CountCluster,
 ) ([]model.LogOrSpanData, error) {
 	var timeStart time.Time
 	if previousLogOrSpanData.SpanDetails != nil {
-		timeStart = previousLogOrSpanData.SpanDetails.EndTime
+		timeStart = previousLogOrSpanData.SpanDetails.StartTime
 	} else {
 		timeStart = previousLogOrSpanData.LogDetails.Timestamp
 	}
+	// positive because countClusters TDOA is defined as CURRENT - PREVIOUS
 	timeToSearchAround := timeStart.Add(time.Duration(countClusterDetails.MeanTDOA) * time.Millisecond)
 	query := getLogsAndSpansAroundTimeQuery(clusterId, timeToSearchAround, time.Duration(bucket)*time.Millisecond)
 	queryJSON, err := json.Marshal(query)
@@ -513,17 +516,25 @@ func (as *AnalyticsService) getMostLikelyLogOrSpan(
 func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.Cluster, error) {
 	clusters := make([]model.Cluster, len(docs))
 	for i, doc := range docs {
-		clusterId, ok := doc["cluster_id"].(string)
+		clusterId, ok := doc["_id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert cluster_id to string: %v", doc)
 		}
-		causesClusters, ok := doc["causes_clusters"].([]string)
+		causesClusters, ok := doc["causes_clusters"].([]interface{})
 		if !ok {
 			return nil, fmt.Errorf("failed to convert causes_clusters to []string: %v", doc)
 		}
+		causesClustersString := make([]string, len(causesClusters))
+		for j, causeCluster := range causesClusters {
+			causeClusterString, ok := causeCluster.(string)
+			if !ok {
+				return nil, fmt.Errorf("failed to convert cause_cluster to string: %v", doc)
+			}
+			causesClustersString[j] = causeClusterString
+		}
 		cluster := model.Cluster{
 			ClusterId:      clusterId,
-			CausesClusters: causesClusters,
+			CausesClusters: causesClustersString,
 		}
 		clusters[i] = cluster
 	}
@@ -542,6 +553,8 @@ func convertDocsToLogOrSpanData(docs []map[string]interface{}) ([]model.LogOrSpa
 		}
 		for i, log := range logs {
 			logOrSpanData[i] = model.LogOrSpanData{
+				Id:         log.Id,
+				ClusterId:  log.ClusterId,
 				LogDetails: &log,
 			}
 		}
@@ -552,6 +565,8 @@ func convertDocsToLogOrSpanData(docs []map[string]interface{}) ([]model.LogOrSpa
 		}
 		for i, span := range spans {
 			logOrSpanData[i] = model.LogOrSpanData{
+				Id:          span.Id,
+				ClusterId:   span.ClusterId,
 				SpanDetails: &span,
 			}
 		}

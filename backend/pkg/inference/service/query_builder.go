@@ -25,7 +25,7 @@ func getSucceedingClusterIdsQuery(clusterId string) map[string]interface{} {
 				"must": []map[string]interface{}{
 					{
 						"term": map[string]interface{}{
-							"cluster_id": clusterId,
+							"_id": clusterId,
 						},
 					},
 				},
