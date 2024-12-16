@@ -49,6 +49,10 @@ func (as *AnalyticsService) UpdateAnalytics(
 			}
 			currentClusterId := stack[0]
 			stack = stack[1:]
+			// always create a new map for the current cluster to make sure it gets added later
+			if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
+				clusterToSucceedingClusters[currentClusterId] = make(map[string]bool)
+			}
 			relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
 			if err != nil {
 				return fmt.Errorf("failed to get related clusters: %w", err)
@@ -61,11 +65,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 						clusterToSucceedingClusters[relatedCluster.ClusterId][currentClusterId] = true
 					}
 				} else {
-					if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
-						clusterToSucceedingClusters[currentClusterId] = map[string]bool{relatedCluster.ClusterId: true}
-					} else {
-						clusterToSucceedingClusters[currentClusterId][relatedCluster.ClusterId] = true
-					}
+					clusterToSucceedingClusters[currentClusterId][relatedCluster.ClusterId] = true
 				}
 				if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
 					stack = append(stack, relatedCluster.ClusterId)
@@ -243,16 +243,16 @@ func (as *AnalyticsService) getClusterGraph(
 		}
 
 		for _, succeedingCluster := range succeedingClusters {
+			currentClusterNode.Successors = append(currentClusterNode.Successors, &succeedingCluster)
 			if _, ok := visitedClusters[succeedingCluster.ClusterId]; !ok {
 				clusterStack = append(clusterStack, succeedingCluster.ClusterId)
-				currentClusterNode.Successors = append(currentClusterNode.Successors, &succeedingCluster)
 				visitedClusters[succeedingCluster.ClusterId] = &succeedingCluster
 			}
 		}
 		for _, precedingCluster := range precedingClusters {
+			currentClusterNode.Predecessors = append(currentClusterNode.Predecessors, &precedingCluster)
 			if _, ok := visitedClusters[precedingCluster.ClusterId]; !ok {
 				clusterStack = append(clusterStack, precedingCluster.ClusterId)
-				currentClusterNode.Predecessors = append(currentClusterNode.Predecessors, &precedingCluster)
 				visitedClusters[precedingCluster.ClusterId] = &precedingCluster
 			}
 		}
