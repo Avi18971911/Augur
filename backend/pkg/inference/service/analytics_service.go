@@ -374,7 +374,7 @@ func (as *AnalyticsService) getMostLikelySequence(
 				previousNode.LogOrSpanData,
 				countClusterDetails,
 			)
-			if mostLikelyLogOrSpan != nil {
+			if mostLikelyLogOrSpan == nil {
 				as.logger.Warn(
 					"Could not find suitable candidate for MLE",
 					zap.String("cluster_id", currentNode.ClusterId),
