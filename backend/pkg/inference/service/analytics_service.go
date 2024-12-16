@@ -41,7 +41,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 ) error {
 	for _, clusterId := range clusterIds {
 		stack := []string{clusterId}
-		clusterToSucceedingClusters := make(map[string][]string)
+		clusterToSucceedingClusters := make(map[string]map[string]bool)
 		visitedClusters := map[string]bool{clusterId: true}
 		for {
 			if len(stack) == 0 {
@@ -49,20 +49,23 @@ func (as *AnalyticsService) UpdateAnalytics(
 			}
 			currentClusterId := stack[0]
 			stack = stack[1:]
-			if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
-				clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
-			}
 			relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
 			if err != nil {
 				return fmt.Errorf("failed to get related clusters: %w", err)
 			}
 			for _, relatedCluster := range relatedClusters {
 				if relatedCluster.MeanTDOA > 0 {
-					clusterToSucceedingClusters[relatedCluster.ClusterId] =
-						append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
+					if _, ok := clusterToSucceedingClusters[relatedCluster.ClusterId]; !ok {
+						clusterToSucceedingClusters[relatedCluster.ClusterId] = map[string]bool{currentClusterId: true}
+					} else {
+						clusterToSucceedingClusters[relatedCluster.ClusterId][currentClusterId] = true
+					}
 				} else {
-					clusterToSucceedingClusters[currentClusterId] =
-						append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
+					if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
+						clusterToSucceedingClusters[currentClusterId] = map[string]bool{relatedCluster.ClusterId: true}
+					} else {
+						clusterToSucceedingClusters[currentClusterId][relatedCluster.ClusterId] = true
+					}
 				}
 				if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
 					stack = append(stack, relatedCluster.ClusterId)
@@ -148,20 +151,26 @@ func pruneClusters(clusters []model.CountCluster) []model.CountCluster {
 }
 
 func getAnalyticsUpdateStatement(
-	clusterToSucceedingClusters map[string][]string,
+	clusterToSucceedingClusters map[string]map[string]bool,
 ) ([]map[string]interface{}, []map[string]interface{}) {
 	metaUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
 	documentUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
 	i := 0
-	for clusterId, succeedingClusterIds := range clusterToSucceedingClusters {
+	for clusterId, succeedingClusterIdsMap := range clusterToSucceedingClusters {
 		metaUpdate := map[string]interface{}{
 			"update": map[string]interface{}{
 				"_id": clusterId,
 			},
 		}
+		succeedingClusteridsList := make([]string, len(succeedingClusterIdsMap))
+		j := 0
+		for succeedingClusterId := range succeedingClusterIdsMap {
+			succeedingClusteridsList[j] = succeedingClusterId
+			j++
+		}
 		documentUpdate := map[string]interface{}{
 			"doc": map[string]interface{}{
-				"causes_clusters": succeedingClusterIds,
+				"causes_clusters": succeedingClusteridsList,
 			},
 			"doc_as_upsert": true,
 		}
