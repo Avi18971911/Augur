@@ -3,9 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	countModel "github.com/Avi18971911/Augur/pkg/count/model"
-	countService "github.com/Avi18971911/Augur/pkg/count/service"
 	"github.com/Avi18971911/Augur/pkg/data_processor/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"go.uber.org/zap"
@@ -15,28 +12,22 @@ import (
 
 const timeout = 10 * time.Second
 const searchAfterTimeout = 60 * time.Second
-const workerCount = 50
+const dpWorkerCount = 5
 
 var querySize = 10000
 
 type DataProcessorService struct {
 	ac           client.AugurClient
-	cs           *countService.CountService
-	cls          clusterService.ClusterService
 	logger       *zap.Logger
 	searchParams *client.SearchAfterParams
 }
 
 func NewDataProcessorService(
 	ac client.AugurClient,
-	cs *countService.CountService,
-	cls clusterService.ClusterService,
 	logger *zap.Logger,
 ) *DataProcessorService {
 	return &DataProcessorService{
 		ac:           ac,
-		cs:           cs,
-		cls:          cls,
 		logger:       logger,
 		searchParams: nil,
 	}
@@ -44,77 +35,50 @@ func NewDataProcessorService(
 
 func (dps *DataProcessorService) ProcessData(
 	ctx context.Context,
-	buckets []countModel.Bucket,
 	indices []string,
-) ([]bool, []error) {
-	searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
-	defer cancel()
+) chan model.DataProcessorOutput {
+	outputChannel := make(chan model.DataProcessorOutput)
+	go func() {
+		defer close(outputChannel)
+		searchCtx, cancel := context.WithTimeout(ctx, searchAfterTimeout)
+		defer cancel()
+		resultChannel := dps.ac.SearchAfter(
+			searchCtx,
+			getAllDocumentsQuery(),
+			indices,
+			dps.searchParams,
+			&querySize,
+		)
 
-	resultChannel := dps.ac.SearchAfter(
-		searchCtx,
-		getAllDocumentsQuery(),
-		indices,
-		dps.searchParams,
-		&querySize,
-	)
-	successes, errors := make([]bool, 0), make([]error, 0)
-	i := 0
-	for result := range resultChannel {
-		if result.Error != nil {
-			dps.logger.Error("Error in search after", zap.Error(result.Error))
-			errors = append(errors, fmt.Errorf("error in search after: %w", result.Error))
-			successes = append(successes, false)
-		} else if result.Success == nil {
-			dps.logger.Error("Result of SearchAfter is nil")
-			errors = append(errors, fmt.Errorf("result of SearchAfter is nil"))
-			successes = append(successes, false)
-		} else {
-			if len(result.Success.Result) == 0 {
-				break
-			}
-			err := dps.clusterAndIncreaseCount(
-				ctx,
-				result.Success.Result,
-				buckets,
-				indices,
-			)
-			if err != nil {
-				dps.logger.Error(
-					"Failed to increase count for overlaps and misses for the given parameters",
-					zap.Error(err),
-					zap.Int("page", i),
-				)
-				errors = append(errors, fmt.Errorf("failed to increase count for overlaps and misses: %w", err))
-				successes = append(successes, false)
+		for result := range resultChannel {
+			if result.Error != nil {
+				dps.logger.Error("Error in search after", zap.Error(result.Error))
+				outputChannel <- model.DataProcessorOutput{
+					Error: result.Error,
+				}
+			} else if result.Success == nil {
+				dps.logger.Error("Result of SearchAfter is nil")
+				outputChannel <- model.DataProcessorOutput{
+					Error: fmt.Errorf("result of SearchAfter is nil"),
+				}
 			} else {
-				successes = append(successes, true)
-				errors = append(errors, nil)
+				if len(result.Success.Result) == 0 {
+					break
+				}
+				output := model.DataProcessorOutput{
+					SpanOrLogData: result.Success.Result,
+					Error:         nil,
+				}
+				outputChannel <- output
+				dps.searchParams = &result.Success.ContinueParams
 			}
-			dps.searchParams = &result.Success.ContinueParams
 		}
-		i++
-	}
-	return successes, errors
+	}()
+
+	return outputChannel
 }
 
-func (dps *DataProcessorService) clusterAndIncreaseCount(
-	ctx context.Context,
-	clusterOrLogData []map[string]interface{},
-	buckets []countModel.Bucket,
-	indices []string,
-) error {
-	clusterOutput, err := dps.clusterData(ctx, clusterOrLogData)
-	if err != nil {
-		return fmt.Errorf("failed to cluster data: %w", err)
-	}
-	err = dps.increaseCountForOverlapsAndMisses(ctx, clusterOutput, buckets, indices)
-	if err != nil {
-		return fmt.Errorf("failed to increase count for overlaps and misses: %w", err)
-	}
-	return nil
-}
-
-func getResultsWithWorkers[
+func GetResultsWithWorkers[
 	inputType any,
 	outputType any,
 ](
@@ -162,7 +126,7 @@ func getResultsWithWorkers[
 	return resultChannel
 }
 
-func detectDataType(data map[string]interface{}) model.DataType {
+func DetectDataType(data map[string]interface{}) model.DataType {
 	if _, ok := data["start_time"]; ok && data["end_time"] != nil {
 		return model.Span
 	}

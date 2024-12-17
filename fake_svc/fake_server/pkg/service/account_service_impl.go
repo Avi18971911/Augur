@@ -37,7 +37,7 @@ func (a *AccountServiceImpl) Login(
 	password string,
 	ctx context.Context,
 ) (*model.AccountDetailsOutput, error) {
-	a.logger.Infof("Login request received with username: %s", "username")
+	a.logger.Infof("Login request received with username: %s", username)
 	tracer, err := fake_server_tracer.GetTracerFromContext(ctx)
 	if err != nil {
 		a.logger.Errorf("Unable to get tracer from context during Login %v", err)

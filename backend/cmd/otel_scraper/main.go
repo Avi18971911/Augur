@@ -1,27 +1,28 @@
 package main
 
 import (
-	"context"
 	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
 	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	count "github.com/Avi18971911/Augur/pkg/count/service"
+	"github.com/Avi18971911/Augur/pkg/data_pipeline/service"
 	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	"github.com/Avi18971911/Augur/pkg/write_buffer"
-	"net"
-	"time"
-
+	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
 	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
+	"github.com/Avi18971911/Augur/pkg/write_buffer"
+	"github.com/asaskevich/EventBus"
 	"github.com/elastic/go-elasticsearch/v8"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	protoTrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip"
+	"net"
+	"time"
 )
 
 func main() {
@@ -47,6 +48,47 @@ func main() {
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cls := clusterService.NewClusterService(ac, logger)
 	countService := count.NewCountService(ac, logger)
+	eventBus := EventBus.New()
+
+	codp := count.NewCountDataProcessorService(
+		ac,
+		countService,
+		[]countModel.Bucket{2500},
+		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
+		logger,
+	)
+
+	cldp := clusterService.NewClusterDataProcessor(
+		ac,
+		cls,
+		logger,
+	)
+
+	andp := analyticsService.NewAnalyticsService(
+		ac,
+		logger,
+	)
+
+	dp := dataProcessor.NewDataProcessorService(
+		ac,
+		logger,
+	)
+
+	dataPipeline := service.NewDataPipeline(
+		dp,
+		cldp,
+		codp,
+		andp,
+		eventBus,
+		logger,
+	)
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	err = dataPipeline.Start(ticker)
+	if err != nil {
+		logger.Fatal("Failed to start data pipeline: %v", zap.Error(err))
+	}
 
 	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
 		ac,
@@ -72,29 +114,6 @@ func main() {
 	protoTrace.RegisterTraceServiceServer(srv, traceServiceServer)
 	protoLogs.RegisterLogsServiceServer(srv, logServiceServer)
 	logger.Info("gRPC service started, listening for OpenTelemetry traces...")
-
-	dp := dataProcessor.NewDataProcessorService(
-		ac,
-		countService,
-		cls,
-		logger,
-	)
-	ticker := time.NewTicker(15 * time.Second)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			_, errors := dp.ProcessData(
-				context.Background(),
-				[]countModel.Bucket{2000},
-				[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName})
-			for _, err := range errors {
-				if err != nil {
-					logger.Error("Failed to process data", zap.Error(err))
-				}
-			}
-		}
-	}()
 
 	if err := srv.Serve(listener); err != nil {
 		logger.Fatal("Failed to serve: %v", zap.Error(err))

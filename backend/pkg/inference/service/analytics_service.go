@@ -18,7 +18,10 @@ type AnalyticsService struct {
 	logger *zap.Logger
 }
 
-func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) *AnalyticsService {
+func NewAnalyticsService(
+	ac augurElasticsearch.AugurClient,
+	logger *zap.Logger,
+) *AnalyticsService {
 	return &AnalyticsService{
 		ac:     ac,
 		logger: logger,
@@ -27,40 +30,48 @@ func NewAnalyticsService(ac augurElasticsearch.AugurClient, logger *zap.Logger) 
 
 func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
-	clusterId string,
-) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap, error) {
-	stack := []string{clusterId}
-	clusterToSucceedingClusters := make(map[string][]string)
-	visitedClusters := map[string]bool{clusterId: true}
-	for {
-		if len(stack) == 0 {
-			break
+	clusterIds []string,
+) error {
+	for _, clusterId := range clusterIds {
+		stack := []string{clusterId}
+		clusterToSucceedingClusters := make(map[string][]string)
+		visitedClusters := map[string]bool{clusterId: true}
+		for {
+			if len(stack) == 0 {
+				break
+			}
+			currentClusterId := stack[0]
+			stack = stack[1:]
+			if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
+				clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
+			}
+			relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
+			if err != nil {
+				return fmt.Errorf("failed to get related clusters: %w", err)
+			}
+			for _, relatedCluster := range relatedClusters {
+				if relatedCluster.MeanTDOA > 0 {
+					clusterToSucceedingClusters[relatedCluster.ClusterId] =
+						append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
+				} else {
+					clusterToSucceedingClusters[currentClusterId] =
+						append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
+				}
+				if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
+					stack = append(stack, relatedCluster.ClusterId)
+					visitedClusters[relatedCluster.ClusterId] = true
+				}
+			}
 		}
-		currentClusterId := stack[0]
-		stack = stack[1:]
-		if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
-			clusterToSucceedingClusters[currentClusterId] = make([]string, 0)
-		}
-		relatedClusters, err := as.getRelatedClusters(ctx, currentClusterId)
+		metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
+		updateCtx, cancel := context.WithTimeout(ctx, timeout)
+		err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
+		cancel()
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to get related clusters: %w", err)
-		}
-		for _, relatedCluster := range relatedClusters {
-			if relatedCluster.MeanTDOA > 0 {
-				clusterToSucceedingClusters[relatedCluster.ClusterId] =
-					append(clusterToSucceedingClusters[relatedCluster.ClusterId], currentClusterId)
-			} else {
-				clusterToSucceedingClusters[currentClusterId] =
-					append(clusterToSucceedingClusters[currentClusterId], relatedCluster.ClusterId)
-			}
-			if _, ok := visitedClusters[relatedCluster.ClusterId]; !ok {
-				stack = append(stack, relatedCluster.ClusterId)
-				visitedClusters[relatedCluster.ClusterId] = true
-			}
+			return fmt.Errorf("failed to bulk update analytics: %w", err)
 		}
 	}
-	metaUpdate, documentUpdate := getAnalyticsUpdate(clusterToSucceedingClusters)
-	return metaUpdate, documentUpdate, nil
+	return nil
 }
 
 func (as *AnalyticsService) getRelatedClusters(
@@ -129,11 +140,11 @@ func pruneClusters(clusters []Cluster) []Cluster {
 	return prunedClusters
 }
 
-func getAnalyticsUpdate(
+func getAnalyticsUpdateStatement(
 	clusterToSucceedingClusters map[string][]string,
-) ([]augurElasticsearch.MetaMap, []augurElasticsearch.DocumentMap) {
-	metaUpdates := make([]augurElasticsearch.MetaMap, len(clusterToSucceedingClusters))
-	documentUpdates := make([]augurElasticsearch.DocumentMap, len(clusterToSucceedingClusters))
+) ([]map[string]interface{}, []map[string]interface{}) {
+	metaUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
+	documentUpdates := make([]map[string]interface{}, len(clusterToSucceedingClusters))
 	i := 0
 	for clusterId, succeedingClusterIds := range clusterToSucceedingClusters {
 		metaUpdate := map[string]interface{}{

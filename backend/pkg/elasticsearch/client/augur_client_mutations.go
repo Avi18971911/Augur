@@ -16,17 +16,14 @@ func (a *AugurClientImpl) BulkUpdate(
 ) error {
 	var buf bytes.Buffer
 	for i, fields := range fieldList {
-		update := map[string]interface{}{
-			"update": metaList[i],
-		}
-		metaJSON, err := json.Marshal(update)
+		metaJSON, err := json.Marshal(metaList[i])
 		if err != nil {
 			return fmt.Errorf("error marshaling update: %w", err)
 		}
 		buf.Write(metaJSON)
 		buf.WriteByte('\n')
 
-		fieldJSON, err := json.Marshal(map[string]interface{}{"doc": fields})
+		fieldJSON, err := json.Marshal(fields)
 		if err != nil {
 			return fmt.Errorf("error marshaling field to update: %w", err)
 		}
