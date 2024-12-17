@@ -464,7 +464,7 @@ func (as *AnalyticsService) getSpanOrLogDetails(
 		timeStart = previousLogOrSpanData.LogDetails.Timestamp
 	}
 	// positive because countClusters TDOA is defined as CURRENT - PREVIOUS
-	timeToSearchAround := timeStart.Add(time.Duration(countClusterDetails.MeanTDOA) * time.Millisecond)
+	timeToSearchAround := timeStart.Add(time.Duration(countClusterDetails.MeanTDOA) * time.Second)
 	query := getLogsAndSpansAroundTimeQuery(clusterId, timeToSearchAround, time.Duration(bucket)*time.Millisecond)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
