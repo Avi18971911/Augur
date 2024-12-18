@@ -58,3 +58,27 @@ type LogDTO struct {
 	SpanId    string    `json:"span_id,omitempty"`
 	ClusterId string    `json:"cluster_id,omitempty"`
 }
+
+// ChainOfEventsResponseDTO represents the response to a chain of events request in the form of a graph
+// @swagger:model ChainOfEventsResponseDTO
+type ChainOfEventsResponseDTO struct {
+	// The nodes in the chain of events
+	Graph map[string]ChainOfEventsNodeDTO
+}
+
+// ChainOfEventsNodeDTO represents a node in the chain of events
+// @swagger:model ChainOfEventsNodeDTO
+type ChainOfEventsNodeDTO struct {
+	// The ID of the log or span data
+	Id string `json:"id"`
+	// The Cluster ID of the cluster belonging to the log or span data
+	ClusterId string `json:"cluster_id"`
+	// The IDs of the successors of the log or span data
+	Successors []string `json:"successors"`
+	// The IDs of the predecessors of the log or span data
+	Predecessors []string `json:"predecessors"`
+	// The details of the span data, if the data is a span
+	SpanDTO SpanDTO `json:"span_dto"`
+	// The details of the log data, if the data is a log
+	LogDTO LogDTO `json:"log_dto"`
+}
