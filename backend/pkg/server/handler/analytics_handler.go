@@ -41,7 +41,6 @@ func ChainOfEventsHandler(
 			return
 		}
 
-		logger.Info("Request body decoded successfully", zap.Any("Request", req))
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
@@ -63,6 +62,7 @@ func ChainOfEventsHandler(
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
 			return
 		}
+		logger.Info("Encoding response", zap.Any("Response", res))
 		resDTO := mapChainOfEventsResponseToDTO(res)
 		err = json.NewEncoder(w).Encode(resDTO)
 		if err != nil {
@@ -85,18 +85,26 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 	for _, node := range mleSequence {
 		successors := make([]string, len(node.Successors))
 		for i, successor := range node.Successors {
+			if successor.LogOrSpanData == nil {
+				continue
+			}
 			successors[i] = successor.LogOrSpanData.Id
 		}
 		predecessors := make([]string, len(node.Predecessors))
 		for i, predecessor := range node.Predecessors {
+			if predecessor.LogOrSpanData == nil {
+				continue
+			}
 			predecessors[i] = predecessor.LogOrSpanData.Id
 		}
 		var spanDTO = SpanDTO{}
 		var logDTO = LogDTO{}
-		if node.LogOrSpanData.SpanDetails != nil {
-			spanDTO = toSpanDTO(spanDTO, node)
-		} else {
-			logDTO = toLogDTO(logDTO, node)
+		if node.LogOrSpanData != nil {
+			if node.LogOrSpanData.SpanDetails != nil {
+				spanDTO = toSpanDTO(spanDTO, node)
+			} else {
+				logDTO = toLogDTO(logDTO, node)
+			}
 		}
 
 		graph[node.LogOrSpanData.Id] = ChainOfEventsNodeDTO{
