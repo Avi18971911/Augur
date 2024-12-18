@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/Avi18971911/Augur/pkg/inference/model"
 	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
 	logModel "github.com/Avi18971911/Augur/pkg/log/model"
@@ -28,40 +29,61 @@ func ChainOfEventsHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Info(
-			"Login request received with URL %s and method %s",
+			"Login request received with URL and method",
 			zap.String("URL Path", r.URL.Path),
 			zap.String("Method", r.Method),
 		)
 		var req ChainOfEventsRequestDTO
+		logger.Info("Decoding request body", zap.Any("Request", r.Body))
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			logger.Error("Error encountered when decoding request body %v", zap.Error(err))
+			logger.Error("Error encountered when decoding request body", zap.Error(err))
 			HttpError(w, "Invalid request payload", http.StatusBadRequest, logger)
 			return
 		}
 
+		logger.Info("Request body decoded successfully", zap.Any("Request", req))
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				logger.Error("Error encountered when closing request body %v", zap.Error(err))
+				logger.Error("Error encountered when closing request body", zap.Error(err))
 			}
 		}(r.Body)
 
+		err = validateRequest(req)
+		if err != nil {
+			logger.Error("Error encountered when validating request", zap.Error(err))
+			HttpError(w, err.Error(), http.StatusBadRequest, logger)
+			return
+		}
 		analyticsRequest := mapChainOfEventsRequestDTOToModel(req)
 		res, err := s.GetChainOfEvents(ctx, analyticsRequest)
 		if err != nil {
-			logger.Error("Error encountered when getting chain of events %v", zap.Error(err))
+			logger.Error("Error encountered when getting chain of events", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
 			return
 		}
 		resDTO := mapChainOfEventsResponseToDTO(res)
 		err = json.NewEncoder(w).Encode(resDTO)
 		if err != nil {
-			logger.Error("Error encountered when encoding response %v", zap.Error(err))
+			logger.Error("Error encountered when encoding response", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
 			return
 		}
 	}
+}
+
+func validateRequest(req ChainOfEventsRequestDTO) error {
+	if req.LogDetails == nil && req.SpanDetails == nil {
+		return ErrNoLogOrSpanData
+	}
+	if req.Id == "" {
+		return ErrNoId
+	}
+	if req.ClusterId == "" {
+		return ErrNoClusterId
+	}
+	return nil
 }
 
 func mapChainOfEventsRequestDTOToModel(dto ChainOfEventsRequestDTO) model.LogOrSpanData {
@@ -149,8 +171,8 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			ClusterId:    node.ClusterId,
 			Successors:   successors,
 			Predecessors: predecessors,
-			SpanDTO:      spanDTO,
-			LogDTO:       logDTO,
+			SpanDTO:      &spanDTO,
+			LogDTO:       &logDTO,
 		}
 	}
 	return ChainOfEventsResponseDTO{
@@ -204,3 +226,9 @@ func mapModelToSpanEventDTO(events []spanModel.SpanEvent) []SpanEventDTO {
 	}
 	return dto
 }
+
+var (
+	ErrNoLogOrSpanData = errors.New("no log or span data provided")
+	ErrNoId            = errors.New("no ID provided")
+	ErrNoClusterId     = errors.New("no cluster ID provided")
+)

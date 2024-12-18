@@ -12,9 +12,9 @@ type ChainOfEventsRequestDTO struct {
 	// The Cluster ID of the cluster belonging to the log or span data
 	ClusterId string `json:"cluster_id" validate:"required"`
 	// The details of the span data, if the data is a span
-	SpanDetails SpanDTO `json:"span_details"`
+	SpanDetails *SpanDTO `json:"span_details"`
 	// The details of the log data, if the data is a log
-	LogDetails LogDTO `json:"log_details"`
+	LogDetails *LogDTO `json:"log_details"`
 }
 
 // SpanDTO represents the details of a span
@@ -78,7 +78,7 @@ type ChainOfEventsNodeDTO struct {
 	// The IDs of the predecessors of the log or span data
 	Predecessors []string `json:"predecessors"`
 	// The details of the span data, if the data is a span
-	SpanDTO SpanDTO `json:"span_dto"`
+	SpanDTO *SpanDTO `json:"span_dto"`
 	// The details of the log data, if the data is a log
-	LogDTO LogDTO `json:"log_dto"`
+	LogDTO *LogDTO `json:"log_dto"`
 }
