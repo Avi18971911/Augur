@@ -14,16 +14,30 @@ services:
       timeout: 5s
       retries: 5
 
-  augur:
+  augur-processor:
     build:
       context: ./
       dockerfile: Dockerfile
       args:
-        MAIN_DIR: augur
+        MAIN_DIR: otel_scraper
     depends_on:
       elasticsearch:
         condition: service_healthy
     ports:
       - "4317:4317"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  augur-query-server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        MAIN_DIR: query_server
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200

@@ -51,10 +51,26 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
+      args:
+        MAIN_DIR: otel_scraper
     depends_on:
       - elasticsearch
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC}"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  augur-query-server:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      args:
+        MAIN_DIR: query_server
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
 
@@ -68,6 +84,11 @@ services:
     ports:
       - "9200:9200"                          # Expose HTTP API on port 9200
       - "9300:9300"                          # Expose transport API on port 9300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   grafana-storage:

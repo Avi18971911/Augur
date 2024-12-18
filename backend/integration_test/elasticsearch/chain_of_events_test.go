@@ -27,7 +27,13 @@ func TestChainOfEvents(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create logger: %v", err)
 	}
-	as := service.NewAnalyticsService(
+
+	an := service.NewAnalyticsService(
+		ac,
+		logger,
+	)
+
+	as := service.CreateNewAnalyticsQueryService(
 		ac,
 		logger,
 	)
@@ -150,7 +156,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -268,7 +274,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -418,7 +424,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -434,5 +440,38 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, logs[6], *graph[clusterIdA].LogOrSpanData.LogDetails)
 		assert.Equal(t, logs[7], *graph[clusterIdB].LogOrSpanData.LogDetails)
 		assert.Equal(t, logs[8], *graph[clusterIdC].LogOrSpanData.LogDetails)
+	})
+
+	t.Run("should be able to handle real data", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/count_index.json")
+		assert.NoError(t, err)
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872458799Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:33.234410296Z")
+		assert.NoError(t, err)
+
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
+			ClusterId: "66553fb7-2b8f-4002-9a15-c96d5ec00781",
+			LogDetails: &logModel.LogEntry{
+				Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
+				ClusterId: "66553fb7-2b8f-4002-9a15-c96d5ec00781",
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Invalid credentials for Login request with username: Yolo and password: Swag",
+				Severity:  "error",
+				Service:   "fake-server",
+			},
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.NotNil(t, graph)
 	})
 }

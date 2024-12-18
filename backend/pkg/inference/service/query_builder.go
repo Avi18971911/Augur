@@ -103,3 +103,13 @@ func getLogsAndSpansAroundTimeQuery(clusterId string, timeSlice time.Time, windo
 		},
 	}
 }
+
+func getLogOrSpanQuery(id string) map[string]interface{} {
+	return map[string]interface{}{
+		"query": map[string]interface{}{
+			"term": map[string]interface{}{
+				"_id": id,
+			},
+		},
+	}
+}
