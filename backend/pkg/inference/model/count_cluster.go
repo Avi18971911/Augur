@@ -1,6 +1,6 @@
-package service
+package model
 
-type Cluster struct {
+type CountCluster struct {
 	ClusterId     string
 	CoOccurrences int64
 	Occurrences   int64
