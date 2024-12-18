@@ -11,7 +11,7 @@ import "github.com/gorilla/mux"
 
 func CreateRouter(
 	ctx context.Context,
-	analyticsService analyticsService.AnalyticsService,
+	analyticsService *analyticsService.AnalyticsService,
 	logger *zap.Logger,
 ) http.Handler {
 	r := mux.NewRouter()

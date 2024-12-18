@@ -23,7 +23,7 @@ import (
 // @Router /graph [get]
 func ChainOfEventsHandler(
 	ctx context.Context,
-	s analyticsService.AnalyticsService,
+	s *analyticsService.AnalyticsService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
