@@ -11,7 +11,7 @@ import "github.com/gorilla/mux"
 
 func CreateRouter(
 	ctx context.Context,
-	analyticsService *analyticsService.AnalyticsService,
+	analyticsQueryService analyticsService.AnalyticsQueryService,
 	logger *zap.Logger,
 ) http.Handler {
 	r := mux.NewRouter()
@@ -19,7 +19,7 @@ func CreateRouter(
 	r.Handle(
 		"/graph", handler.ChainOfEventsHandler(
 			ctx,
-			analyticsService,
+			analyticsQueryService,
 			logger,
 		),
 	).Methods("GET")

@@ -27,12 +27,9 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	andp := analyticsService.NewAnalyticsService(
-		ac,
-		logger,
-	)
+	as := analyticsService.CreateNewAnalyticsQueryService(ac, logger)
 
-	r := router.CreateRouter(context.Background(), andp, logger)
+	r := router.CreateRouter(context.Background(), as, logger)
 	logger.Info("Starting server at :8081")
 	if err := http.ListenAndServe(":8081", r); err != nil {
 		logger.Fatal("Failed to serve: %v", zap.Error(err))

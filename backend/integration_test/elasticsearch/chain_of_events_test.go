@@ -27,7 +27,13 @@ func TestChainOfEvents(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create logger: %v", err)
 	}
-	as := service.NewAnalyticsService(
+
+	an := service.NewAnalyticsService(
+		ac,
+		logger,
+	)
+
+	as := service.CreateNewAnalyticsQueryService(
 		ac,
 		logger,
 	)
@@ -150,7 +156,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -268,7 +274,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -418,7 +424,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}

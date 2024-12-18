@@ -9,12 +9,6 @@ import (
 type ChainOfEventsRequestDTO struct {
 	// The ID of the log or span data
 	Id string `json:"id" validate:"required"`
-	// The Cluster ID of the cluster belonging to the log or span data
-	ClusterId string `json:"cluster_id" validate:"required"`
-	// The details of the span data, if the data is a span
-	SpanDetails *SpanDTO `json:"span_details"`
-	// The details of the log data, if the data is a log
-	LogDetails *LogDTO `json:"log_details"`
 }
 
 // SpanDTO represents the details of a span

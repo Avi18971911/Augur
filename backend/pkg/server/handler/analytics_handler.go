@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/Avi18971911/Augur/pkg/inference/model"
 	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
-	logModel "github.com/Avi18971911/Augur/pkg/log/model"
 	spanModel "github.com/Avi18971911/Augur/pkg/trace/model"
 	"go.uber.org/zap"
 	"io"
@@ -24,7 +23,7 @@ import (
 // @Router /graph [get]
 func ChainOfEventsHandler(
 	ctx context.Context,
-	s *analyticsService.AnalyticsService,
+	s analyticsService.AnalyticsQueryService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +55,9 @@ func ChainOfEventsHandler(
 			HttpError(w, err.Error(), http.StatusBadRequest, logger)
 			return
 		}
-		analyticsRequest := mapChainOfEventsRequestDTOToModel(req)
-		res, err := s.GetChainOfEvents(ctx, analyticsRequest)
+
+		logOrSpanData, err := s.GetSpanOrLogData(ctx, req.Id)
+		res, err := s.GetChainOfEvents(ctx, logOrSpanData)
 		if err != nil {
 			logger.Error("Error encountered when getting chain of events", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
@@ -74,77 +74,10 @@ func ChainOfEventsHandler(
 }
 
 func validateRequest(req ChainOfEventsRequestDTO) error {
-	if req.LogDetails == nil && req.SpanDetails == nil {
-		return ErrNoLogOrSpanData
-	}
 	if req.Id == "" {
 		return ErrNoId
 	}
-	if req.ClusterId == "" {
-		return ErrNoClusterId
-	}
 	return nil
-}
-
-func mapChainOfEventsRequestDTOToModel(dto ChainOfEventsRequestDTO) model.LogOrSpanData {
-	return model.LogOrSpanData{
-		Id:        dto.Id,
-		ClusterId: dto.ClusterId,
-		SpanDetails: &spanModel.Span{
-			Id:           dto.SpanDetails.Id,
-			CreatedAt:    dto.SpanDetails.CreatedAt,
-			SpanID:       dto.SpanDetails.SpanID,
-			ParentSpanID: dto.SpanDetails.ParentSpanID,
-			TraceID:      dto.SpanDetails.TraceID,
-			ServiceName:  dto.SpanDetails.ServiceName,
-			StartTime:    dto.SpanDetails.StartTime,
-			EndTime:      dto.SpanDetails.EndTime,
-			ActionName:   dto.SpanDetails.ActionName,
-			SpanKind:     dto.SpanDetails.SpanKind,
-			ClusterEvent: dto.SpanDetails.ClusterEvent,
-			ClusterId:    dto.SpanDetails.ClusterId,
-			Attributes:   dto.SpanDetails.Attributes,
-			Events:       mapSpanEventDTOToModel(dto.SpanDetails.Events),
-		},
-		LogDetails: &logModel.LogEntry{
-			Id:        dto.LogDetails.Id,
-			CreatedAt: dto.LogDetails.CreatedAt,
-			Timestamp: dto.LogDetails.Timestamp,
-			Severity:  mapSeverityToLevel(dto.LogDetails.Severity),
-			Message:   dto.LogDetails.Message,
-			Service:   dto.LogDetails.Service,
-			TraceId:   dto.LogDetails.TraceId,
-			SpanId:    dto.LogDetails.SpanId,
-			ClusterId: dto.LogDetails.ClusterId,
-		},
-	}
-}
-
-func mapSpanEventDTOToModel(dto []SpanEventDTO) []spanModel.SpanEvent {
-	var events []spanModel.SpanEvent
-	for _, dto := range dto {
-		events = append(events, spanModel.SpanEvent{
-			Name:       dto.Name,
-			Attributes: dto.Attributes,
-			Timestamp:  dto.Timestamp,
-		})
-	}
-	return events
-}
-
-func mapSeverityToLevel(severity string) logModel.Level {
-	switch severity {
-	case "info":
-		return logModel.InfoLevel
-	case "error":
-		return logModel.ErrorLevel
-	case "debug":
-		return logModel.DebugLevel
-	case "warn":
-		return logModel.WarnLevel
-	default:
-		return logModel.InfoLevel
-	}
 }
 
 func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) ChainOfEventsResponseDTO {
