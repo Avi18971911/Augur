@@ -11,6 +11,7 @@ import (
 	logHelper "github.com/Avi18971911/Augur/pkg/log/helper"
 	spanHelper "github.com/Avi18971911/Augur/pkg/trace/helper"
 	"go.uber.org/zap"
+	"math"
 	"time"
 )
 
@@ -346,7 +347,8 @@ func (as *AnalyticsQueryServiceImpl) getSpanOrLogDetails(
 	}
 	// positive because countClusters TDOA is defined as CURRENT - PREVIOUS
 	timeToSearchAround := timeStart.Add(time.Duration(countClusterDetails.MeanTDOA) * time.Second)
-	query := getLogsAndSpansAroundTimeQuery(clusterId, timeToSearchAround, time.Duration(bucket)*time.Millisecond)
+	startTime, endTime := getSearchStartAndEnd(timeToSearchAround, countClusterDetails.VarianceTDOA)
+	query := getLogsAndSpansAroundTimeQuery(clusterId, startTime, endTime)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal logs and spans query: %w", err)
@@ -417,6 +419,15 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelyLogOrSpan(
 	} else {
 		return &spanOrLogDetails[maxIndex]
 	}
+}
+
+func getSearchStartAndEnd(searchTime time.Time, varianceTDOA float64) (time.Time, time.Time) {
+	std := math.Sqrt(varianceTDOA)
+	const multiplier = 50.0
+	const millisecondsInSecond = 1000.0
+	earliestTime := searchTime.Add(-time.Duration(multiplier*std*millisecondsInSecond) * time.Millisecond)
+	latestTime := searchTime.Add(time.Duration(multiplier*std*millisecondsInSecond) * time.Millisecond)
+	return earliestTime, latestTime
 }
 
 func convertDocsToClusterNodes(docs []map[string]interface{}) ([]model.Cluster, error) {

@@ -442,7 +442,7 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, logs[8], *graph[clusterIdC].LogOrSpanData.LogDetails)
 	})
 
-	t.Run("should be able to handle real data", func(t *testing.T) {
+	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/log_index.json")
@@ -451,15 +451,17 @@ func TestChainOfEvents(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/count_index.json")
 		assert.NoError(t, err)
+		const maxLogsInChain = 8
 
 		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872458799Z")
 		assert.NoError(t, err)
 		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:33.234410296Z")
 		assert.NoError(t, err)
 
+		clusterId := "66553fb7-2b8f-4002-9a15-c96d5ec00781"
 		spanOrLogDatum := analyticsModel.LogOrSpanData{
 			Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
-			ClusterId: "66553fb7-2b8f-4002-9a15-c96d5ec00781",
+			ClusterId: clusterId,
 			LogDetails: &logModel.LogEntry{
 				Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
 				ClusterId: "66553fb7-2b8f-4002-9a15-c96d5ec00781",
@@ -472,6 +474,53 @@ func TestChainOfEvents(t *testing.T) {
 		}
 		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
 		assert.NoError(t, err)
-		assert.NotNil(t, graph)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Successors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Predecessors))
+		for _, node := range graph[clusterId].Predecessors {
+			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+		}
+	})
+
+	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/count_index.json")
+		assert.NoError(t, err)
+		const maxLogsInChain = 8
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872440799Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:32.229644879Z")
+		assert.NoError(t, err)
+
+		clusterId := "0b064520-f152-40b0-a34e-661fe3e50cae"
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        "53aa1506e94ead53a771ad073b0e4c1ea29dd5959297c40f123a344e85b493ae",
+			ClusterId: clusterId,
+			LogDetails: &logModel.LogEntry{
+				Id:        "53aa1506e94ead53a771ad073b0e4c1ea29dd5959297c40f123a344e85b493ae",
+				ClusterId: clusterId,
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Login request received with URL /accounts/login and method POST",
+				Severity:  "info",
+				Service:   "fake-server",
+			},
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
+		for _, node := range graph[clusterId].Successors {
+			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+		}
 	})
 }
