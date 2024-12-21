@@ -59,7 +59,12 @@ func loadTestDataFromFile(es *elasticsearch.Client, indexName, filePath string) 
 }
 
 func deleteAllDocuments(es *elasticsearch.Client) error {
-	indexes := []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName, bootstrapper.CountIndexName}
+	indexes := []string{
+		bootstrapper.LogIndexName,
+		bootstrapper.SpanIndexName,
+		bootstrapper.CountIndexName,
+		bootstrapper.ClusterIndexName,
+	}
 
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -68,6 +73,25 @@ func deleteAllDocuments(es *elasticsearch.Client) error {
 	}
 	queryJSON, _ := json.Marshal(query)
 	res, err := es.DeleteByQuery(indexes, bytes.NewReader(queryJSON), es.DeleteByQuery.WithRefresh(true))
+	if err != nil {
+		return fmt.Errorf("failed to delete documents by query: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("failed to delete documents in index %s", res.String())
+	}
+	return nil
+}
+
+func deleteAllDocumentsFromIndex(es *elasticsearch.Client, index string) error {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all": map[string]interface{}{},
+		},
+	}
+	queryJSON, _ := json.Marshal(query)
+	res, err := es.DeleteByQuery([]string{index}, bytes.NewReader(queryJSON), es.DeleteByQuery.WithRefresh(true))
 	if err != nil {
 		return fmt.Errorf("failed to delete documents by query: %w", err)
 	}

@@ -138,7 +138,7 @@ func TestUpdateAnalytics(t *testing.T) {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
 
-		err = deleteAllDocuments(es)
+		err = deleteAllDocumentsFromIndex(es, bootstrapper.CountIndexName)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
@@ -208,6 +208,56 @@ func TestUpdateAnalytics(t *testing.T) {
 		assert.ElementsMatch(t, []string{"1"}, clusterTwoCauses)
 		assert.ElementsMatch(t, []string{"2"}, clusterThreeCauses)
 		assert.ElementsMatch(t, []string{}, clusterFourCauses)
+	})
+
+	t.Run("Should work in a difficult real-world scenario and produce no cycles", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
+		assert.NoError(t, err)
+
+		clusterIds := []string{
+			"15d28b23-8ac5-4097-9292-62294611d2b0",
+			"df3d8241-5da4-48e0-b5dc-fcd33c1744de",
+			"8cb0cdfd-5ddd-463e-ae61-e0e1efd1978e",
+			"593bdd0c-eba9-4878-a6f6-86a59ce78edb",
+			"5fc97189-716d-4d79-a157-b6a8261c501e",
+			"7ce1d5fb-1349-4a41-8181-d54e3e69a1ea",
+			"009c18b9-afd1-40cc-8d83-fd810a5ce4ce",
+			"2d0ea4ac-61ce-439d-8b83-4804557f523e",
+		}
+		err = as.UpdateAnalytics(context.Background(), clusterIds)
+		assert.NoError(t, err)
+
+		queryString, err := json.Marshal(getAllQuery())
+		assert.NoError(t, err)
+		allClusterDocs, err := ac.Search(
+			context.Background(),
+			string(queryString),
+			[]string{bootstrapper.ClusterIndexName},
+			nil,
+		)
+		assert.NoError(t, err)
+		clusters, err := convertClusterDocs(allClusterDocs)
+		assert.NoError(t, err)
+		assert.Equal(t, 8, len(clusters))
+		graph := make(map[string]map[string]bool)
+		for _, cluster := range clusters {
+			graph[cluster.ClusterId] = make(map[string]bool)
+			for _, causedCluster := range cluster.CausedClusters {
+				graph[cluster.ClusterId][causedCluster] = true
+				assert.False(t, graph[causedCluster][cluster.ClusterId])
+				if _, ok := graph[causedCluster][cluster.ClusterId]; ok {
+					logger.Error(
+						"Cycle detected",
+						zap.String("cluster", cluster.ClusterId),
+						zap.String("caused_cluster", causedCluster),
+					)
+				}
+			}
+		}
 	})
 }
 

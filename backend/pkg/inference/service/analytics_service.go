@@ -32,20 +32,23 @@ func NewAnalyticsService(
 
 func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
-	clusterIds []string,
+	clusterIdsToAnalyze []string,
 ) error {
-	metaUpdates, documentUpdates := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
-	for _, clusterId := range clusterIds {
+	clusterToSucceedingClusters := make(map[string]map[string]bool)
+	visitedClusters := map[string]bool{}
+	for _, clusterId := range clusterIdsToAnalyze {
+		if _, ok := visitedClusters[clusterId]; ok {
+			continue
+		}
+		visitedClusters[clusterId] = true
 		stack := []string{clusterId}
-		clusterToSucceedingClusters := make(map[string]map[string]bool)
-		visitedClusters := map[string]bool{clusterId: true}
 		for {
 			if len(stack) == 0 {
 				break
 			}
 			currentClusterId := stack[0]
 			stack = stack[1:]
-			// always create a new map for the current cluster to make sure it gets added later
+			// always create a new map for the current cluster to make sure it gets added later even if there are no related clusters
 			if _, ok := clusterToSucceedingClusters[currentClusterId]; !ok {
 				clusterToSucceedingClusters[currentClusterId] = make(map[string]bool)
 			}
@@ -54,6 +57,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 				return fmt.Errorf("failed to get related clusters: %w", err)
 			}
 			for _, relatedCluster := range relatedClusters {
+				// MeanTDOA > 0 means relatedCluster -> currentCluster w.r.t. causation
 				if relatedCluster.MeanTDOA > 0 {
 					if _, ok := clusterToSucceedingClusters[relatedCluster.ClusterId]; !ok {
 						clusterToSucceedingClusters[relatedCluster.ClusterId] = map[string]bool{currentClusterId: true}
@@ -69,17 +73,72 @@ func (as *AnalyticsService) UpdateAnalytics(
 				}
 			}
 		}
-		metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
-		metaUpdates = append(metaUpdates, metaUpdate...)
-		documentUpdates = append(documentUpdates, documentUpdate...)
 	}
+	as.pruneCycleClusters(clusterToSucceedingClusters)
+	metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
 	updateCtx, cancel := context.WithTimeout(ctx, timeout)
-	err := as.ac.BulkUpdate(updateCtx, metaUpdates, documentUpdates, bootstrapper.ClusterIndexName)
+	err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
 	cancel()
 	if err != nil {
 		return fmt.Errorf("failed to bulk update analytics: %w", err)
 	}
 	return nil
+}
+
+func (as *AnalyticsService) pruneCycleClusters(clusterToSucceedingClusters map[string]map[string]bool) {
+	if len(clusterToSucceedingClusters) == 0 {
+		return
+	}
+	visitedClusters := make(map[string]bool)
+	inCurrentPath := make(map[string]bool)
+
+	for startCluster := range clusterToSucceedingClusters {
+		if visitedClusters[startCluster] {
+			continue
+		}
+		type StackFrame struct {
+			clusterID     string
+			successorIter []string
+		}
+		stack := []StackFrame{
+			{
+				clusterID:     startCluster,
+				successorIter: getKeys(clusterToSucceedingClusters[startCluster]),
+			},
+		}
+		inCurrentPath[startCluster] = true
+
+		for len(stack) > 0 {
+			frame := &stack[len(stack)-1]
+			currentCluster := frame.clusterID
+
+			if len(frame.successorIter) == 0 {
+				stack = stack[:len(stack)-1]
+				delete(inCurrentPath, currentCluster)
+				continue
+			}
+
+			nextSuccessor := frame.successorIter[0]
+			frame.successorIter = frame.successorIter[1:]
+
+			if inCurrentPath[nextSuccessor] {
+				delete(clusterToSucceedingClusters[currentCluster], nextSuccessor)
+				continue
+			}
+
+			if visitedClusters[nextSuccessor] {
+				continue
+			}
+
+			inCurrentPath[nextSuccessor] = true
+			visitedClusters[nextSuccessor] = true
+
+			stack = append(stack, StackFrame{
+				clusterID:     nextSuccessor,
+				successorIter: getKeys(clusterToSucceedingClusters[nextSuccessor]),
+			})
+		}
+	}
 }
 
 func (as *AnalyticsService) getRelatedClusters(
@@ -177,4 +236,12 @@ func getAnalyticsUpdateStatement(
 		i++
 	}
 	return metaUpdates, documentUpdates
+}
+
+func getKeys(m map[string]bool) []string {
+	result := make([]string, 0, len(m))
+	for k := range m {
+		result = append(result, k)
+	}
+	return result
 }
