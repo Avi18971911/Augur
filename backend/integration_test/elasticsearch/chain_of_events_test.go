@@ -33,7 +33,7 @@ func TestChainOfEvents(t *testing.T) {
 		logger,
 	)
 
-	as := service.CreateNewAnalyticsQueryService(
+	as := service.NewAnalyticsQueryService(
 		ac,
 		logger,
 	)
@@ -479,7 +479,7 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, 0, len(graph[clusterId].Successors))
 		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Predecessors))
 		for _, node := range graph[clusterId].Predecessors {
-			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
 		}
 	})
 
@@ -520,7 +520,7 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
 		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
 		for _, node := range graph[clusterId].Successors {
-			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
 		}
 	})
 
@@ -565,7 +565,7 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
 		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
 		for _, node := range graph[clusterId].Successors {
-			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
 		}
 	})
 }

@@ -27,7 +27,7 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	as := analyticsService.CreateNewAnalyticsQueryService(ac, logger)
+	as := analyticsService.NewAnalyticsQueryService(ac, logger)
 
 	r := router.CreateRouter(context.Background(), as, logger)
 	logger.Info("Starting server at :8081")

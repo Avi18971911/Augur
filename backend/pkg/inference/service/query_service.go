@@ -28,7 +28,7 @@ type AnalyticsQueryServiceImpl struct {
 	logger *zap.Logger
 }
 
-func CreateNewAnalyticsQueryService(ac client.AugurClient, logger *zap.Logger) AnalyticsQueryService {
+func NewAnalyticsQueryService(ac client.AugurClient, logger *zap.Logger) AnalyticsQueryService {
 	return &AnalyticsQueryServiceImpl{
 		ac:     ac,
 		logger: logger,
@@ -74,13 +74,13 @@ func (as *AnalyticsQueryServiceImpl) GetChainOfEvents(
 		return nil, err
 	}
 	if logOrSpanData.SpanDetails != nil {
-		clusterGraph[clusterToSearchOn].LogOrSpanData = &model.LogOrSpanData{
+		clusterGraph[clusterToSearchOn].LogOrSpanData = model.LogOrSpanData{
 			Id:          logOrSpanData.Id,
 			ClusterId:   logOrSpanData.ClusterId,
 			SpanDetails: logOrSpanData.SpanDetails,
 		}
 	} else if logOrSpanData.LogDetails != nil {
-		clusterGraph[clusterToSearchOn].LogOrSpanData = &model.LogOrSpanData{
+		clusterGraph[clusterToSearchOn].LogOrSpanData = model.LogOrSpanData{
 			Id:         logOrSpanData.Id,
 			ClusterId:  logOrSpanData.ClusterId,
 			LogDetails: logOrSpanData.LogDetails,
@@ -107,9 +107,8 @@ func (as *AnalyticsQueryServiceImpl) getClusterGraph(
 	clusterStack := []string{clusterToSearchOn}
 	visitedClusters := map[string]*model.ClusterNode{
 		clusterToSearchOn: {
-			ClusterId:    clusterToSearchOn,
-			Successors:   make([]*model.ClusterNode, 0),
-			Predecessors: make([]*model.ClusterNode, 0),
+			Successors:   make([]model.SimpleClusterNode, 0),
+			Predecessors: make([]model.SimpleClusterNode, 0),
 		},
 	}
 	for {
@@ -133,17 +132,25 @@ func (as *AnalyticsQueryServiceImpl) getClusterGraph(
 		}
 
 		for _, succeedingCluster := range succeedingClusters {
-			currentClusterNode.Successors = append(currentClusterNode.Successors, &succeedingCluster)
-			if _, ok := visitedClusters[succeedingCluster.ClusterId]; !ok {
-				clusterStack = append(clusterStack, succeedingCluster.ClusterId)
-				visitedClusters[succeedingCluster.ClusterId] = &succeedingCluster
+			simpleClusterNode := model.SimpleClusterNode{
+				Id:        succeedingCluster.LogOrSpanData.Id,
+				ClusterId: succeedingCluster.LogOrSpanData.ClusterId,
+			}
+			currentClusterNode.Successors = append(currentClusterNode.Successors, simpleClusterNode)
+			if _, ok := visitedClusters[succeedingCluster.LogOrSpanData.ClusterId]; !ok {
+				clusterStack = append(clusterStack, succeedingCluster.LogOrSpanData.ClusterId)
+				visitedClusters[succeedingCluster.LogOrSpanData.ClusterId] = &succeedingCluster
 			}
 		}
 		for _, precedingCluster := range precedingClusters {
-			currentClusterNode.Predecessors = append(currentClusterNode.Predecessors, &precedingCluster)
-			if _, ok := visitedClusters[precedingCluster.ClusterId]; !ok {
-				clusterStack = append(clusterStack, precedingCluster.ClusterId)
-				visitedClusters[precedingCluster.ClusterId] = &precedingCluster
+			simpleClusterNode := model.SimpleClusterNode{
+				Id:        precedingCluster.LogOrSpanData.Id,
+				ClusterId: precedingCluster.LogOrSpanData.ClusterId,
+			}
+			currentClusterNode.Predecessors = append(currentClusterNode.Predecessors, simpleClusterNode)
+			if _, ok := visitedClusters[precedingCluster.LogOrSpanData.ClusterId]; !ok {
+				clusterStack = append(clusterStack, precedingCluster.LogOrSpanData.ClusterId)
+				visitedClusters[precedingCluster.LogOrSpanData.ClusterId] = &precedingCluster
 			}
 		}
 	}
@@ -168,9 +175,11 @@ func (as *AnalyticsQueryServiceImpl) getSucceedingClusters(
 	clusterNodes := make([]model.ClusterNode, len(cluster.CausesClusters))
 	for i, causeCluster := range cluster.CausesClusters {
 		clusterNodes[i] = model.ClusterNode{
-			ClusterId:    causeCluster,
-			Successors:   make([]*model.ClusterNode, 0),
-			Predecessors: make([]*model.ClusterNode, 0),
+			Successors:   make([]model.SimpleClusterNode, 0),
+			Predecessors: make([]model.SimpleClusterNode, 0),
+			LogOrSpanData: model.LogOrSpanData{
+				ClusterId: causeCluster,
+			},
 		}
 	}
 	return clusterNodes, nil
@@ -188,9 +197,11 @@ func (as *AnalyticsQueryServiceImpl) getPrecedingClusters(
 	clusterNodes := make([]model.ClusterNode, len(clusters))
 	for i, cluster := range clusters {
 		clusterNodes[i] = model.ClusterNode{
-			ClusterId:    cluster.ClusterId,
-			Successors:   make([]*model.ClusterNode, 0),
-			Predecessors: make([]*model.ClusterNode, 0),
+			Successors:   make([]model.SimpleClusterNode, 0),
+			Predecessors: make([]model.SimpleClusterNode, 0),
+			LogOrSpanData: model.LogOrSpanData{
+				ClusterId: cluster.ClusterId,
+			},
 		}
 	}
 	return clusterNodes, nil
@@ -227,7 +238,7 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 	nodesToDoMLEOn := []model.MostLikelyEstimatorPair{
 		{
 			PreviousNode: startNode,
-			NextNodes:    make([]*model.ClusterNode, 0),
+			NextNodes:    make([]model.SimpleClusterNode, 0),
 		},
 	}
 	visitedNodes := map[string]bool{clusterIdToSearchOn: true}
@@ -246,7 +257,11 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 		previousNode := currentPair.PreviousNode
 		nextNodes := currentPair.NextNodes
 		for _, currentNode := range nextNodes {
-			countClusterDetails, err := as.getCountClusterDetails(ctx, previousNode.ClusterId, currentNode.ClusterId)
+			countClusterDetails, err := as.getCountClusterDetails(
+				ctx,
+				previousNode.LogOrSpanData.ClusterId,
+				currentNode.ClusterId,
+			)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get cluster details: %w", err)
 			}
@@ -268,15 +283,15 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 				as.logger.Warn(
 					"Could not find suitable candidate for MLE",
 					zap.String("cluster_id", currentNode.ClusterId),
-					zap.String("preceding_cluster_id", previousNode.ClusterId),
+					zap.String("preceding_cluster_id", previousNode.LogOrSpanData.ClusterId),
 				)
 				continue
 			} else {
-				currentNode.LogOrSpanData = mostLikelyLogOrSpan
+				clusterGraph[currentNode.ClusterId].LogOrSpanData = *mostLikelyLogOrSpan
 			}
 
-			successorsNextNodes := make([]*model.ClusterNode, 0)
-			for _, successor := range currentNode.Successors {
+			successorsNextNodes := make([]model.SimpleClusterNode, 0)
+			for _, successor := range clusterGraph[currentNode.ClusterId].Successors {
 				if _, ok := visitedNodes[successor.ClusterId]; !ok {
 					successorsNextNodes = append(successorsNextNodes, successor)
 					visitedNodes[successor.ClusterId] = true
@@ -284,13 +299,13 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 			}
 			if len(successorsNextNodes) > 0 {
 				nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
-					PreviousNode: currentNode,
+					PreviousNode: clusterGraph[currentNode.ClusterId],
 					NextNodes:    successorsNextNodes,
 				})
 			}
 
-			predecessorsNextNodes := make([]*model.ClusterNode, 0)
-			for _, predecessor := range currentNode.Predecessors {
+			predecessorsNextNodes := make([]model.SimpleClusterNode, 0)
+			for _, predecessor := range clusterGraph[currentNode.ClusterId].Predecessors {
 				if _, ok := visitedNodes[predecessor.ClusterId]; !ok {
 					predecessorsNextNodes = append(predecessorsNextNodes, predecessor)
 					visitedNodes[predecessor.ClusterId] = true
@@ -298,7 +313,7 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 			}
 			if len(predecessorsNextNodes) > 0 {
 				nodesToDoMLEOn = append(nodesToDoMLEOn, model.MostLikelyEstimatorPair{
-					PreviousNode: currentNode,
+					PreviousNode: clusterGraph[currentNode.ClusterId],
 					NextNodes:    predecessorsNextNodes,
 				})
 			}
@@ -337,7 +352,7 @@ func (as *AnalyticsQueryServiceImpl) getCountClusterDetails(
 func (as *AnalyticsQueryServiceImpl) getSpanOrLogDetails(
 	ctx context.Context,
 	clusterId string,
-	previousLogOrSpanData *model.LogOrSpanData,
+	previousLogOrSpanData model.LogOrSpanData,
 	countClusterDetails model.CountCluster,
 ) ([]model.LogOrSpanData, error) {
 	var timeStart time.Time
@@ -375,7 +390,7 @@ func (as *AnalyticsQueryServiceImpl) getSpanOrLogDetails(
 
 func (as *AnalyticsQueryServiceImpl) getMostLikelyLogOrSpan(
 	spanOrLogDetails []model.LogOrSpanData,
-	previousSpanOrLogDetails *model.LogOrSpanData,
+	previousSpanOrLogDetails model.LogOrSpanData,
 	clusterDetails model.CountCluster,
 ) *model.LogOrSpanData {
 	probabilities := make([]float64, len(spanOrLogDetails))

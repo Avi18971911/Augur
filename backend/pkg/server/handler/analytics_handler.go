@@ -85,31 +85,29 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 	for _, node := range mleSequence {
 		successors := make([]string, len(node.Successors))
 		for i, successor := range node.Successors {
-			if successor.LogOrSpanData == nil {
+			if mleSequence[successor.ClusterId] == nil {
 				continue
 			}
-			successors[i] = successor.LogOrSpanData.Id
+			successors[i] = mleSequence[successor.ClusterId].LogOrSpanData.Id
 		}
 		predecessors := make([]string, len(node.Predecessors))
 		for i, predecessor := range node.Predecessors {
-			if predecessor.LogOrSpanData == nil {
+			if mleSequence[predecessor.ClusterId] == nil {
 				continue
 			}
-			predecessors[i] = predecessor.LogOrSpanData.Id
+			predecessors[i] = mleSequence[predecessor.ClusterId].LogOrSpanData.Id
 		}
 		var spanDTO = SpanDTO{}
 		var logDTO = LogDTO{}
-		if node.LogOrSpanData != nil {
-			if node.LogOrSpanData.SpanDetails != nil {
-				spanDTO = toSpanDTO(spanDTO, node)
-			} else {
-				logDTO = toLogDTO(logDTO, node)
-			}
+		if node.LogOrSpanData.SpanDetails != nil {
+			spanDTO = toSpanDTO(spanDTO, node)
+		} else {
+			logDTO = toLogDTO(logDTO, node)
 		}
 
 		graph[node.LogOrSpanData.Id] = ChainOfEventsNodeDTO{
 			Id:           node.LogOrSpanData.Id,
-			ClusterId:    node.ClusterId,
+			ClusterId:    node.LogOrSpanData.ClusterId,
 			Successors:   successors,
 			Predecessors: predecessors,
 			SpanDTO:      &spanDTO,
