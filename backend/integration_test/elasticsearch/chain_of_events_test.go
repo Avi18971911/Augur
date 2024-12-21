@@ -533,19 +533,22 @@ func TestChainOfEvents(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
 		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data/difficult_inference/span_index.json")
+		assert.NoError(t, err)
 		const maxLogsInChain = 8
 
-		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-19T16:10:51.311560718Z")
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-21T10:30:54.838663084Z")
 		assert.NoError(t, err)
-		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-19T16:10:46.171770924Z")
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-21T10:30:44.890232885Z")
 		assert.NoError(t, err)
 
-		clusterId := "593bdd0c-eba9-4878-a6f6-86a59ce78edb"
+		clusterId := "d07ad010-acd1-4e5a-a121-e584dc791d38"
+		id := "89e039d63387543949a4ff035b76ddf3ae4d687c5083f9fe52289e64be253eb8"
 		spanOrLogDatum := analyticsModel.LogOrSpanData{
-			Id:        "a29c28c88dc88ad4d6029c8e3e749fdbd03236b3283fe0ddf6f2ff121a31afbd",
+			Id:        id,
 			ClusterId: clusterId,
 			LogDetails: &logModel.LogEntry{
-				Id:        "a29c28c88dc88ad4d6029c8e3e749fdbd03236b3283fe0ddf6f2ff121a31afbd",
+				Id:        id,
 				ClusterId: clusterId,
 				CreatedAt: createdAt,
 				Timestamp: timestamp,
@@ -554,6 +557,7 @@ func TestChainOfEvents(t *testing.T) {
 				Service:   "fake-server",
 			},
 		}
+		// TODO: Do some heavy investigation to ensure adequate functionality in this case
 		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
 		assert.NoError(t, err)
 		assert.Equal(t, maxLogsInChain, len(graph))

@@ -270,6 +270,7 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 					zap.String("cluster_id", currentNode.ClusterId),
 					zap.String("preceding_cluster_id", previousNode.ClusterId),
 				)
+				continue
 			} else {
 				currentNode.LogOrSpanData = mostLikelyLogOrSpan
 			}
