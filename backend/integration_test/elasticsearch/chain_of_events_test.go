@@ -442,14 +442,14 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, logs[8], *graph[clusterIdC].LogOrSpanData.LogDetails)
 	})
 
-	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
+	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/log_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
 		assert.NoError(t, err)
 		const maxLogsInChain = 8
 
@@ -486,11 +486,11 @@ func TestChainOfEvents(t *testing.T) {
 	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/log_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
 		assert.NoError(t, err)
 		const maxLogsInChain = 8
 
@@ -505,6 +505,47 @@ func TestChainOfEvents(t *testing.T) {
 			ClusterId: clusterId,
 			LogDetails: &logModel.LogEntry{
 				Id:        "53aa1506e94ead53a771ad073b0e4c1ea29dd5959297c40f123a344e85b493ae",
+				ClusterId: clusterId,
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Login request received with URL /accounts/login and method POST",
+				Severity:  "info",
+				Service:   "fake-server",
+			},
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
+		for _, node := range graph[clusterId].Successors {
+			assert.NotNil(t, node.LogOrSpanData.LogDetails)
+		}
+	})
+
+	t.Run("Should be able to do inference even in difficult circumstances where many overlaps occur", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/difficult_inference/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
+		assert.NoError(t, err)
+		const maxLogsInChain = 8
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-19T16:10:51.311560718Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-19T16:10:46.171770924Z")
+		assert.NoError(t, err)
+
+		clusterId := "593bdd0c-eba9-4878-a6f6-86a59ce78edb"
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        "a29c28c88dc88ad4d6029c8e3e749fdbd03236b3283fe0ddf6f2ff121a31afbd",
+			ClusterId: clusterId,
+			LogDetails: &logModel.LogEntry{
+				Id:        "a29c28c88dc88ad4d6029c8e3e749fdbd03236b3283fe0ddf6f2ff121a31afbd",
 				ClusterId: clusterId,
 				CreatedAt: createdAt,
 				Timestamp: timestamp,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	countModel "github.com/Avi18971911/Augur/pkg/count/model"
 	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
 	augurElasticsearch "github.com/Avi18971911/Augur/pkg/elasticsearch/client"
 	"github.com/Avi18971911/Augur/pkg/inference/model"
@@ -15,7 +14,6 @@ import (
 const timeout = 10 * time.Second
 const minimumRatio = 0.6
 const querySize = 1000
-const bucket countModel.Bucket = 100
 
 type AnalyticsService struct {
 	ac     augurElasticsearch.AugurClient
@@ -36,6 +34,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 	ctx context.Context,
 	clusterIds []string,
 ) error {
+	metaUpdates, documentUpdates := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 	for _, clusterId := range clusterIds {
 		stack := []string{clusterId}
 		clusterToSucceedingClusters := make(map[string]map[string]bool)
@@ -71,12 +70,14 @@ func (as *AnalyticsService) UpdateAnalytics(
 			}
 		}
 		metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
-		updateCtx, cancel := context.WithTimeout(ctx, timeout)
-		err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
-		cancel()
-		if err != nil {
-			return fmt.Errorf("failed to bulk update analytics: %w", err)
-		}
+		metaUpdates = append(metaUpdates, metaUpdate...)
+		documentUpdates = append(documentUpdates, documentUpdate...)
+	}
+	updateCtx, cancel := context.WithTimeout(ctx, timeout)
+	err := as.ac.BulkUpdate(updateCtx, metaUpdates, documentUpdates, bootstrapper.ClusterIndexName)
+	cancel()
+	if err != nil {
+		return fmt.Errorf("failed to bulk update analytics: %w", err)
 	}
 	return nil
 }
