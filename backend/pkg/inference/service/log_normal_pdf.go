@@ -51,6 +51,12 @@ func DetermineCausality(
 	coOccurrences,
 	occurrences int64,
 ) (isCausal bool, withProbability float64) {
+	if meanTDOA < 0 {
+		meanTDOA = math.Abs(meanTDOA)
+	}
+	if sampleTDOA < 0 {
+		sampleTDOA = math.Abs(sampleTDOA)
+	}
 	mu, sigmaSquared := fitLogNormal(meanTDOA, varianceTDOA)
 	sigma := math.Sqrt(sigmaSquared)
 	a := 0.0

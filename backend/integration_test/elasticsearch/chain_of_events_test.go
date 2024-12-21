@@ -27,7 +27,13 @@ func TestChainOfEvents(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to create logger: %v", err)
 	}
-	as := service.NewAnalyticsService(
+
+	an := service.NewAnalyticsService(
+		ac,
+		logger,
+	)
+
+	as := service.NewAnalyticsQueryService(
 		ac,
 		logger,
 	)
@@ -150,7 +156,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -268,7 +274,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -418,7 +424,7 @@ func TestChainOfEvents(t *testing.T) {
 		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.Nil(t, err)
 
-		err = as.UpdateAnalytics(context.Background(), updatedClusters)
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
@@ -434,5 +440,132 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, logs[6], *graph[clusterIdA].LogOrSpanData.LogDetails)
 		assert.Equal(t, logs[7], *graph[clusterIdB].LogOrSpanData.LogDetails)
 		assert.Equal(t, logs[8], *graph[clusterIdC].LogOrSpanData.LogDetails)
+	})
+
+	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
+		assert.NoError(t, err)
+		const maxLogsInChain = 8
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872458799Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:33.234410296Z")
+		assert.NoError(t, err)
+
+		clusterId := "66553fb7-2b8f-4002-9a15-c96d5ec00781"
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
+			ClusterId: clusterId,
+			LogDetails: &logModel.LogEntry{
+				Id:        "61d5afe39d21cbea98aa5a395ac158a2564e2d0d1d9b0e300aeced2b67a0cc8f",
+				ClusterId: "66553fb7-2b8f-4002-9a15-c96d5ec00781",
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Invalid credentials for Login request with username: Yolo and password: Swag",
+				Severity:  "error",
+				Service:   "fake-server",
+			},
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Successors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Predecessors))
+		for _, node := range graph[clusterId].Predecessors {
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
+		}
+	})
+
+	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
+		assert.NoError(t, err)
+		const maxLogsInChain = 8
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872440799Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:32.229644879Z")
+		assert.NoError(t, err)
+
+		clusterId := "0b064520-f152-40b0-a34e-661fe3e50cae"
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        "53aa1506e94ead53a771ad073b0e4c1ea29dd5959297c40f123a344e85b493ae",
+			ClusterId: clusterId,
+			LogDetails: &logModel.LogEntry{
+				Id:        "53aa1506e94ead53a771ad073b0e4c1ea29dd5959297c40f123a344e85b493ae",
+				ClusterId: clusterId,
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Login request received with URL /accounts/login and method POST",
+				Severity:  "info",
+				Service:   "fake-server",
+			},
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
+		for _, node := range graph[clusterId].Successors {
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
+		}
+	})
+
+	t.Run("Should be able to do inference even in difficult circumstances where many overlaps occur", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/difficult_inference/cluster_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
+		assert.NoError(t, err)
+		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data/difficult_inference/span_index.json")
+		assert.NoError(t, err)
+		const maxLogsInChain = 8
+
+		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-21T10:30:54.838663084Z")
+		assert.NoError(t, err)
+		timestamp, err := time.Parse(time.RFC3339Nano, "2024-12-21T10:30:44.890232885Z")
+		assert.NoError(t, err)
+
+		clusterId := "d07ad010-acd1-4e5a-a121-e584dc791d38"
+		id := "89e039d63387543949a4ff035b76ddf3ae4d687c5083f9fe52289e64be253eb8"
+		spanOrLogDatum := analyticsModel.LogOrSpanData{
+			Id:        id,
+			ClusterId: clusterId,
+			LogDetails: &logModel.LogEntry{
+				Id:        id,
+				ClusterId: clusterId,
+				CreatedAt: createdAt,
+				Timestamp: timestamp,
+				Message:   "Login request received with URL /accounts/login and method POST",
+				Severity:  "info",
+				Service:   "fake-server",
+			},
+		}
+		// TODO: Do some heavy investigation to ensure adequate functionality in this case
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+		assert.Equal(t, maxLogsInChain, len(graph))
+		// this error should always be the last in the chain
+		assert.Equal(t, 0, len(graph[clusterId].Predecessors))
+		assert.Equal(t, maxLogsInChain-1, len(graph[clusterId].Successors))
+		for _, node := range graph[clusterId].Successors {
+			assert.NotNil(t, graph[node.ClusterId].LogOrSpanData.LogDetails)
+		}
 	})
 }

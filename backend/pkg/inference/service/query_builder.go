@@ -54,9 +54,7 @@ func getCountClusterDetailsQuery(countId string) map[string]interface{} {
 	}
 }
 
-func getLogsAndSpansAroundTimeQuery(clusterId string, timeSlice time.Time, window time.Duration) map[string]interface{} {
-	fromTime := timeSlice.Add(-window)
-	toTime := timeSlice.Add(window)
+func getLogsAndSpansAroundTimeQuery(clusterId string, startTime time.Time, endTime time.Time) map[string]interface{} {
 
 	return map[string]interface{}{
 		"query": map[string]interface{}{
@@ -72,8 +70,8 @@ func getLogsAndSpansAroundTimeQuery(clusterId string, timeSlice time.Time, windo
 					{
 						"range": map[string]interface{}{
 							"timestamp": map[string]interface{}{
-								"gte": fromTime,
-								"lte": toTime,
+								"gte": startTime,
+								"lte": endTime,
 							},
 						},
 					},
@@ -83,14 +81,14 @@ func getLogsAndSpansAroundTimeQuery(clusterId string, timeSlice time.Time, windo
 								{
 									"range": map[string]interface{}{
 										"start_time": map[string]interface{}{
-											"lte": toTime,
+											"lte": startTime,
 										},
 									},
 								},
 								{
 									"range": map[string]interface{}{
 										"end_time": map[string]interface{}{
-											"gte": fromTime,
+											"gte": endTime,
 										},
 									},
 								},
@@ -99,6 +97,16 @@ func getLogsAndSpansAroundTimeQuery(clusterId string, timeSlice time.Time, windo
 					},
 				},
 				"minimum_should_match": 1,
+			},
+		},
+	}
+}
+
+func getLogOrSpanQuery(id string) map[string]interface{} {
+	return map[string]interface{}{
+		"query": map[string]interface{}{
+			"term": map[string]interface{}{
+				"_id": id,
 			},
 		},
 	}

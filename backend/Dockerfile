@@ -7,8 +7,11 @@ WORKDIR /app
 # Copy the local package files to the container's workspace.
 ADD . /app
 
+# Build argument to specify which main to use
+ARG MAIN_DIR
+
 # Compile the binary, we disable cgo to create a statically linked binary.
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/otel_scraper
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/$MAIN_DIR
 
 # Set execute permissions
 RUN chmod +x ./app

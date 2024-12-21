@@ -1,8 +1,12 @@
 package model
 
 type ClusterNode struct {
-	ClusterId     string         `json:"cluster_id"`
-	Successors    []*ClusterNode `json:"successors"`
-	Predecessors  []*ClusterNode `json:"predecessors"`
-	LogOrSpanData *LogOrSpanData
+	Successors    []SimpleClusterNode `json:"successors"`
+	Predecessors  []SimpleClusterNode `json:"predecessors"`
+	LogOrSpanData LogOrSpanData
+}
+
+type SimpleClusterNode struct {
+	Id        string `json:"id"`
+	ClusterId string `json:"cluster_id"`
 }

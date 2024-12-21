@@ -1,0 +1,3992 @@
+[
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879020888Z",
+      "mean_TDOA": 0.146097616125,
+      "occurrences": 8,
+      "variance_TDOA": 1.130800849673957
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879019179Z",
+      "mean_TDOA": 0.14587742083333333,
+      "occurrences": 8,
+      "variance_TDOA": 1.1307350999699732
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879033763Z",
+      "mean_TDOA": 0.137948687625,
+      "occurrences": 8,
+      "variance_TDOA": 1.2884129055129547
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879020054Z",
+      "mean_TDOA": 0.1377336798125,
+      "occurrences": 8,
+      "variance_TDOA": 1.288515535503954
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879031388Z",
+      "mean_TDOA": 0.1379810781875,
+      "occurrences": 8,
+      "variance_TDOA": 1.2883823659443856
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879030388Z",
+      "mean_TDOA": -0.4123338378125,
+      "occurrences": 8,
+      "variance_TDOA": 0.7583445018719872
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879033013Z",
+      "mean_TDOA": 0.13788396618749998,
+      "occurrences": 8,
+      "variance_TDOA": 1.288479307397795
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879015221Z",
+      "mean_TDOA": -0.41228382470833336,
+      "occurrences": 8,
+      "variance_TDOA": 0.7582803002564835
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879032179Z",
+      "mean_TDOA": 0.14604746262499999,
+      "occurrences": 8,
+      "variance_TDOA": 1.130789637820875
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879018179Z",
+      "mean_TDOA": -0.412459654,
+      "occurrences": 8,
+      "variance_TDOA": 0.7584553523346148
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "bde982bc-a58d-41b5-a7ca-8b307768f580;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.879021721Z",
+      "mean_TDOA": -0.4123031521666667,
+      "occurrences": 8,
+      "variance_TDOA": 0.7583135227577633
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867193554Z",
+      "mean_TDOA": 0.09809310886666667,
+      "occurrences": 10,
+      "variance_TDOA": 0.867846222868085
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867199346Z",
+      "mean_TDOA": 0.21917671371666672,
+      "occurrences": 10,
+      "variance_TDOA": 1.1830775916548049
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867198429Z",
+      "mean_TDOA": 0.09788724866666662,
+      "occurrences": 10,
+      "variance_TDOA": 0.8679047818450327
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867203429Z",
+      "mean_TDOA": 0.09801850541666667,
+      "occurrences": 10,
+      "variance_TDOA": 0.867885566861088
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867200971Z",
+      "mean_TDOA": -0.4897686921333333,
+      "occurrences": 10,
+      "variance_TDOA": 1.3087276480488186
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867202221Z",
+      "mean_TDOA": -0.48970866755,
+      "occurrences": 10,
+      "variance_TDOA": 1.3087086090425486
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867195721Z",
+      "mean_TDOA": -0.48973102395,
+      "occurrences": 10,
+      "variance_TDOA": 1.3087133954455847
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867200179Z",
+      "mean_TDOA": 0.21934741794999996,
+      "occurrences": 10,
+      "variance_TDOA": 1.1830320569241422
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867197179Z",
+      "mean_TDOA": 0.09806592898333334,
+      "occurrences": 10,
+      "variance_TDOA": 0.867866055344109
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867205471Z",
+      "mean_TDOA": 0.21936909155,
+      "occurrences": 10,
+      "variance_TDOA": 1.1830274559917107
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.867194846Z",
+      "mean_TDOA": -0.4898864005333334,
+      "occurrences": 10,
+      "variance_TDOA": 1.3087534321876388
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912895804Z",
+      "mean_TDOA": 0.08652867449999997,
+      "occurrences": 8,
+      "variance_TDOA": 0.18625548182694646
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912901221Z",
+      "mean_TDOA": 0.365843096375,
+      "occurrences": 8,
+      "variance_TDOA": 1.1517318430167491
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912899346Z",
+      "mean_TDOA": 0.3966541748125,
+      "occurrences": 8,
+      "variance_TDOA": 1.5921485122426118
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912893638Z",
+      "mean_TDOA": 0.366143747625,
+      "occurrences": 8,
+      "variance_TDOA": 1.151902967345624
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912906138Z",
+      "mean_TDOA": -0.24649123883333332,
+      "occurrences": 8,
+      "variance_TDOA": 0.9681289660898279
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912904763Z",
+      "mean_TDOA": -0.2465444195208333,
+      "occurrences": 8,
+      "variance_TDOA": 0.9680819304103694
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912903471Z",
+      "mean_TDOA": -0.24670320785416666,
+      "occurrences": 8,
+      "variance_TDOA": 0.9681180891855129
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912900304Z",
+      "mean_TDOA": 0.39658944818749997,
+      "occurrences": 8,
+      "variance_TDOA": 1.5920713064446654
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912908096Z",
+      "mean_TDOA": -0.24651270352083332,
+      "occurrences": 8,
+      "variance_TDOA": 0.9681157690132302
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912897804Z",
+      "mean_TDOA": 0.3966812866875,
+      "occurrences": 8,
+      "variance_TDOA": 1.592215988425979
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:20.912896888Z",
+      "mean_TDOA": 0.36607983875000005,
+      "occurrences": 8,
+      "variance_TDOA": 1.1519322754427526
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865658554Z",
+      "mean_TDOA": 0.018050178222222227,
+      "occurrences": 9,
+      "variance_TDOA": 0.8359175397767158
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865660846Z",
+      "mean_TDOA": -0.6598313329074075,
+      "occurrences": 9,
+      "variance_TDOA": 1.1749265020862025
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865661763Z",
+      "mean_TDOA": -0.6596628181666667,
+      "occurrences": 9,
+      "variance_TDOA": 1.1748820218995508
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865666346Z",
+      "mean_TDOA": -0.6595993095185184,
+      "occurrences": 9,
+      "variance_TDOA": 1.174971306235244
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865664513Z",
+      "mean_TDOA": 0.4170013983333333,
+      "occurrences": 9,
+      "variance_TDOA": 1.0640883979164444
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865665304Z",
+      "mean_TDOA": 0.4166966643333333,
+      "occurrences": 9,
+      "variance_TDOA": 1.0640695460593748
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865669138Z",
+      "mean_TDOA": 0.4169369515555555,
+      "occurrences": 9,
+      "variance_TDOA": 1.0641341146971592
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865667179Z",
+      "mean_TDOA": -0.6596259988333333,
+      "occurrences": 9,
+      "variance_TDOA": 1.174943075284242
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865662554Z",
+      "mean_TDOA": 0.01833209044444445,
+      "occurrences": 9,
+      "variance_TDOA": 0.8358788421759505
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865663388Z",
+      "mean_TDOA": 0.018258849555555554,
+      "occurrences": 9,
+      "variance_TDOA": 0.8359109322961517
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.865668346Z",
+      "mean_TDOA": 0.1684499862222222,
+      "occurrences": 9,
+      "variance_TDOA": 0.3952341308835409
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853524721Z",
+      "mean_TDOA": -0.1935774891388889,
+      "occurrences": 12,
+      "variance_TDOA": 1.1428937992663264
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853533638Z",
+      "mean_TDOA": -0.1935229131805556,
+      "occurrences": 12,
+      "variance_TDOA": 1.1428827127938024
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853532804Z",
+      "mean_TDOA": -0.19354433748611113,
+      "occurrences": 12,
+      "variance_TDOA": 1.1428760778997376
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853528763Z",
+      "mean_TDOA": 0.4006721379027778,
+      "occurrences": 12,
+      "variance_TDOA": 5.921087826509212
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853530096Z",
+      "mean_TDOA": 0.4007029439305555,
+      "occurrences": 12,
+      "variance_TDOA": 5.921056856424288
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853535346Z",
+      "mean_TDOA": 0.40042947538888884,
+      "occurrences": 12,
+      "variance_TDOA": 5.920182107720903
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853531888Z",
+      "mean_TDOA": -0.19371465997222223,
+      "occurrences": 12,
+      "variance_TDOA": 1.142834678067318
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853526763Z",
+      "mean_TDOA": 0.19740880900000002,
+      "occurrences": 12,
+      "variance_TDOA": 2.17626635986236
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 12,
+      "created_at": "2024-12-21T10:31:20.853534471Z",
+      "mean_TDOA": 0.23301450220833336,
+      "occurrences": 12,
+      "variance_TDOA": 1.719469979867736
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863084721Z",
+      "mean_TDOA": 0.14602465378124999,
+      "occurrences": 16,
+      "variance_TDOA": 0.2754978314063097
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863085513Z",
+      "mean_TDOA": -0.06936700015625001,
+      "occurrences": 16,
+      "variance_TDOA": 2.519488496698684
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863070679Z",
+      "mean_TDOA": 0.14604527478125,
+      "occurrences": 16,
+      "variance_TDOA": 0.27549324330675573
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863078013Z",
+      "mean_TDOA": -0.06943244403125001,
+      "occurrences": 16,
+      "variance_TDOA": 2.5193185033369523
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 24,
+      "created_at": "2024-12-21T10:31:05.775409547Z",
+      "mean_TDOA": -0.323384475,
+      "occurrences": 24,
+      "variance_TDOA": 4.003329375595379
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 24,
+      "created_at": "2024-12-21T10:31:05.775363714Z",
+      "mean_TDOA": -0.32315187788194444,
+      "occurrences": 24,
+      "variance_TDOA": 4.004570120803224
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863081888Z",
+      "mean_TDOA": -0.06933184893749998,
+      "occurrences": 16,
+      "variance_TDOA": 2.519541461498678
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863077013Z",
+      "mean_TDOA": 0.14607952868750002,
+      "occurrences": 16,
+      "variance_TDOA": 0.2754922303421419
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863082763Z",
+      "mean_TDOA": -0.06957066518749999,
+      "occurrences": 16,
+      "variance_TDOA": 2.5191621091224436
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.863079554Z",
+      "mean_TDOA": 0.14584677612500002,
+      "occurrences": 16,
+      "variance_TDOA": 0.2754156604182173
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 24,
+      "created_at": "2024-12-21T10:31:05.77536288Z",
+      "mean_TDOA": -0.3231890945138888,
+      "occurrences": 24,
+      "variance_TDOA": 4.004064963147156
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895782096Z",
+      "mean_TDOA": 0.2962340048846154,
+      "occurrences": 13,
+      "variance_TDOA": 0.5336507421449651
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895753596Z",
+      "mean_TDOA": 0.29821093446153846,
+      "occurrences": 13,
+      "variance_TDOA": 2.2187067549531068
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.747865047Z",
+      "mean_TDOA": -0.19242300937301582,
+      "occurrences": 21,
+      "variance_TDOA": 3.4884659859892673
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.747867714Z",
+      "mean_TDOA": -0.19226992589682543,
+      "occurrences": 21,
+      "variance_TDOA": 3.489244738012184
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895757804Z",
+      "mean_TDOA": 0.29814580142307695,
+      "occurrences": 13,
+      "variance_TDOA": 2.218846131644516
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895790471Z",
+      "mean_TDOA": 0.2962681325384615,
+      "occurrences": 13,
+      "variance_TDOA": 0.5336276216667345
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895780263Z",
+      "mean_TDOA": 0.2980163593076923,
+      "occurrences": 13,
+      "variance_TDOA": 2.2189932508630617
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.74853938Z",
+      "mean_TDOA": -0.19219654488888888,
+      "occurrences": 21,
+      "variance_TDOA": 3.4896201646858334
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895778388Z",
+      "mean_TDOA": 0.2981887421153846,
+      "occurrences": 13,
+      "variance_TDOA": 2.21873365378537
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895788429Z",
+      "mean_TDOA": 0.29605074958974364,
+      "occurrences": 13,
+      "variance_TDOA": 0.5337926319302875
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.895775929Z",
+      "mean_TDOA": 0.2962152256153846,
+      "occurrences": 13,
+      "variance_TDOA": 0.533667168280354
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855825763Z",
+      "mean_TDOA": 0.25217222589999994,
+      "occurrences": 10,
+      "variance_TDOA": 7.159630126889675
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855802304Z",
+      "mean_TDOA": 0.39203515494999996,
+      "occurrences": 10,
+      "variance_TDOA": 0.797173760964658
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855851846Z",
+      "mean_TDOA": 0.2519934572,
+      "occurrences": 10,
+      "variance_TDOA": 7.158346769448099
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855844263Z",
+      "mean_TDOA": -0.34535966549999997,
+      "occurrences": 10,
+      "variance_TDOA": 0.9477065440942117
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855871638Z",
+      "mean_TDOA": 0.25223356135,
+      "occurrences": 10,
+      "variance_TDOA": 7.1598396194793485
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855832596Z",
+      "mean_TDOA": -0.3451954541999999,
+      "occurrences": 10,
+      "variance_TDOA": 0.9478799293877626
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855858096Z",
+      "mean_TDOA": 0.34930246890000005,
+      "occurrences": 10,
+      "variance_TDOA": 1.3867631343538727
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855846971Z",
+      "mean_TDOA": 0.25226226129999996,
+      "occurrences": 10,
+      "variance_TDOA": 7.159828237989636
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855829054Z",
+      "mean_TDOA": -0.3452278681666667,
+      "occurrences": 10,
+      "variance_TDOA": 0.9478820567218451
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.855835138Z",
+      "mean_TDOA": -0.3451747486,
+      "occurrences": 10,
+      "variance_TDOA": 0.947916052758375
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843510721Z",
+      "mean_TDOA": 0.13974067005,
+      "occurrences": 10,
+      "variance_TDOA": 1.153297728196716
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843508638Z",
+      "mean_TDOA": -0.31845119650000003,
+      "occurrences": 10,
+      "variance_TDOA": 1.530397272607368
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843506221Z",
+      "mean_TDOA": -0.31856639368333334,
+      "occurrences": 10,
+      "variance_TDOA": 1.530189186022014
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843502179Z",
+      "mean_TDOA": 0.18982427021666667,
+      "occurrences": 10,
+      "variance_TDOA": 6.875737512975119
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843504304Z",
+      "mean_TDOA": 0.18960402446666666,
+      "occurrences": 10,
+      "variance_TDOA": 6.874270060967588
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843511596Z",
+      "mean_TDOA": 0.18975085001666667,
+      "occurrences": 10,
+      "variance_TDOA": 6.875477168189169
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843505221Z",
+      "mean_TDOA": 0.29429588619999997,
+      "occurrences": 10,
+      "variance_TDOA": 1.1982773502067363
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843507179Z",
+      "mean_TDOA": -0.3183964198666666,
+      "occurrences": 10,
+      "variance_TDOA": 1.5303708061223202
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.843499846Z",
+      "mean_TDOA": -0.3184186102666666,
+      "occurrences": 10,
+      "variance_TDOA": 1.5303625970271169
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820143638Z",
+      "mean_TDOA": 0.16308149373076924,
+      "occurrences": 13,
+      "variance_TDOA": 0.2441376940421003
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.752897589Z",
+      "mean_TDOA": -0.27162198784126984,
+      "occurrences": 21,
+      "variance_TDOA": 3.9347993002292982
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.752895547Z",
+      "mean_TDOA": -0.27177964395238097,
+      "occurrences": 21,
+      "variance_TDOA": 3.9336728283045734
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 21,
+      "created_at": "2024-12-21T10:31:05.752882714Z",
+      "mean_TDOA": -0.27158718825396827,
+      "occurrences": 21,
+      "variance_TDOA": 3.9348120889959697
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820150888Z",
+      "mean_TDOA": -0.03192527498717949,
+      "occurrences": 13,
+      "variance_TDOA": 2.392186819945713
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820141554Z",
+      "mean_TDOA": -0.032007819410256384,
+      "occurrences": 13,
+      "variance_TDOA": 2.392052623332441
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820137721Z",
+      "mean_TDOA": -0.032154835833333346,
+      "occurrences": 13,
+      "variance_TDOA": 2.3920387167988135
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820157804Z",
+      "mean_TDOA": 0.16303751765384614,
+      "occurrences": 13,
+      "variance_TDOA": 0.2441641622313022
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820152846Z",
+      "mean_TDOA": 0.16301157696153845,
+      "occurrences": 13,
+      "variance_TDOA": 0.2441796855811826
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820155763Z",
+      "mean_TDOA": 0.16281360734615383,
+      "occurrences": 13,
+      "variance_TDOA": 0.24428441727921565
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 13,
+      "created_at": "2024-12-21T10:31:20.820146721Z",
+      "mean_TDOA": -0.03195278524358976,
+      "occurrences": 13,
+      "variance_TDOA": 2.392151979950503
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 25,
+      "created_at": "2024-12-21T10:31:05.741295797Z",
+      "mean_TDOA": -0.20646939521999996,
+      "occurrences": 25,
+      "variance_TDOA": 3.973616152521731
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855009763Z",
+      "mean_TDOA": 0.2029389197352942,
+      "occurrences": 17,
+      "variance_TDOA": 9.162070106888374
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855018888Z",
+      "mean_TDOA": 0.07580224994117646,
+      "occurrences": 17,
+      "variance_TDOA": 1.2329758107003235
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855012513Z",
+      "mean_TDOA": 0.16670236938235292,
+      "occurrences": 17,
+      "variance_TDOA": 1.5743715265128564
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855034554Z",
+      "mean_TDOA": 0.20291580811764703,
+      "occurrences": 17,
+      "variance_TDOA": 9.162151393857147
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 25,
+      "created_at": "2024-12-21T10:31:05.741289005Z",
+      "mean_TDOA": -0.20643483752,
+      "occurrences": 25,
+      "variance_TDOA": 3.973549843739181
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 25,
+      "created_at": "2024-12-21T10:31:05.741287422Z",
+      "mean_TDOA": -0.20639762292000002,
+      "occurrences": 25,
+      "variance_TDOA": 3.9739610665684473
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855024388Z",
+      "mean_TDOA": 0.202869324,
+      "occurrences": 17,
+      "variance_TDOA": 9.162033898185282
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 17,
+      "created_at": "2024-12-21T10:31:20.855017429Z",
+      "mean_TDOA": 0.2027283217058823,
+      "occurrences": 17,
+      "variance_TDOA": 9.160857022921414
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852438221Z",
+      "mean_TDOA": -0.38605460315,
+      "occurrences": 10,
+      "variance_TDOA": 0.9041853187867019
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;feb01bd5-d969-4c59-8c65-41163aed5b0c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852461804Z",
+      "mean_TDOA": 0.03137173534999999,
+      "occurrences": 10,
+      "variance_TDOA": 2.009329568901351
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852443554Z",
+      "mean_TDOA": -0.38601757058333336,
+      "occurrences": 10,
+      "variance_TDOA": 0.9042250556045128
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852463763Z",
+      "mean_TDOA": 0.32699684390000006,
+      "occurrences": 10,
+      "variance_TDOA": 1.3637087808661668
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852445679Z",
+      "mean_TDOA": -0.38599262176666665,
+      "occurrences": 10,
+      "variance_TDOA": 0.9042512138565859
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;bde982bc-a58d-41b5-a7ca-8b307768f580",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852465763Z",
+      "mean_TDOA": 0.10330810615000001,
+      "occurrences": 10,
+      "variance_TDOA": 0.34885106715439007
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852456304Z",
+      "mean_TDOA": 0.0313354438,
+      "occurrences": 10,
+      "variance_TDOA": 2.0093013993761226
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852458388Z",
+      "mean_TDOA": -0.38621996508333334,
+      "occurrences": 10,
+      "variance_TDOA": 0.9041429134238979
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;21a2cac1-7aaa-4766-b517-d404fa949084",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852450554Z",
+      "mean_TDOA": 0.03105148970000003,
+      "occurrences": 10,
+      "variance_TDOA": 2.009167449526784
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852447804Z",
+      "mean_TDOA": 0.32694797295,
+      "occurrences": 10,
+      "variance_TDOA": 1.3636999938608256
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;f084070f-6f60-444c-af3e-1ebd3aa997aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_occurrences": 10,
+      "created_at": "2024-12-21T10:31:20.852452638Z",
+      "mean_TDOA": 0.03126156245,
+      "occurrences": 10,
+      "variance_TDOA": 2.009246635890128
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 11,
+      "created_at": "2024-12-21T10:31:20.853527888Z",
+      "mean_TDOA": 0.2643486931818182,
+      "occurrences": 12,
+      "variance_TDOA": 1.58072253731423
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 11,
+      "created_at": "2024-12-21T10:31:20.853536429Z",
+      "mean_TDOA": 0.2645250852272727,
+      "occurrences": 12,
+      "variance_TDOA": 1.5808008332959924
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.855020263Z",
+      "mean_TDOA": 0.11430948312499997,
+      "occurrences": 17,
+      "variance_TDOA": 0.8283617192322289
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 16,
+      "created_at": "2024-12-21T10:31:20.855033304Z",
+      "mean_TDOA": 0.11412913275,
+      "occurrences": 17,
+      "variance_TDOA": 0.828312876362774
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.855849429Z",
+      "mean_TDOA": 0.4480505718888888,
+      "occurrences": 10,
+      "variance_TDOA": 0.5052123787596474
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;caf705ce-cd18-4254-a76d-9feb31a11840",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.843512679Z",
+      "mean_TDOA": 0.21517593901851853,
+      "occurrences": 10,
+      "variance_TDOA": 0.6379445073842401
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:20.843509763Z",
+      "mean_TDOA": 0.21535409644444445,
+      "occurrences": 10,
+      "variance_TDOA": 0.6378408634802137
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.001867804Z",
+      "mean_TDOA": -0.541402792,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.950962846Z",
+      "mean_TDOA": -0.11542717350000009,
+      "occurrences": 10,
+      "variance_TDOA": 2.5087803709183953
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.001880304Z",
+      "mean_TDOA": 0.000023084,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.001881929Z",
+      "mean_TDOA": 0.00000425,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.001882721Z",
+      "mean_TDOA": -0.000029625,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.001884346Z",
+      "mean_TDOA": -0.000247375,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.950984638Z",
+      "mean_TDOA": -0.50205473275,
+      "occurrences": 10,
+      "variance_TDOA": 1.0760758478178067
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.950960846Z",
+      "mean_TDOA": -0.50195347225,
+      "occurrences": 10,
+      "variance_TDOA": 1.076073678094296
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.889456763Z",
+      "mean_TDOA": -1.235169771,
+      "occurrences": 9,
+      "variance_TDOA": 1.1666478688196792E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.889442388Z",
+      "mean_TDOA": -1.2353123959999999,
+      "occurrences": 9,
+      "variance_TDOA": 1.166647868821288E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.889446221Z",
+      "mean_TDOA": -1.235210396,
+      "occurrences": 9,
+      "variance_TDOA": 1.1666478688196792E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.887844929Z",
+      "mean_TDOA": -1.2355382295,
+      "occurrences": 10,
+      "variance_TDOA": 4.5515340499487526E-11
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.887846804Z",
+      "mean_TDOA": -1.2353956044999999,
+      "occurrences": 10,
+      "variance_TDOA": 4.5515340499487526E-11
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "caf705ce-cd18-4254-a76d-9feb31a11840;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.887879554Z",
+      "mean_TDOA": -1.2354362294999999,
+      "occurrences": 10,
+      "variance_TDOA": 4.5515340499487526E-11
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033427388Z",
+      "mean_TDOA": 0.23143636749999996,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033429679Z",
+      "mean_TDOA": -0.000266959,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033430763Z",
+      "mean_TDOA": 1.004548861,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033436679Z",
+      "mean_TDOA": 0.23153688849999998,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033437721Z",
+      "mean_TDOA": 0.0000035,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033447263Z",
+      "mean_TDOA": -0.541422376,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033449596Z",
+      "mean_TDOA": -0.000015334,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:21.033451346Z",
+      "mean_TDOA": -0.000049209,
+      "occurrences": 10,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741299797Z",
+      "mean_TDOA": 0.37821814183333335,
+      "occurrences": 25,
+      "variance_TDOA": 1.0156026336577182
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741285964Z",
+      "mean_TDOA": 0.2919219805,
+      "occurrences": 25,
+      "variance_TDOA": 0.5783650550288936
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741301839Z",
+      "mean_TDOA": 0.7109352015555557,
+      "occurrences": 25,
+      "variance_TDOA": 0.5754169007096102
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741294422Z",
+      "mean_TDOA": 0.29210564511111115,
+      "occurrences": 25,
+      "variance_TDOA": 0.5785360531180636
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741297297Z",
+      "mean_TDOA": 0.2062428957777778,
+      "occurrences": 25,
+      "variance_TDOA": 1.2031046706897888
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741290339Z",
+      "mean_TDOA": 0.7109849122222222,
+      "occurrences": 25,
+      "variance_TDOA": 0.5754754505501811
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741284505Z",
+      "mean_TDOA": 0.7108876390555556,
+      "occurrences": 25,
+      "variance_TDOA": 0.5753940403549934
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.741293089Z",
+      "mean_TDOA": 0.7106453843888889,
+      "occurrences": 25,
+      "variance_TDOA": 0.5753352551292775
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747869922Z",
+      "mean_TDOA": 0.799526023875,
+      "occurrences": 21,
+      "variance_TDOA": 0.006936916799198744
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.748543339Z",
+      "mean_TDOA": 0.2996488073125,
+      "occurrences": 21,
+      "variance_TDOA": 0.5729673825088479
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747874297Z",
+      "mean_TDOA": 0.799579594125,
+      "occurrences": 21,
+      "variance_TDOA": 0.006945841982233429
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747879755Z",
+      "mean_TDOA": 0.2992046875,
+      "occurrences": 21,
+      "variance_TDOA": 0.5731099042111555
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747877672Z",
+      "mean_TDOA": 0.29939874506249997,
+      "occurrences": 21,
+      "variance_TDOA": 0.5732694319901009
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.748548422Z",
+      "mean_TDOA": 0.7994767504375,
+      "occurrences": 21,
+      "variance_TDOA": 0.006936002383986631
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.748553922Z",
+      "mean_TDOA": 0.7992314326875,
+      "occurrences": 21,
+      "variance_TDOA": 0.006917276257917979
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "650376e1-3588-4d82-8242-f2d4a07ff368;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747872464Z",
+      "mean_TDOA": 0.29942306012500003,
+      "occurrences": 21,
+      "variance_TDOA": 0.5732563013679478
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752874089Z",
+      "mean_TDOA": 0.7993954274374999,
+      "occurrences": 21,
+      "variance_TDOA": 0.006919237662826925
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752901589Z",
+      "mean_TDOA": 0.799498271125,
+      "occurrences": 21,
+      "variance_TDOA": 0.006928940296179874
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752869214Z",
+      "mean_TDOA": 0.29931742206249995,
+      "occurrences": 21,
+      "variance_TDOA": 0.5727314645089632
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752893339Z",
+      "mean_TDOA": 0.2991233645,
+      "occurrences": 21,
+      "variance_TDOA": 0.5725720127231907
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752887047Z",
+      "mean_TDOA": 0.299341737125,
+      "occurrences": 21,
+      "variance_TDOA": 0.5727183432687489
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752899672Z",
+      "mean_TDOA": 0.29956748431249997,
+      "occurrences": 21,
+      "variance_TDOA": 0.5724296249511336
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752889339Z",
+      "mean_TDOA": 0.7991501096875,
+      "occurrences": 21,
+      "variance_TDOA": 0.006900912114410937
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d7153d19-be57-4137-8bea-7f418628fb6d;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.752884797Z",
+      "mean_TDOA": 0.799444700875,
+      "occurrences": 21,
+      "variance_TDOA": 0.006920127433475479
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.913287304Z",
+      "mean_TDOA": -1.235210396,
+      "occurrences": 8,
+      "variance_TDOA": 2.3283093632022326E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.913274929Z",
+      "mean_TDOA": -1.235251021,
+      "occurrences": 8,
+      "variance_TDOA": 2.3283093632022326E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "21a2cac1-7aaa-4766-b517-d404fa949084;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.913265096Z",
+      "mean_TDOA": -1.2353530209999999,
+      "occurrences": 8,
+      "variance_TDOA": 2.3283093631998368E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775360547Z",
+      "mean_TDOA": 0.29968658843749996,
+      "occurrences": 24,
+      "variance_TDOA": 0.5729820582281433
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775411464Z",
+      "mean_TDOA": 0.2994365261875,
+      "occurrences": 24,
+      "variance_TDOA": 0.5732841377162259
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775408714Z",
+      "mean_TDOA": 0.7992692138124998,
+      "occurrences": 24,
+      "variance_TDOA": 0.006915785439140424
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775364589Z",
+      "mean_TDOA": 0.799563805,
+      "occurrences": 24,
+      "variance_TDOA": 0.006935447914989933
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775418464Z",
+      "mean_TDOA": 0.7995145315625001,
+      "occurrences": 24,
+      "variance_TDOA": 0.006934531534711474
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775410589Z",
+      "mean_TDOA": 0.29924246862500004,
+      "occurrences": 24,
+      "variance_TDOA": 0.5731246059587799
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775407047Z",
+      "mean_TDOA": 0.29946084124999994,
+      "occurrences": 24,
+      "variance_TDOA": 0.5732710056424137
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3a8bd267-8532-4f40-9b89-ee81f5219333;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.775362005Z",
+      "mean_TDOA": 0.79961737525,
+      "occurrences": 24,
+      "variance_TDOA": 0.006944378938854386
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:20.972231804Z",
+      "mean_TDOA": -0.000280167,
+      "occurrences": 12,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:20.972300763Z",
+      "mean_TDOA": -0.541435584,
+      "occurrences": 12,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:20.972303346Z",
+      "mean_TDOA": -0.000062417,
+      "occurrences": 12,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:20.972319221Z",
+      "mean_TDOA": -0.000009708,
+      "occurrences": 12,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 1,
+      "created_at": "2024-12-21T10:31:20.972320013Z",
+      "mean_TDOA": -0.000028542,
+      "occurrences": 12,
+      "variance_TDOA": 0
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.972318346Z",
+      "mean_TDOA": -0.50195009725,
+      "occurrences": 12,
+      "variance_TDOA": 1.0759675652937128
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.972321721Z",
+      "mean_TDOA": -0.5020513577500001,
+      "occurrences": 12,
+      "variance_TDOA": 1.075969734910241
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 2,
+      "created_at": "2024-12-21T10:31:20.972304763Z",
+      "mean_TDOA": -0.11542379849999995,
+      "occurrences": 12,
+      "variance_TDOA": 2.5086183460083618
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.737803797Z",
+      "mean_TDOA": -0.2991873905,
+      "occurrences": 9,
+      "variance_TDOA": 0.5741247999446127
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.738391672Z",
+      "mean_TDOA": -0.299465117,
+      "occurrences": 9,
+      "variance_TDOA": 0.5741632227833416
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.73839613Z",
+      "mean_TDOA": -0.2992468828125,
+      "occurrences": 9,
+      "variance_TDOA": 0.5741279720668813
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.738415797Z",
+      "mean_TDOA": -0.299283575375,
+      "occurrences": 9,
+      "variance_TDOA": 0.5741204236719338
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.74697563Z",
+      "mean_TDOA": -0.299646914125,
+      "occurrences": 9,
+      "variance_TDOA": 0.5740432741183995
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.746978547Z",
+      "mean_TDOA": -0.29946537250000005,
+      "occurrences": 9,
+      "variance_TDOA": 0.5740003902989256
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.746959839Z",
+      "mean_TDOA": -0.29942867993749994,
+      "occurrences": 9,
+      "variance_TDOA": 0.574007935834373
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.746973464Z",
+      "mean_TDOA": -0.299369187625,
+      "occurrences": 9,
+      "variance_TDOA": 0.5740047243105302
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747274922Z",
+      "mean_TDOA": -0.2996776693125,
+      "occurrences": 9,
+      "variance_TDOA": 0.5737475702713289
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747272964Z",
+      "mean_TDOA": -0.29989590349999995,
+      "occurrences": 9,
+      "variance_TDOA": 0.5737825765592539
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747283839Z",
+      "mean_TDOA": -0.299714361875,
+      "occurrences": 9,
+      "variance_TDOA": 0.5737399982821294
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747270964Z",
+      "mean_TDOA": -0.299618177,
+      "occurrences": 9,
+      "variance_TDOA": 0.573744498653604
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747229589Z",
+      "mean_TDOA": -0.29948947662500003,
+      "occurrences": 9,
+      "variance_TDOA": 0.5739857371067542
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747233672Z",
+      "mean_TDOA": -0.29939329175,
+      "occurrences": 9,
+      "variance_TDOA": 0.5739900787146256
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747234672Z",
+      "mean_TDOA": -0.29967101825,
+      "occurrences": 9,
+      "variance_TDOA": 0.574028607582527
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 8,
+      "created_at": "2024-12-21T10:31:05.747235839Z",
+      "mean_TDOA": -0.2994527840625,
+      "occurrences": 9,
+      "variance_TDOA": 0.5739932839285393
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73841313Z",
+      "mean_TDOA": 0.0001958381111111111,
+      "occurrences": 9,
+      "variance_TDOA": 6.391837272688888E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.738432422Z",
+      "mean_TDOA": -0.29204084105555556,
+      "occurrences": 9,
+      "variance_TDOA": 0.5784243095836789
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.738400255Z",
+      "mean_TDOA": -0.29175102388888896,
+      "occurrences": 9,
+      "variance_TDOA": 0.578503200653891
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73840563Z",
+      "mean_TDOA": -0.29170131322222226,
+      "occurrences": 9,
+      "variance_TDOA": 0.5785612543001251
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73844038Z",
+      "mean_TDOA": 0.0003987685555555556,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000024008748833182225
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.738419297Z",
+      "mean_TDOA": 0.0001729307777777778,
+      "occurrences": 9,
+      "variance_TDOA": 5.560906744555556E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73842213Z",
+      "mean_TDOA": -0.2917985863888889,
+      "occurrences": 9,
+      "variance_TDOA": 0.5784804660558603
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746985589Z",
+      "mean_TDOA": -0.29192395466666665,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783973508306931
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746966672Z",
+      "mean_TDOA": 0.00022583777777777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000023571138093655556
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746983422Z",
+      "mean_TDOA": -0.29197151716666664,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783746307425437
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746981172Z",
+      "mean_TDOA": -0.0001729307777777778,
+      "occurrences": 9,
+      "variance_TDOA": 5.560906744555555E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746971297Z",
+      "mean_TDOA": 0.000022907333333333333,
+      "occurrences": 9,
+      "variance_TDOA": 4.283352384000002E-9
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746964297Z",
+      "mean_TDOA": -0.29221377183333325,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783186091834364
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.746968589Z",
+      "mean_TDOA": -0.291874244,
+      "occurrences": 9,
+      "variance_TDOA": 0.5784553595835121
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737729047Z",
+      "mean_TDOA": -0.7968644886666667,
+      "occurrences": 9,
+      "variance_TDOA": 1.2010727761190287
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737722339Z",
+      "mean_TDOA": 0.2917028602777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.5771916809755753
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737717214Z",
+      "mean_TDOA": 0.29190955027777776,
+      "occurrences": 9,
+      "variance_TDOA": 0.5773507574122885
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73772538Z",
+      "mean_TDOA": 0.00006927311111111111,
+      "occurrences": 9,
+      "variance_TDOA": 1.0460987193088888E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73772638Z",
+      "mean_TDOA": -0.00035918988888888887,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000014875160928008888
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737723422Z",
+      "mean_TDOA": -0.79659941,
+      "occurrences": 9,
+      "variance_TDOA": 1.2022096123712502
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737728005Z",
+      "mean_TDOA": -0.7964621300000001,
+      "occurrences": 9,
+      "variance_TDOA": 1.202784275851333
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737724172Z",
+      "mean_TDOA": -0.7965611462777777,
+      "occurrences": 9,
+      "variance_TDOA": 1.202234729086719
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737727172Z",
+      "mean_TDOA": -0.000052268555555555554,
+      "occurrences": 9,
+      "variance_TDOA": 6.16773568022222E-9
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737719172Z",
+      "mean_TDOA": 0.2921128441111111,
+      "occurrences": 9,
+      "variance_TDOA": 0.5770862365273955
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.737721547Z",
+      "mean_TDOA": 0.29188652488888883,
+      "occurrences": 9,
+      "variance_TDOA": 0.5773624886568895
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740827839Z",
+      "mean_TDOA": -0.000428463,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000023684280899580004
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740817547Z",
+      "mean_TDOA": -0.7969337617777777,
+      "occurrences": 9,
+      "variance_TDOA": 1.2005200706924584
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740824672Z",
+      "mean_TDOA": -0.7966686831111112,
+      "occurrences": 9,
+      "variance_TDOA": 1.201656459207978
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74081613Z",
+      "mean_TDOA": -0.796531403111111,
+      "occurrences": 9,
+      "variance_TDOA": 1.2022308988640509
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74082688Z",
+      "mean_TDOA": -0.7966304193888889,
+      "occurrences": 9,
+      "variance_TDOA": 1.2016815659248912
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740809297Z",
+      "mean_TDOA": 0.292043571,
+      "occurrences": 9,
+      "variance_TDOA": 0.5766104281263573
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740812255Z",
+      "mean_TDOA": 0.2918172517777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.5768865395078913
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740810297Z",
+      "mean_TDOA": -0.0000692731111111111,
+      "occurrences": 9,
+      "variance_TDOA": 1.0460987193088888E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74081513Z",
+      "mean_TDOA": 0.29163358716666665,
+      "occurrences": 9,
+      "variance_TDOA": 0.5767158100317981
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740807172Z",
+      "mean_TDOA": 0.2918402771666666,
+      "occurrences": 9,
+      "variance_TDOA": 0.5768748143707384
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740829547Z",
+      "mean_TDOA": -0.00012154166666666666,
+      "occurrences": 9,
+      "variance_TDOA": 1.5610783714E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745721964Z",
+      "mean_TDOA": -0.000022907333333333333,
+      "occurrences": 9,
+      "variance_TDOA": 4.283352384E-9
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745720047Z",
+      "mean_TDOA": -0.0001958381111111111,
+      "occurrences": 9,
+      "variance_TDOA": 6.39183727268889E-8
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745710755Z",
+      "mean_TDOA": -0.2919944244999999,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783632063872257
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745714922Z",
+      "mean_TDOA": -0.2922366791666667,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783071686514167
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745708547Z",
+      "mean_TDOA": -0.29194686200000003,
+      "occurrences": 9,
+      "variance_TDOA": 0.5783859282999646
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745717255Z",
+      "mean_TDOA": 0.00020293044444444442,
+      "occurrences": 9,
+      "variance_TDOA": 0.000002164776756890222
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4523491d-cd27-49e0-89ff-86fe56e77d70;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.745703922Z",
+      "mean_TDOA": -0.2918971513333333,
+      "occurrences": 9,
+      "variance_TDOA": 0.5784439404299604
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736816422Z",
+      "mean_TDOA": -0.7965052987777778,
+      "occurrences": 9,
+      "variance_TDOA": 1.2030606648148303
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736818255Z",
+      "mean_TDOA": -0.7962402201111111,
+      "occurrences": 9,
+      "variance_TDOA": 1.2041992095583423
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73682213Z",
+      "mean_TDOA": 0.00030692133333333336,
+      "occurrences": 9,
+      "variance_TDOA": 0.000001316685612596
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73680913Z",
+      "mean_TDOA": 0.2922457147777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.5791894065276288
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.73679313Z",
+      "mean_TDOA": 0.00035918988888888887,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000014875160928008892
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736801839Z",
+      "mean_TDOA": 0.000428463,
+      "occurrences": 9,
+      "variance_TDOA": 0.000002368428089958
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736803797Z",
+      "mean_TDOA": -0.7961029401111112,
+      "occurrences": 9,
+      "variance_TDOA": 1.2047747182268604
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736813464Z",
+      "mean_TDOA": -0.7962019563888889,
+      "occurrences": 9,
+      "variance_TDOA": 1.2042243635719845
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736805714Z",
+      "mean_TDOA": 0.2920620501666667,
+      "occurrences": 9,
+      "variance_TDOA": 0.5790183175159467
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736811214Z",
+      "mean_TDOA": 0.29226874016666665,
+      "occurrences": 9,
+      "variance_TDOA": 0.5791776477511109
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "d07ad010-acd1-4e5a-a121-e584dc791d38;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.736799714Z",
+      "mean_TDOA": 0.29247203399999994,
+      "occurrences": 9,
+      "variance_TDOA": 0.5789125161323537
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74728188Z",
+      "mean_TDOA": -0.29214979244444444,
+      "occurrences": 9,
+      "variance_TDOA": 0.5781752521502693
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.747285714Z",
+      "mean_TDOA": -0.00020293044444444447,
+      "occurrences": 9,
+      "variance_TDOA": 0.000002164776756890222
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74728838Z",
+      "mean_TDOA": -0.0003987685555555556,
+      "occurrences": 9,
+      "variance_TDOA": 0.000002400874883318222
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.747279964Z",
+      "mean_TDOA": -0.2924396096111111,
+      "occurrences": 9,
+      "variance_TDOA": 0.5780960936249394
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.747265505Z",
+      "mean_TDOA": -0.2921000817777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.5782333390475856
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.747268589Z",
+      "mean_TDOA": -0.2921973549444445,
+      "occurrences": 9,
+      "variance_TDOA": 0.578152482065203
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.74727813Z",
+      "mean_TDOA": -0.00022583777777777778,
+      "occurrences": 9,
+      "variance_TDOA": 0.000002357113809365556
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "588917d7-e02b-41b5-9c65-7e4a5d09dc24",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740429922Z",
+      "mean_TDOA": -0.7968122201111111,
+      "occurrences": 9,
+      "variance_TDOA": 1.2012067086182123
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;3a8bd267-8532-4f40-9b89-ee81f5219333",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "3a8bd267-8532-4f40-9b89-ee81f5219333",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740433672Z",
+      "mean_TDOA": -0.7965471414444445,
+      "occurrences": 9,
+      "variance_TDOA": 1.2023436444853224
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;650376e1-3588-4d82-8242-f2d4a07ff368",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "650376e1-3588-4d82-8242-f2d4a07ff368",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740420214Z",
+      "mean_TDOA": -0.7965088777222223,
+      "occurrences": 9,
+      "variance_TDOA": 1.2023687641116885
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740453589Z",
+      "mean_TDOA": 0.2917551288333333,
+      "occurrences": 9,
+      "variance_TDOA": 0.5772974596014436
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;4523491d-cd27-49e0-89ff-86fe56e77d70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740461755Z",
+      "mean_TDOA": 0.29196181883333333,
+      "occurrences": 9,
+      "variance_TDOA": 0.5774565548576021
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;d07ad010-acd1-4e5a-a121-e584dc791d38",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740436172Z",
+      "mean_TDOA": -0.00030692133333333336,
+      "occurrences": 9,
+      "variance_TDOA": 0.0000013166856125959996
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740438547Z",
+      "mean_TDOA": 0.000052268555555555554,
+      "occurrences": 9,
+      "variance_TDOA": 6.167735680222222E-9
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;d7153d19-be57-4137-8bea-7f418628fb6d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "d7153d19-be57-4137-8bea-7f418628fb6d",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740451047Z",
+      "mean_TDOA": -0.7964098614444444,
+      "occurrences": 9,
+      "variance_TDOA": 1.202918357945969
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;77ebf931-28cc-424e-93be-3d4aadbbd62b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740456214Z",
+      "mean_TDOA": 0.2919387934444444,
+      "occurrences": 9,
+      "variance_TDOA": 0.5774682885969047
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;3670a38a-e53c-47c9-88c6-30064d79e9e3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740448422Z",
+      "mean_TDOA": 0.00012154166666666666,
+      "occurrences": 9,
+      "variance_TDOA": 1.5610783714000004E-7
+    }
+  },
+  {
+    "_index": "count_index",
+    "_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d;c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "co_cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "co_occurrences": 9,
+      "created_at": "2024-12-21T10:31:05.740445172Z",
+      "mean_TDOA": 0.29216511266666667,
+      "occurrences": 9,
+      "variance_TDOA": 0.5771919713559942
+    }
+  }
+]

@@ -1,0 +1,2095 @@
+[
+  {
+    "_index": "log_index",
+    "_id": "679c26e908c175fe5ca8b1350298f829b9276c3c6aa51c010c06cc59054d7da5",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.838774042Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:50.764007804Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "dbe6a7f7f510f8cfcf39711d35eb8cd4ad7286e2a13d8c69e8ae3b8d87d5d6a6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:44.843214135Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.093396133Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a40eada515fe1213b54f3c768f835993c4e700d2e37e43b998d01f8f5312a5bc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:44.843297801Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:42.726704467Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "22a06c9fd7791ea8058cb0eebb2c1ada9f43ae68f42c7ba6f7eb08686105de9a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.83881875Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:53.886841875Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "dbc74cb999fccee8061088bc64199971b7ea46a20861902b042abbcb2155a9e7",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:44.843217093Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:41.093429966Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "27dd131534268745e05dbb1d53c7e5db8ed48232b623f77e199e2881f4a18cb2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:44.843233385Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.724926383Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "4dc162ae462e8aeb3bcba14d9604ac131b362e171ab35a7335aeed4d6171bcb1",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:44.843167676Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:40.089530841Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3aaaf24a2265a5cfef5868b0a54d9681b89679707fe12f5db6c82cc1c7fa76a6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:54.838737625Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:47.473786511Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "365b7ada01a88b8ed86e28ab29f8b72a4ee2650f6a5250bca74ed7c95b20264f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:54.838697417Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:45.891413052Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "349ed95838a5cc5871a8adfe7232766abbe4a9227e584d401c249e6d6c6a5337",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:54.838744167Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:48.02638922Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "52e5202e39548fb8767c2613f84a8c786a14d37886769e0926225a19432c916a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:54.838736084Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:47.473748094Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2cf211269155baa7bd2088b0738fda9dc255f77010b3437ed4fedc3a5094cb87",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:44.843293093Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:42.72645705Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5123667ab05c967ff66313f13ebba09ecc0daf9b6fda3955f1dfc23c1212096a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:54.83879625Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.341013263Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "1c0e0b928f739c66cf4824333de09fdb513ffc2d01013eda303c94949acf3d97",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:54.838795084Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:52.34100118Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ea2a317914e837cdf149fb96ed796e8d4b50ade48df44f03d471d2062d7e584c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:44.843223551Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.724717133Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e0a94d3fbbe8a4e2fde2c9146098cb9d9bc3efd31a45978d7dd98ddf8962bdad",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:44.843332135Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:44.281625259Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "15bf6e08243d43308eeadbca9f29708f86fd206faf49f9011247244bd63c45f1",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.8387585Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.761891012Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "fef20b14d4e31a2b0673fe865b512cfbc8185e12615d5466dd369a4d66705a63",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:54.838757084Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.761700595Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a7998e7328c71026f45e6d54260ffe2d27c7a76c57447c809cb55b9901a90e53",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838679125Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.890508843Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "9bda185547f4a19e7768e710633c4813a437a9509e2d33b111a3ac966529be61",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:54.838750834Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.027587512Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "1da76f0afaf338cea39258a4b43f8c427927534ae5b17554938c2606c6b6a0d1",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:44.843230801Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.724899383Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "cb872c6ecdfbbe00633565f2efc052c29946954edb32c8ab327684895de8d2d9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:44.843329718Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.281608468Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "89e039d63387543949a4ff035b76ddf3ae4d687c5083f9fe52289e64be253eb8",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:54.838663084Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.890232885Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "db5279d0c0652dd0eea36044e861b9a02cd5c0fc5ccb807e2ec3912cd3af9e2e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:54.838781542Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:51.336364138Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7304dd9acc07f0afa1a3837643311edb32e50b39b2a578d832ef414c03b2d320",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:54.838760084Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.761934054Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b4988037219ad50acb39f4266d62bd75669cdb8c0020eb807a9463133b5dda70",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838705334Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:46.470912594Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3c1c0f702f5515c6cb3f013cdf063c3bb4e7fab1661681b3c55b8f773727ed92",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:54.838779917Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:50.764302804Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "40d07971bbfcc111755a9d21c4468a61668c0f62eb8b093f553fc43bc52d304f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838761375Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.762008845Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ff26f6f20f4c5a02f0e8fcb94e9d9ff221a0baccf1da7fdeca31ddb090091d14",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:44.843295676Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:42.72662155Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2078ab8d73a5badea44d735f747cc57522a551b6fde5d9095050526be8e6f77e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838745417Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:48.026413261Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5352f21df1514ee196f72c5f0277fa84965b730a955f825a0c71702f389af657",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:54.838740917Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:48.02621122Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "25b812863d8dd7331805dc363e51853c0bab6f66229610c74bf22f746c6d9031",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:44.843210551Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:41.093380675Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7594b1f597f697899daba87a97096827a8261a1732fc01b96c6e229c00bcd8d5",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:54.838822209Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:53.886943875Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "65e8ae2e72954f0e2e44a06e73b203f7721ca6315f88b24e36c584cf16849dd2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:44.84331251Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:43.279512926Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "1c3fcbb05610dd66759dbe7424f61d860d795692fc89cb311ea4ff40820b30cd",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:54.838786292Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:51.336680513Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5f679c74f422d1a44ec2c5df2b056bd8bd56e3072a9ab8d1d56f8db1aa77b722",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:44.843302801Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:42.728294342Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5477b7218111e6e19d93ea71b2d189923b802bde621d528c783ce55c959d5c20",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:44.84315451Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:40.088030507Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2a3db35ab661a546dd298ed31f3fc236528b52ffaf437e242888b5b4cb51ef2e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:54.838734667Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:47.473726803Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "0aba7b87605d57a5faf498988c650091ca8246c8f21a20c78ea6a571db0ecafa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:44.843227051Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.724857633Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "77deb6eb0f69ed73ffb24f582ceda81bae00d107ec96bb5bca4aa6dbdbe1852b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838813417Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.882439139Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ba7bd59e43670c3198788d1e477b01e6548707533c1b1d8f636920d35fc370ce",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.838747959Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:49.027475345Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "f27a4036211e99778492e5256b9323a652e8283519cc829c59518c3063d803c2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:44.843327343Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:44.281599593Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "0d95bc02dfdf5644a1f5b6f3bdd8d0e3593c07821285723781c25068e1f7846b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.838692084Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:45.891137427Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e17260d1d87ceb2717516eb605d392b2b0f2bf7cc25eb0e3f39893a65dcc4a55",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:54.838699209Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:45.891459552Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2892c347810c768727c8e5cf0481eea644c3f5ad005dfb5f5a9b6122ee14826a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:54.8387495Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:49.027577053Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "93359d940db0c49f656911e8357f507afed11988a98a6894665592b8d4d83fd0",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:54.838787959Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:51.33670868Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "04b67fdf176b040c061c150b2ea98f420f313e87dff617cfa9c46bc76751444a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.838665167Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.89043876Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ddfd4c82fe234592925aa5c33130ffed0e267ac0a47f44e37fe98934fdfd7931",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:54.838676167Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.890483176Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e321b9c2da7d12deb03fd8c0939fd91fa744e70a4a609ff441a4d3a92e62ea8b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc",
+      "created_at": "2024-12-21T10:30:54.838811167Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.882420305Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "88039c0d7a7224152661e47baddefa0f8c4e4fb3d555404d491ab4961b06cf5f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.838742584Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:48.026342053Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "6252730ad1bbf6fa224435ae522cefba4cac4ebcfa8c5b546761aeb7e785de35",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.838733084Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:47.473499553Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "898de76b19462e8817e0a435b0c65e5956dad7181a36f2ec81c157b973514347",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.838784959Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:51.336613013Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "941c4d6abfe383ccb6a73a961ffcf8e40cc13bc0fc5e85f012c7e0daf56ee375",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:54.838793417Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.340902138Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5393e77972786513ddb29332fc6ab7aa7498841987990ed8a0c6924235a01de6",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "77ebf931-28cc-424e-93be-3d4aadbbd62b",
+      "created_at": "2024-12-21T10:30:54.838694625Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:45.891386927Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c5ca8ae2262db6f370ac8e46eb42d6caaaef0b363bec871dd01cc5cbd613fcc2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.838809834Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.88238643Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "aae392e0732b6b629047ad9af80a06e51926109e5d18b605bc8368dd410ceadf",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "3670a38a-e53c-47c9-88c6-30064d79e9e3",
+      "created_at": "2024-12-21T10:30:44.843314801Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:43.279536509Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "41f5c468921b3f03c94882692ce25ab7e65269fede1a3c22f0db459b0ba8b03d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:54.838702375Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:46.470830094Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7f5c977b9f0860bd68d26e65d30b821a4fb1b70ee7a0a9597596927c06be2371",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:54.838808Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:52.88216868Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "820b46a6e08a0cd569a327d7561b52ae9c3a1a7e81ecbba41ce4c56549c48cfc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "08502582-8d21-42bf-ba59-3d0bc80122e0",
+      "created_at": "2024-12-21T10:30:21.959850388Z",
+      "message": "Starting webserver",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:03.570805921Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "fd81ee8ea6bd488c4e73a8b97a88a33160df2abff16f24649156a4c5031fa50b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "d07ad010-acd1-4e5a-a121-e584dc791d38",
+      "created_at": "2024-12-21T10:30:44.84330626Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:43.279373884Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3bf2f44776fc1768c467feff7609816dd1292ecb87b010a8d175b7dd767d773b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:54.838843584Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:53.8869845Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "dd3a7bc66a5f8e400d201b4aa3e2055087c6da83efbef65831553c23cfc8d82d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4523491d-cd27-49e0-89ff-86fe56e77d70",
+      "created_at": "2024-12-21T10:30:54.838777917Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:50.764270888Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "bc76156d8e1ae37d7cd834dbe23784b89fda223b51d01f2d3ef2559d65331d1a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "4f25dbbd-4035-4397-a6e3-a3a94ebe2c2d",
+      "created_at": "2024-12-21T10:30:44.843164301Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:40.089412257Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7287825a7485359c81455b1f397bf5ba969f1f7a8ac139972bcca7996f150d61",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "cfda7b6b-14ee-4f03-b51f-f87a3da1f4a9",
+      "created_at": "2024-12-21T10:30:44.843193093Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:41.093085466Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "483c7390265efc257aee233cd0083a44e6e18da98106095c8e244b9b4ecf7abe",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9a262ea-0e44-4056-ad59-0a7445c44fd4",
+      "created_at": "2024-12-21T10:30:54.838752292Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:49.02760922Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e863b3e1796983d3345bd35ae268343a8c5bdb1552cb495c6caa7809b1d83f48",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836767047Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.672575876Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "630d7591674dfae4b942fcf50f55e1da4ea364afb1f970b35f8ab8464a93aa27",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:14.847839301Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:08.002925631Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "4d78efcba6191bb6ac6d49b062cbcd2f147fcdfba5fa265db875261a0787bdd0",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836888463Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:04.122942796Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "d28e61406020110dd02c54542194bbd98b3c40c21537991d17999a816fce3b1e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:14.847834843Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:07.002050756Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2414df36a1da3f904c75baf0d63deec2ea31b7adc13a2189c22fd31ec19a695d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.83678838Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:58.235145835Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b8a6dd360bae7ebdd8a61a5ed12da0f3b8f2e5f2b6a6aaefed55fb5a3fcb7ecb",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:30:54.838703959Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:46.470882177Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "0b46c6dbd46f99dbdf8a5dd98f2eac384661fd6d6e5e6d8f252a07a449627247",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.83687588Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:03.713815879Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "320a322ffcf9c3e47434ea8a1d7125de34926eaea16ff21b97fb5b165eaf2205",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836837838Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:01.25240342Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "073fb285523ca1f098cc4980af73908f1fec418e5da7a61a6a169bfb56f56c55",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:14.847715301Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:05.123948672Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "1427d4c98c7a7549a95708065d13b4055dc4ecd23a081db182fe9ff160448357",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:14.847756551Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:06.388356172Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "44332792057c88cd7487c97cb3e8094a2d33f0eea8f32c4dcc4c94e97d351bc9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:14.847997551Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:10.752630674Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c1793209133cedfda9f04bfe996fa85addedd39ead8a3493f4095cfcf6c2d231",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.836757213Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.123538584Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "11f4e44c02c9f26d292bc3ea01e625c310cee9682f410df7b2d2b26efd3a2a0a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:30:44.843325051Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:44.281529884Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a133a88addac0c638299fee60b3298f11b6e3b1520cb8a242386ad6d17b360ca",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.83674113Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:55.12191275Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "bf6faff55d1d449a66b9a5efdd829069dbdf873dab3f81118d32d63958c3b2c3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.83678563Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:58.23513296Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "9886084c9cf1e5dca80369b77e96bc6c9066d97afc5cdf11480b4ab8ba8dff61",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:14.847917551Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.193936674Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a65013b5a2ded7e408619fc75953165e865799d318947dd64e6bb2e85d02b2cf",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:14.84783726Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.002739881Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "742bfa7686c3ea53349c42603a37aae5ee10b71633b3e79e17db9411c5139115",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:14.847719551Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.385760505Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "30b4714856db48f4d837f6645ca2c7d048b630b93c76e16d77b9c6862fad368e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.836828713Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:00.819396753Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ed70caf15b260295af8ae4294cb70ea519f2c7c6c65a9eaa580cdea75f1cdded",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.83682513Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:00.819231878Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "6e0b9acfda4f4c1b45e509dfcbcff9b7f5a76cd20245123feccd5993ba47f09d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:14.847701801Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.123812547Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "813c03c39d4c9d3a150699e482cb8b4ff66d2e9ea21687a75d6702e695bae302",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:30:44.843171135Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:40.089901799Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8cf5ad485a89588986685dbc9372d78e265e519e64d949bd9ff7d62439723a05",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836760088Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:56.123572376Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "4bc5a692eb0575aa278822c3c5044658b1e7bd5e883973e3ba21be3f8f405567",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:14.847828718Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:07.001939048Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a28997255eb32ad291f9ce2f3d1bd123cf824a3dae08df1222338000835b5846",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.836756047Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:56.123516084Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e7521b6f6885ebbae384f0104c1acaf0ab82708af53a8845d04f1d451b3effd7",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.836754338Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.123222584Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "281b0aa8d83290e98450115cea4ac2f3de7b344b609350621f2efe36d9b37c5e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:30:54.838797542Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:52.341033305Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c1ea14774391af7fd81749b91bcc6740b3c5aeba19ca447799b7b3d97ee83fae",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836869505Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.713012546Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "f5ecc046ee9d3a73e018fe64f4c4cc1c7f416d9b4f50df39df9955033b42fc7b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:14.847846176Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.19110534Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b5be1b50b91daac78198a4ff2a32a5b730a27352bd3b36a564bf95b0de05e0c1",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.83676913Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.672773376Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "31c18e0fd67e59ea26503e051358249e9b825af696d74620667d0d4e8fbc65aa",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.83683288Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:01.252272753Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8db6853d99fa315d93fc5f80ed3b19f1c7326936db2c6ade6ac07322d6429c03",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:30:54.838700959Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:46.470700844Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "41acc4412d92347ab32e8b915cd80af915ef1a78fbb64fe6da6aeae90dbd40ef",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:14.847926343Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:09.194031757Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "13e8a1352a42fe512ab4550ac9ff937a5aa807e63ca3c4c910f8942e9acace69",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:14.847931968Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.750863632Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8f46bc53f7e6674bc3ff370b6a33c8eaadbb7910327ea86ee1868cc4b4d2bb93",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:14.847840885Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.002942423Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ef3df9b3cd40d262f60305cc57620bbc41923b8488fbcc1f9a6909b756714389",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836807463Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:59.240412711Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b37d12620687ccd1734318acaa08481c0ab01259fe88c5f0b91232a80a58b223",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:14.847933551Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.750891924Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "242aabec79c9acba59a2e8ec636b28c80c4166a74abe495d78f5bb67ffc7455d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.836827297Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:00.819380545Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5128ed00e36f91ead055a12d7a738d5855483cafd98e09a653881471eacb004d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.836861797Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.712826129Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "d6f3a39e83cf7cb6f039d71a49ed1f381bd3593a6179893a3f587ac154e16883",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:30:54.838840584Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:53.886957208Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3de04e47adab63ae306b83d3f81991d1c4408a507730531d835ff63580cf19ab",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:14.847753093Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:06.388312381Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b228c154bc4fc9111cdee9fe784cef171c2658b6fd0f386f10ecab2478b27c2a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:14.84800076Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:10.752769841Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "246f603e7249bf8d6407cb0c51a9ddc24454a1df6b333439322c5a84aa3fceea",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:14.84783101Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:07.002022548Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "e5d1e6835715bac3b9a4b4dc79d3ae3cf57f156970095f296e79b8aaebb373af",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.836780505Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:57.673931502Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c84a42042378480a614ec1ebce55622cf4338162c2df6f72140b8826c3520559",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.836803088Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.240055252Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "876337383bef695f9c271f87756404e86eb156edcc5c89ea3e504649539b6301",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:14.847930385Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.750831924Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "0ce78d03c143287861665c420aee338cfece3d10b15852bc62bd7e9b051d1e7e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:14.847833051Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:07.002039256Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "fe395903209cddbf7cc50ae76177652bde7e2e7bfba71320dac723eec3105bdf",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.836880963Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:03.713953296Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "12c5d3e34c5f405f6d27e403d7bee732c69442a646b1e22297676b2b6e7d6959",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.836867255Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.712998546Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "ae9cbddf9fd912cf65d5034d5fd95c8ba5591e6153a288a4cf206362d35807ec",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:14.84784276Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:08.002988506Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "d2ca47a91285a44e97ef30c531a3f2eff06b37bc189429b50aad92a408353f99",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836745547Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:55.122302792Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c2de8094fa1bf9bf52f58d8acf292519370fb4f2859500a7bea0f96412e760e5",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836830172Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:00.819428878Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "051097174c7649da52ae93cbd1c86a9b2760c6659b4385bdcfa1940d8180029a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836882672Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:03.713970129Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5044f6c89988531dabf49ca1adfcd392b7c7af27bc51b4cdd8622c37443fb918",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.83681163Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.816529836Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "783a75cb31aeb61a3dbfd06e84f15392c854e587127c42de770bd210dea4373c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:14.847847926Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.191165382Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "6e231e0f8ab2878410575f98dbda03ff57b4904fb76b49fda652e4a6e1807cd4",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.836804463Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:59.240321169Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "c38f3952629331ceb58d62e7deab8f803dbbdd9655676c809e6c0ae35500e013",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:14.847708343Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.123930588Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "9263f055095848a468a28ba8f9309078b8ab0487eb5d53f8a3847f41514aa113",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:14.847735843Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.38582263Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "9076bd2c525252844f468b317e8792e421cdefbd560702ca14c018008527f97d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:14.847732093Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.38579713Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "99c34c749d283f586efc2d253e4938dc09f0e6ce906de87a360ed26e123a7ab0",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:30:44.843309301Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:43.279490926Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "fdd3314e86feef4253c232547f916f6b77cd4f212d4138c72717a1d617fb8c14",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.836847172Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.25441542Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "90d4f50f60abcc76cca11eee07b9cca1464cd1aee68151f6259ed40d4be2f44b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:14.847920218Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:09.194003549Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "355fd005c16cf4ea3325ffe8bc5ab0fa390e0a67175f4f6dbfc4a5033851f807",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.836851422Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.254656129Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3703ef38efb177df859e25f228fc006eb92b1d452ca2c9e1d748c0a33d805b5b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:14.847928676Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.750728466Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8f67daa1824612a66b13a664c9215a0f87fc2d2524280f075f3210e014a04514",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836813172Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.816743878Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7bcaae83fc28d1759bb40f037fdd9e2b2b6d3261e6a1018e882685606a9e5bd8",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:14.847717468Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:05.385626839Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7e8669f64fd797ddbe7d7bb3642aa564254837a960d4b5c5d8d22acb1f03674a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.83684838Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:02.254630462Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "b3b02daa185312af836f42d7a2c91326f4324f407eb5d9e62e3cae79daf3188d",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836865047Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:02.712957337Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "fd1ae1d569f018accdc727ae1b5b51f622b66e308bdfbfe70cf2342a6b42671e",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.836894172Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:04.123023046Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a78e8618d4a2f120d03a7fb557351bb3396d85717fedece45b0db5dac93c2d99",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836896088Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:04.12306213Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a68f529e9a2142ecf6df221bd998b6c719eaa8cd4285ecd47c8ad21e7d0f03d2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:14.847849676Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.191202673Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7dd866920548079d0aca026bb823c0640f933b2641655e6d6e1f62d0284f9700",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836749338Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:55.122395792Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "45762721f3285ed8be91feea0f859b8178a29ab2b9a4a96eac007de4e7980fcb",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.836879255Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:03.713943004Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "75784af76b546e65a4343283839bbeb8d90dcdf7bc843377550cbc57e1a89fbc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:30:54.838775334Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:50.764255263Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "58e857f102fcb7cfd7cb129d90ad00c5fb286273848a683ba511f980e33febc9",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:04.836773797Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:57.673641418Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "f48e4295c00dd211ca62dfb542dc00337fbc00a5938be0cc690932fe288484d2",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.83683663Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:01.252391378Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "aa1f19f39a9910836eb7c2a910cd33d55b7ef5e9c4c20676da165de20f0dcb68",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "f084070f-6f60-444c-af3e-1ebd3aa997aa",
+      "created_at": "2024-12-21T10:31:04.836835005Z",
+      "message": "Login request received with username: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:01.25237067Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "32883dd3921a34c56aeec1a70778e6bfed612080de87b745a691cb5176cc372a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836853463Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:02.254696837Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8217774f3566b0c3e5bb56adf6a9e87caf1f573bae7f5194aabc8cf7074d5d9b",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.836764338Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.672340168Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "8fa1642805ac182f68e8b36bdf2cc1f66c46daedfc1a6d229b7c8f73a2d5605c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:04.83680588Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.240345502Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "6ae27e5296e98492643354c10419d24df1fdec69b00fd6fa7693c940d83e6f77",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:14.84799526Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:10.752410341Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3e39c1e7ad1f3a247ef50b848e6e4dabc590870e692b6fcafd73da503576fab8",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:14.847999135Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:10.752695216Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "4e013fe24b22e3bb4756dc935bddd4510aa5cc3b6615fe9f74f3507d1fbfa8a7",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836770505Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:56.672879959Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "251966534bdd88051bc35b62991fbd09caeb10f7b6eedc7a158d71640ac8f61f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.836783672Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:58.235050085Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3115c2d6b83917bc4347974070716a78ea4d80d7292c9e6956a19bd2743830c3",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "b89ef3e6-0494-49a7-9a64-fbc5f10b4fad",
+      "created_at": "2024-12-21T10:31:04.836782297Z",
+      "message": "Invalid credentials for Login request with username: Yolo and password: Swag",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:57.673978918Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "f54266bfd498c7219883bfabf4bdb17a7b761888a641466666ebeff7005694bb",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.83678988Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:58.235151585Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "730ceccd42413d12398098ccb1301b06490a17e15c8597b4b9ba46f26daffd0f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:14.847706426Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:31:05.123917255Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "2873566e07945eca376c9b86ddb07545c631ec79a6eb8ca05e5fa753adacd9dc",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:14.84792401Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:09.194012507Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "a2757812027995782dd17bcac05d7a66015b3dfed2c29662ab39996b467d4679",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "e1ff114c-e9bf-4e83-b973-25d3612c23e6",
+      "created_at": "2024-12-21T10:31:04.836776963Z",
+      "message": "Invalid credentials",
+      "service": "fake-server",
+      "severity": "error",
+      "timestamp": "2024-12-21T10:30:57.67390471Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5d28d1561b1e70acb516f6dce0709a11074677f5787d460937c69eaf4286464f",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.836818255Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.816818878Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "5d2cb91b86624c83a677bdbf7cf1d98e603aaa20d797e545c69a9bbb007b7d05",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:04.83688463Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:04.12280538Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "00c07051cb077bee199e1d1ae4d253ce2c05ae19f5c9c2314b53939200833d13",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "21a2cac1-7aaa-4766-b517-d404fa949084",
+      "created_at": "2024-12-21T10:31:14.847844635Z",
+      "message": "Login request received with URL /accounts/login and method POST",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:08.19093609Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "3d46e45ea567434cf089af14f23edf26b234f3b147432c4beecf56ce5cad106c",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "c9d8cbf3-2117-4bc2-ab87-00139d2017b4",
+      "created_at": "2024-12-21T10:31:04.836747963Z",
+      "message": "Beginning Transaction with concerns readConcern: IsolationLow, writeConcern: DurabilityLow",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:55.122375334Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "f70560c29eb1e9fab465a7c470ae3c761af693e060d8c09f8b1fe1835441efde",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "feb01bd5-d969-4c59-8c65-41163aed5b0c",
+      "created_at": "2024-12-21T10:31:04.836820838Z",
+      "message": "Searching for the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:30:59.816837253Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "7a3d86f2ca686804746bc80d51c189a43c6e67fcb625d9f0fde322b25ae8ba8a",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "caf705ce-cd18-4254-a76d-9feb31a11840",
+      "created_at": "2024-12-21T10:31:14.84775151Z",
+      "message": "Found the username in the DB: Yolo",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:06.388163131Z"
+    }
+  },
+  {
+    "_index": "log_index",
+    "_id": "1e23d71fcd5344cdbd4837635c3005db64e25513e405b794456b3c9686ca2025",
+    "_score": 1,
+    "_source": {
+      "cluster_id": "bde982bc-a58d-41b5-a7ca-8b307768f580",
+      "created_at": "2024-12-21T10:31:14.847754885Z",
+      "message": "Rolling back Transaction",
+      "service": "fake-server",
+      "severity": "info",
+      "timestamp": "2024-12-21T10:31:06.388326339Z"
+    }
+  }
+]
