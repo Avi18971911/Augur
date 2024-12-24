@@ -2,11 +2,13 @@ import {useState} from "react";
 
 function NavigationForm() {
     const [selectedService, setSelectedService] = useState("")
+    const [selectedOperation, setSelectedOperation] = useState("")
 
     return (
         <div style={{flexDirection: 'column', display: "flex"}}>
             <h3>Navigation</h3>
             <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
+
                 <div>
                     Service
                 </div>
@@ -14,11 +16,26 @@ function NavigationForm() {
                     value={selectedService}
                     onChange={(e) => setSelectedService(e.target.value)}
                 >
-                    <option value={"service1"}>Service 1</option>
-                    <option value={"service2"}>Service 2</option>
-                    <option value={"service3"}>Service 3</option>
+                    <option value={"service1"}>Placeholder Service</option>
                 </select>
+
+                <div>
+                    Operation
+                </div>
+                <select
+                    value={selectedOperation}
+                    onChange={(e) => setSelectedOperation(e.target.value)}
+                >
+                    <option value={"operation1"}>Placeholder Operation</option>
+                </select>
+
+                <div>
+                    Limit Results
+                </div>
+                <input type={"number"} name={"limit"} />
             </form>
+
+            <button type={"submit"} style={{marginTop: '20px'}}>Search</button>
         </div>
     )
 }
