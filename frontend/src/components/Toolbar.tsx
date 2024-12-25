@@ -5,9 +5,12 @@ import styles from "../styles/NavLink.module.css";
 function Toolbar() {
     return (
         <nav style={{ display: 'flex', width: '100%', position: 'fixed', top: 0, left: 0, background: 'gray' }}>
-            <ul style={{ display: 'flex', listStyle: 'none', gap: '1rem', padding: 0, marginLeft: 20 }}>
+            <ul style={{
+                display: 'flex', listStyle: 'none', gap: '1rem', padding: 0, marginLeft: 20, marginTop: 0,
+                marginBottom: 0, height: '100%'
+            }}>
                 {Object.entries(routes).map(([key, route]) => (
-                    <li key={key}>
+                    <li key={key} style={{ height: '40px', width: '80px'}}>
                         <NavLink
                             to={route.path}
                             className={({ isActive }) =>
