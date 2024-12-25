@@ -5,7 +5,10 @@ function NavigationForm() {
     const [selectedOperation, setSelectedOperation] = useState("")
 
     return (
-        <div style={{flexDirection: 'column', display: "flex"}}>
+        <div style={{
+            flexDirection: 'column', display: "flex", width: '100%', borderStyle: 'solid', borderColor: 'white',
+            alignItems: 'center',
+        }}>
             <h3>Navigation</h3>
             <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
 
@@ -35,7 +38,7 @@ function NavigationForm() {
                 <input type={"number"} name={"limit"} />
             </form>
 
-            <button type={"submit"} style={{marginTop: '20px'}}>Search</button>
+            <button type={"submit"} style={{marginTop: '20px', width: '50%'}}>Search</button>
         </div>
     )
 }
