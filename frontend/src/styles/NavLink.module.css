@@ -1,0 +1,21 @@
+.active {
+    background: #383333;
+    color: white;
+}
+
+.inactive {
+    background: gray;
+    color: white;
+}
+
+.active, .inactive {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.active:hover, .inactive:hover {
+    color: white;
+}
