@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"github.com/Avi18971911/Augur/internal/query_server/inference/service"
+	"github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -20,7 +20,7 @@ import (
 // @Router /graph [get]
 func ChainOfEventsHandler(
 	ctx context.Context,
-	s service.AnalyticsQueryService,
+	s inference.AnalyticsQueryService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

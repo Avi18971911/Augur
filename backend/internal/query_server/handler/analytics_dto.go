@@ -19,7 +19,7 @@ type SpanDTO struct {
 	SpanID       string            `json:"span_id" validate:"required"`
 	ParentSpanID string            `json:"parent_span_id" validate:"required"`
 	TraceID      string            `json:"trace_id" validate:"required"`
-	ServiceName  string            `json:"service_name" validate:"required"`
+	Service      string            `json:"service" validate:"required"`
 	StartTime    time.Time         `json:"start_time" validate:"required"`
 	EndTime      time.Time         `json:"end_time" validate:"required"`
 	ActionName   string            `json:"action_name" validate:"required"`

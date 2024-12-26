@@ -3,7 +3,7 @@ package router
 import (
 	"context"
 	"github.com/Avi18971911/Augur/internal/query_server/handler"
-	inferenceService "github.com/Avi18971911/Augur/internal/query_server/inference/service"
+	inferenceService "github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	"go.uber.org/zap"
 	"net/http"
 )

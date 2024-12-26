@@ -187,7 +187,7 @@ func getSpanClusterDetails(
 	if !ok {
 		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract id from span")
 	}
-	serviceName, ok := span["service_name"].(string)
+	serviceName, ok := span["service"].(string)
 	if !ok {
 		return clusterModel.ClusterInput{}, fmt.Errorf("failed to extract service name from span")
 	}

@@ -494,7 +494,7 @@ func convertSpanToSpanOrLogData(spans []spanModel.Span) []map[string]interface{}
 	for i, span := range spans {
 		result[i] = map[string]interface{}{
 			"_id":           span.Id,
-			"service_name":  span.ServiceName,
+			"service":       span.Service,
 			"cluster_event": span.ClusterEvent,
 			"start_time":    span.StartTime,
 			"end_time":      span.EndTime,

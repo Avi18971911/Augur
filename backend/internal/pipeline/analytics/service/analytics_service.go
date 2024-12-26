@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
-	"github.com/Avi18971911/Augur/internal/query_server/inference/model"
+	"github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
 	"go.uber.org/zap"
 	"time"
 )

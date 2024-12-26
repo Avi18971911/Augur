@@ -78,6 +78,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 	events := getEvents(span)
 	spanKind := getSpanKind(span)
 	clusterEvent := getClusterString(serviceName, span.Name, spanKind, getAttributesString(attributes))
+	spanStatus := getStatus(span)
 
 	return model.Span{
 		Id:           generateSpanId(startTime, clusterEvent),
@@ -85,7 +86,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 		SpanID:       spanId,
 		ParentSpanID: parentSpanId,
 		TraceID:      traceId,
-		ServiceName:  serviceName,
+		Service:      serviceName,
 		StartTime:    startTime,
 		EndTime:      endTime,
 		ActionName:   span.Name,
@@ -94,6 +95,7 @@ func getTypedSpan(span *v1.Span, serviceName string) model.Span {
 		SpanKind:     spanKind,
 		ClusterEvent: clusterEvent,
 		ClusterId:    clusterService.DefaultClusterId,
+		Status:       spanStatus,
 	}
 }
 
@@ -137,6 +139,15 @@ func getClusterString(serviceName string, actionName string, spanKind string, at
 		spanKind,
 		attributes,
 	)
+}
+
+func getStatus(span *v1.Span) model.Status {
+	if span.Status.Code == v1.Status_STATUS_CODE_UNSET {
+		return model.UNSET
+	} else if span.Status.Code != v1.Status_STATUS_CODE_OK {
+		return model.OK
+	}
+	return model.ERROR
 }
 
 func generateSpanId(timeStamp time.Time, clusterEvent string) string {

@@ -21,7 +21,7 @@ var spanIndex = map[string]interface{}{
 			"trace_id": map[string]string{
 				"type": "keyword",
 			},
-			"service_name": map[string]string{
+			"service": map[string]string{
 				"type": "keyword",
 			},
 			"start_time": map[string]string{
@@ -45,6 +45,17 @@ var spanIndex = map[string]interface{}{
 			},
 			"cluster_id": map[string]string{
 				"type": "keyword",
+			},
+			"status": map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"message": map[string]string{
+						"type": "text",
+					},
+					"code": map[string]string{
+						"type": "keyword",
+					},
+				},
 			},
 			"events": map[string]interface{}{
 				"type": "nested",

@@ -3,7 +3,7 @@ package handler
 import (
 	"errors"
 	spanModel "github.com/Avi18971911/Augur/internal/otel_server/trace/model"
-	"github.com/Avi18971911/Augur/internal/query_server/inference/model"
+	"github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
 )
 
 func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) ChainOfEventsResponseDTO {
@@ -52,7 +52,7 @@ func toSpanDTO(spanDTO SpanDTO, node *model.ClusterNode) SpanDTO {
 		SpanID:       node.LogOrSpanData.SpanDetails.SpanID,
 		ParentSpanID: node.LogOrSpanData.SpanDetails.ParentSpanID,
 		TraceID:      node.LogOrSpanData.SpanDetails.TraceID,
-		ServiceName:  node.LogOrSpanData.SpanDetails.ServiceName,
+		Service:      node.LogOrSpanData.SpanDetails.Service,
 		StartTime:    node.LogOrSpanData.SpanDetails.StartTime,
 		EndTime:      node.LogOrSpanData.SpanDetails.EndTime,
 		ActionName:   node.LogOrSpanData.SpanDetails.ActionName,

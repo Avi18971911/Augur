@@ -8,7 +8,7 @@ type Span struct {
 	SpanID       string            `json:"span_id"`
 	ParentSpanID string            `json:"parent_span_id"`
 	TraceID      string            `json:"trace_id"`
-	ServiceName  string            `json:"service_name"`
+	Service      string            `json:"service"`
 	StartTime    time.Time         `json:"start_time"`
 	EndTime      time.Time         `json:"end_time"`
 	ActionName   string            `json:"action_name"`
@@ -17,6 +17,7 @@ type Span struct {
 	ClusterId    string            `json:"cluster_id,omitempty"` // ID of the cluster this span belongs to
 	Attributes   map[string]string `json:"attributes"`           // Metadata like HTTP status, user info
 	Events       []SpanEvent       `json:"events"`               // Important events within the span
+	Status       Status            `json:"status"`               // Status of the span
 }
 
 type SpanEvent struct {
@@ -24,3 +25,11 @@ type SpanEvent struct {
 	Attributes map[string]string `json:"attributes"`
 	Timestamp  time.Time         `json:"timestamp"`
 }
+
+type Status string
+
+const (
+	UNSET Status = "unset"
+	OK    Status = "ok"
+	ERROR Status = "error"
+)

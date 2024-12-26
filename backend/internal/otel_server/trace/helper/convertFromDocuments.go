@@ -34,11 +34,11 @@ func ConvertFromDocuments(res []map[string]interface{}) ([]spanModel.Span, error
 		}
 		doc.TraceID = traceId
 
-		serviceName, ok := hit["service_name"].(string)
+		serviceName, ok := hit["service"].(string)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert service_name to string %s", hit["service_name"])
+			return nil, fmt.Errorf("failed to convert service to string %s", hit["service"])
 		}
-		doc.ServiceName = serviceName
+		doc.Service = serviceName
 
 		startTime, ok := hit["start_time"].(string)
 		if !ok {

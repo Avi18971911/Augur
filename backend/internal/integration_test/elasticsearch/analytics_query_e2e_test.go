@@ -7,7 +7,7 @@ import (
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
 	"github.com/Avi18971911/Augur/internal/query_server/handler"
-	"github.com/Avi18971911/Augur/internal/query_server/inference/service"
+	"github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"net/http/httptest"
@@ -25,7 +25,7 @@ func TestAnalyticsQuery(t *testing.T) {
 		t.Errorf("Failed to create logger: %v", err)
 	}
 
-	as := service.NewAnalyticsQueryService(
+	as := inference.NewAnalyticsQueryService(
 		ac,
 		logger,
 	)
