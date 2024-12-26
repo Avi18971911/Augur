@@ -98,9 +98,37 @@ func ConvertFromDocuments(res []map[string]interface{}) ([]spanModel.Span, error
 			doc.Events[i] = typeEvent(event)
 		}
 
+		status, ok := hit["status"].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("failed to convert status to map[string]interface{} %s", hit["status"])
+		}
+		statusMessage, ok := status["message"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert status.message to string %s", status["message"])
+		}
+		statusCode, ok := status["code"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert status.code to string %s", status["code"])
+		}
+		doc.Status = spanModel.Status{
+			Message: statusMessage,
+			Code:    typeStatusCode(statusCode),
+		}
+
 		spans = append(spans, doc)
 	}
 	return spans, nil
+}
+
+func typeStatusCode(code string) spanModel.StatusCode {
+	switch code {
+	case "ok":
+		return spanModel.OK
+	case "error":
+		return spanModel.ERROR
+	default:
+		return spanModel.UNSET
+	}
 }
 
 func typeEvent(event interface{}) spanModel.SpanEvent {

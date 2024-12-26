@@ -26,10 +26,15 @@ type SpanEvent struct {
 	Timestamp  time.Time         `json:"timestamp"`
 }
 
-type Status string
+type Status struct {
+	Message string     `json:"message"`
+	Code    StatusCode `json:"code"`
+}
+
+type StatusCode string
 
 const (
-	UNSET Status = "unset"
-	OK    Status = "ok"
-	ERROR Status = "error"
+	UNSET StatusCode = "unset"
+	OK    StatusCode = "ok"
+	ERROR StatusCode = "error"
 )

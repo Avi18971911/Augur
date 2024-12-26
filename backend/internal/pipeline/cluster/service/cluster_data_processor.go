@@ -373,21 +373,13 @@ func getSpanOutput(item map[string]interface{}) (
 	model.SpanDetails,
 	error,
 ) {
-	startTimeString, ok := item["start_time"].(string)
+	startTime, ok := item["start_time"].(time.Time)
 	if !ok {
 		return model.SpanDetails{}, fmt.Errorf("failed to extract start time from span")
 	}
-	startTime, err := client.NormalizeTimestampToNanoseconds(startTimeString)
-	if err != nil {
-		return model.SpanDetails{}, fmt.Errorf("failed to normalize start time: %w", err)
-	}
-	endTimeString, ok := item["end_time"].(string)
+	endTime, ok := item["end_time"].(time.Time)
 	if !ok {
 		return model.SpanDetails{}, fmt.Errorf("failed to extract end time from span")
-	}
-	endTime, err := client.NormalizeTimestampToNanoseconds(endTimeString)
-	if err != nil {
-		return model.SpanDetails{}, fmt.Errorf("failed to normalize end time: %w", err)
 	}
 	spanDetails := model.SpanDetails{
 		StartTime: startTime,

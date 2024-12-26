@@ -142,12 +142,22 @@ func getClusterString(serviceName string, actionName string, spanKind string, at
 }
 
 func getStatus(span *v1.Span) model.Status {
-	if span.Status.Code == v1.Status_STATUS_CODE_UNSET {
-		return model.UNSET
-	} else if span.Status.Code != v1.Status_STATUS_CODE_OK {
-		return model.OK
+	if span.Status.Code == 0 {
+		return model.Status{
+			Message: span.Status.Message,
+			Code:    model.UNSET,
+		}
 	}
-	return model.ERROR
+	if span.Status.Code == 1 {
+		return model.Status{
+			Message: span.Status.Message,
+			Code:    model.OK,
+		}
+	}
+	return model.Status{
+		Message: span.Status.Message,
+		Code:    model.ERROR,
+	}
 }
 
 func generateSpanId(timeStamp time.Time, clusterEvent string) string {
