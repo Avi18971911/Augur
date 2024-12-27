@@ -492,12 +492,14 @@ func convertLogToSpanOrLogData(logs []logModel.LogEntry) []map[string]interface{
 func convertSpanToSpanOrLogData(spans []spanModel.Span) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(spans))
 	for i, span := range spans {
+		startTimeString := span.StartTime.Format(time.RFC3339Nano)
+		endTimeString := span.EndTime.Format(time.RFC3339Nano)
 		result[i] = map[string]interface{}{
 			"_id":           span.Id,
 			"service":       span.Service,
 			"cluster_event": span.ClusterEvent,
-			"start_time":    span.StartTime,
-			"end_time":      span.EndTime,
+			"start_time":    startTimeString,
+			"end_time":      endTimeString,
 			"created_at":    span.CreatedAt,
 			"cluster_id":    span.ClusterId,
 		}
