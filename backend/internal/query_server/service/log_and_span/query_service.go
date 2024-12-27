@@ -71,7 +71,7 @@ func (lss *LogAndSpanService) GetAllErrors(
 func getLogAndSpansFromSearchResult(res []map[string]interface{}) ([]model.LogAndSpan, error) {
 	logsAndSpans := make([]model.LogAndSpan, len(res))
 	for i, doc := range res {
-		if _, ok := doc["timestamp"]; !ok {
+		if _, ok := doc["timestamp"]; ok {
 			log, err := logHelper.ConvertFromDocuments([]map[string]interface{}{doc})
 			if err != nil {
 				return nil, err

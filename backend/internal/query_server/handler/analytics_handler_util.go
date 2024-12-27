@@ -26,9 +26,9 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 		var spanDTO = SpanDTO{}
 		var logDTO = LogDTO{}
 		if node.LogOrSpanData.SpanDetails != nil {
-			spanDTO = toSpanDTO(spanDTO, node)
+			spanDTO = toSpanDTO(node)
 		} else {
-			logDTO = toLogDTO(logDTO, node)
+			logDTO = toLogDTO(node)
 		}
 
 		graph[node.LogOrSpanData.Id] = ChainOfEventsNodeDTO{
@@ -45,8 +45,8 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 	}
 }
 
-func toSpanDTO(spanDTO SpanDTO, node *model.ClusterNode) SpanDTO {
-	spanDTO = SpanDTO{
+func toSpanDTO(node *model.ClusterNode) SpanDTO {
+	return SpanDTO{
 		Id:           node.LogOrSpanData.SpanDetails.Id,
 		CreatedAt:    node.LogOrSpanData.SpanDetails.CreatedAt,
 		SpanID:       node.LogOrSpanData.SpanDetails.SpanID,
@@ -62,11 +62,10 @@ func toSpanDTO(spanDTO SpanDTO, node *model.ClusterNode) SpanDTO {
 		Attributes:   node.LogOrSpanData.SpanDetails.Attributes,
 		Events:       mapModelToSpanEventDTO(node.LogOrSpanData.SpanDetails.Events),
 	}
-	return spanDTO
 }
 
-func toLogDTO(logDTO LogDTO, node *model.ClusterNode) LogDTO {
-	logDTO = LogDTO{
+func toLogDTO(node *model.ClusterNode) LogDTO {
+	return LogDTO{
 		Id:        node.LogOrSpanData.LogDetails.Id,
 		CreatedAt: node.LogOrSpanData.LogDetails.CreatedAt,
 		Timestamp: node.LogOrSpanData.LogDetails.Timestamp,
@@ -77,7 +76,6 @@ func toLogDTO(logDTO LogDTO, node *model.ClusterNode) LogDTO {
 		SpanId:    node.LogOrSpanData.LogDetails.SpanId,
 		ClusterId: node.LogOrSpanData.LogDetails.ClusterId,
 	}
-	return logDTO
 }
 
 func mapModelToSpanEventDTO(events []spanModel.SpanEvent) []SpanEventDTO {

@@ -37,7 +37,8 @@ func ErrorHandler(
 			return
 		}
 
-		err = json.NewEncoder(w).Encode(logOrSpanData)
+		errorResult := convertLogAndSpanDataToErrorResult(logOrSpanData)
+		err = json.NewEncoder(w).Encode(errorResult)
 		if err != nil {
 			logger.Error("Error encountered when encoding response", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
