@@ -22,7 +22,7 @@ type ErrorSearchParams struct {
 }
 
 type LogAndSpanQueryService interface {
-	GetAllErrors(errorSearchParams ErrorSearchParams) ([]model.LogAndSpan, error)
+	GetAllErrors(ctx context.Context, errorSearchParams ErrorSearchParams) ([]model.LogAndSpan, error)
 }
 
 type LogAndSpanService struct {

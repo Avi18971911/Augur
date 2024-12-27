@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Avi18971911/Augur/internal/query_server/handler"
 	inferenceService "github.com/Avi18971911/Augur/internal/query_server/service/inference"
+	"github.com/Avi18971911/Augur/internal/query_server/service/log_and_span"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -11,7 +12,8 @@ import "github.com/gorilla/mux"
 
 func CreateRouter(
 	ctx context.Context,
-	analyticsQueryService inferenceService.AnalyticsQueryService,
+	inferenceQueryService inferenceService.InferenceQueryService,
+	logAndSpanQueryService log_and_span.LogAndSpanQueryService,
 	logger *zap.Logger,
 ) http.Handler {
 	r := mux.NewRouter()
@@ -19,10 +21,18 @@ func CreateRouter(
 	r.Handle(
 		"/graph", handler.ChainOfEventsHandler(
 			ctx,
-			analyticsQueryService,
+			inferenceQueryService,
 			logger,
 		),
 	).Methods("GET")
+
+	r.Handle(
+		"/error", handler.ErrorHandler(
+			ctx,
+			logAndSpanQueryService,
+			logger,
+		),
+	)
 
 	return r
 }

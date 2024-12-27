@@ -20,7 +20,7 @@ import (
 const timeout = 10 * time.Second
 const querySize = 100
 
-type AnalyticsQueryService interface {
+type InferenceQueryService interface {
 	GetChainOfEvents(
 		ctx context.Context,
 		input inferenceModel.LogOrSpanData,
@@ -28,19 +28,19 @@ type AnalyticsQueryService interface {
 	GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error)
 }
 
-type AnalyticsQueryServiceImpl struct {
+type InferenceQueryServiceImpl struct {
 	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewAnalyticsQueryService(ac client.AugurClient, logger *zap.Logger) AnalyticsQueryService {
-	return &AnalyticsQueryServiceImpl{
+func NewAnalyticsQueryService(ac client.AugurClient, logger *zap.Logger) InferenceQueryService {
+	return &InferenceQueryServiceImpl{
 		ac:     ac,
 		logger: logger,
 	}
 }
 
-func (as *AnalyticsQueryServiceImpl) GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error) {
+func (as *InferenceQueryServiceImpl) GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error) {
 	query := getLogOrSpanQuery(id)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
@@ -68,7 +68,7 @@ func (as *AnalyticsQueryServiceImpl) GetSpanOrLogData(ctx context.Context, id st
 	return logOrSpanData[0], nil
 }
 
-func (as *AnalyticsQueryServiceImpl) GetChainOfEvents(
+func (as *InferenceQueryServiceImpl) GetChainOfEvents(
 	ctx context.Context,
 	logOrSpanData inferenceModel.LogOrSpanData,
 ) (mleSequence map[string]*inferenceModel.ClusterNode, err error) {
@@ -105,7 +105,7 @@ func (as *AnalyticsQueryServiceImpl) GetChainOfEvents(
 	return mleSequence, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getClusterGraph(
+func (as *InferenceQueryServiceImpl) getClusterGraph(
 	ctx context.Context,
 	clusterToSearchOn string,
 ) (clustersInGraph map[string]*inferenceModel.ClusterNode, err error) {
@@ -162,7 +162,7 @@ func (as *AnalyticsQueryServiceImpl) getClusterGraph(
 	return visitedClusters, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getSucceedingClusters(
+func (as *InferenceQueryServiceImpl) getSucceedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]inferenceModel.ClusterNode, error) {
@@ -190,7 +190,7 @@ func (as *AnalyticsQueryServiceImpl) getSucceedingClusters(
 	return clusterNodes, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getPrecedingClusters(
+func (as *InferenceQueryServiceImpl) getPrecedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]inferenceModel.ClusterNode, error) {
@@ -212,7 +212,7 @@ func (as *AnalyticsQueryServiceImpl) getPrecedingClusters(
 	return clusterNodes, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getClusterSubGraph(
+func (as *InferenceQueryServiceImpl) getClusterSubGraph(
 	ctx context.Context,
 	query map[string]interface{},
 ) ([]analyticsModel.Cluster, error) {
@@ -234,7 +234,7 @@ func (as *AnalyticsQueryServiceImpl) getClusterSubGraph(
 	return clusters, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
+func (as *InferenceQueryServiceImpl) getMostLikelySequence(
 	ctx context.Context,
 	clusterIdToSearchOn string,
 	clusterGraph map[string]*inferenceModel.ClusterNode,
@@ -327,7 +327,7 @@ func (as *AnalyticsQueryServiceImpl) getMostLikelySequence(
 	return clusterGraph, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getCountClusterDetails(
+func (as *InferenceQueryServiceImpl) getCountClusterDetails(
 	ctx context.Context,
 	previousClusterId string,
 	nextClusterId string,
@@ -354,7 +354,7 @@ func (as *AnalyticsQueryServiceImpl) getCountClusterDetails(
 	return countClusters[0], nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getSpanOrLogDetails(
+func (as *InferenceQueryServiceImpl) getSpanOrLogDetails(
 	ctx context.Context,
 	clusterId string,
 	previousLogOrSpanData inferenceModel.LogOrSpanData,
@@ -393,7 +393,7 @@ func (as *AnalyticsQueryServiceImpl) getSpanOrLogDetails(
 	return logOrSpanData, nil
 }
 
-func (as *AnalyticsQueryServiceImpl) getMostLikelyLogOrSpan(
+func (as *InferenceQueryServiceImpl) getMostLikelyLogOrSpan(
 	spanOrLogDetails []inferenceModel.LogOrSpanData,
 	previousSpanOrLogDetails inferenceModel.LogOrSpanData,
 	clusterDetails inferenceModel.CountCluster,
