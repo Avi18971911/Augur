@@ -9,6 +9,15 @@ import (
 	"net/http"
 )
 
+// ErrorHandler creates a handler for getting errors using search parameters.
+// @Summary Get spans or logs detailing errors.
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param error body log_and_span.ErrorSearchParams true "The optional search parameters"
+// @Success 200 {object} ErrorResponseDTO "List of logs and spans detailing errors"
+// @Failure 500 {object} ErrorMessage "Internal server error"
+// @Router /error [get]
 func ErrorHandler(
 	ctx context.Context,
 	ls log_and_span.LogAndSpanQueryService,

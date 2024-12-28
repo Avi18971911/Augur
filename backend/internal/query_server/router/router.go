@@ -32,7 +32,7 @@ func CreateRouter(
 			logAndSpanQueryService,
 			logger,
 		),
-	)
+	).Methods("GET")
 
 	return r
 }

@@ -1,0 +1,346 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a monitoring and analytics tool for distributed systems.",
+        "title": "Augur API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/backendAPI",
+    "paths": {
+        "/error": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get spans or logs detailing errors.",
+                "parameters": [
+                    {
+                        "description": "The optional search parameters",
+                        "name": "error",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/log_and_span.ErrorSearchParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of logs and spans detailing errors",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/graph": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get a sub-graph from a log or trace.",
+                "parameters": [
+                    {
+                        "description": "The log or span data to get the sub-graph from",
+                        "name": "logOrSpanData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ChainOfEventsRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sub-graph from the log or trace",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ChainOfEventsResponseDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handler.ChainOfEventsNodeDTO": {
+            "type": "object",
+            "properties": {
+                "cluster_id": {
+                    "description": "The Cluster ID of the cluster belonging to the log or span data",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "The ID of the log or span data",
+                    "type": "string"
+                },
+                "log_dto": {
+                    "description": "The details of the log data, if the data is a log",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/handler.LogDTO"
+                        }
+                    ]
+                },
+                "predecessors": {
+                    "description": "The IDs of the predecessors of the log or span data",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "span_dto": {
+                    "description": "The details of the span data, if the data is a span",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/handler.SpanDTO"
+                        }
+                    ]
+                },
+                "successors": {
+                    "description": "The IDs of the successors of the log or span data",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handler.ChainOfEventsRequestDTO": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "description": "The ID of the log or span data",
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ChainOfEventsResponseDTO": {
+            "type": "object",
+            "properties": {
+                "graph": {
+                    "description": "The nodes in the chain of events",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/handler.ChainOfEventsNodeDTO"
+                    }
+                }
+            }
+        },
+        "handler.ErrorMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ErrorResponseDTO": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "description": "The log or span representing the error",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.LogAndSpanDTO"
+                    }
+                }
+            }
+        },
+        "handler.LogAndSpanDTO": {
+            "type": "object",
+            "properties": {
+                "log_dto": {
+                    "description": "The log details, null if the error is a span",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/handler.LogDTO"
+                        }
+                    ]
+                },
+                "span_dto": {
+                    "description": "The span details, null if the error is a log",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/handler.SpanDTO"
+                        }
+                    ]
+                }
+            }
+        },
+        "handler.LogDTO": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "message",
+                "service",
+                "severity",
+                "timestamp"
+            ],
+            "properties": {
+                "cluster_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "span_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SpanDTO": {
+            "type": "object",
+            "required": [
+                "action_name",
+                "cluster_event",
+                "cluster_id",
+                "created_at",
+                "end_time",
+                "id",
+                "parent_span_id",
+                "service",
+                "span_id",
+                "span_kind",
+                "start_time",
+                "trace_id"
+            ],
+            "properties": {
+                "action_name": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "cluster_event": {
+                    "type": "string"
+                },
+                "cluster_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.SpanEventDTO"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parent_span_id": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "span_id": {
+                    "type": "string"
+                },
+                "span_kind": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.SpanEventDTO": {
+            "type": "object",
+            "required": [
+                "attributes",
+                "name",
+                "timestamp"
+            ],
+            "properties": {
+                "attributes": {
+                    "description": "The attributes of the event, metadata like HTTP status, user info",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "description": "The name of the event",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "description": "The timestamp of the event",
+                    "type": "string"
+                }
+            }
+        },
+        "log_and_span.ErrorSearchParams": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
