@@ -54,7 +54,7 @@ func getAllErrorsQuery(params ErrorSearchParams) map[string]interface{} {
 		}
 		spanMustClauses = append(spanMustClauses, map[string]interface{}{
 			"term": map[string]interface{}{
-				"status": "error",
+				"status.code": "error",
 			},
 		})
 
