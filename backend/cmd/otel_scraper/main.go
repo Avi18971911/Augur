@@ -1,19 +1,19 @@
 package main
 
 import (
-	clusterService "github.com/Avi18971911/Augur/pkg/cluster/service"
-	countModel "github.com/Avi18971911/Augur/pkg/count/model"
-	count "github.com/Avi18971911/Augur/pkg/count/service"
-	"github.com/Avi18971911/Augur/pkg/data_pipeline/service"
-	dataProcessor "github.com/Avi18971911/Augur/pkg/data_processor/service"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
-	logModel "github.com/Avi18971911/Augur/pkg/log/model"
-	logsServer "github.com/Avi18971911/Augur/pkg/log/server"
-	traceModel "github.com/Avi18971911/Augur/pkg/trace/model"
-	traceServer "github.com/Avi18971911/Augur/pkg/trace/server"
-	"github.com/Avi18971911/Augur/pkg/write_buffer"
+	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
+	"github.com/Avi18971911/Augur/internal/db/write_buffer"
+	logModel "github.com/Avi18971911/Augur/internal/otel_server/log/model"
+	logsServer "github.com/Avi18971911/Augur/internal/otel_server/log/server"
+	spanModel "github.com/Avi18971911/Augur/internal/otel_server/trace/model"
+	traceServer "github.com/Avi18971911/Augur/internal/otel_server/trace/server"
+	analyticsService "github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
+	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
+	countModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	count "github.com/Avi18971911/Augur/internal/pipeline/count/service"
+	"github.com/Avi18971911/Augur/internal/pipeline/data_pipeline/service"
+	dataProcessor "github.com/Avi18971911/Augur/internal/pipeline/data_processor/service"
 	"github.com/asaskevich/EventBus"
 	"github.com/elastic/go-elasticsearch/v8"
 	protoLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -90,7 +90,7 @@ func main() {
 		logger.Fatal("Failed to start data pipeline: %v", zap.Error(err))
 	}
 
-	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[traceModel.Span](
+	traceDBBuffer := write_buffer.NewDatabaseWriteBufferImpl[spanModel.Span](
 		ac,
 		bootstrapper.SpanIndexName,
 		logger,

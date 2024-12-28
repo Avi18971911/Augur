@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/bootstrapper"
-	"github.com/Avi18971911/Augur/pkg/elasticsearch/client"
-	analyticsService "github.com/Avi18971911/Augur/pkg/inference/service"
-	"github.com/Avi18971911/Augur/pkg/server/router"
+	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
+	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
+	"github.com/Avi18971911/Augur/internal/query_server/router"
+	"github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	"github.com/elastic/go-elasticsearch/v8"
 	"go.uber.org/zap"
 	"net/http"
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	as := analyticsService.NewAnalyticsQueryService(ac, logger)
+	as := inference.NewAnalyticsQueryService(ac, logger)
 
 	r := router.CreateRouter(context.Background(), as, logger)
 	logger.Info("Starting server at :8081")
