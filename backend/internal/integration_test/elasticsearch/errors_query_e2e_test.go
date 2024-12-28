@@ -254,4 +254,107 @@ func TestErrorsQuery(t *testing.T) {
 		}
 		assert.EqualValues(t, expectedSpanIds, actualSpanIds)
 	})
+
+	t.Run("should return all possible errors with empty params", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		assert.NoError(t, err)
+
+		timestamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		startTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+		endTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		logs := []logModel.LogEntry{
+			{
+				Id:        "1",
+				Severity:  logModel.ErrorLevel,
+				Message:   "Error message 1",
+				Timestamp: timestamp,
+				CreatedAt: createdAt,
+				Service:   "service1",
+				ClusterId: "cluster1",
+			},
+			{
+				Id:        "2",
+				Severity:  logModel.InfoLevel,
+				Message:   "Info message 1",
+				Timestamp: timestamp,
+				CreatedAt: createdAt,
+				Service:   "service1",
+				ClusterId: "cluster1",
+			},
+		}
+
+		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
+		assert.NoError(t, err)
+
+		spans := []model.Span{
+			{
+				Id:           "1",
+				CreatedAt:    createdAt,
+				StartTime:    startTime,
+				EndTime:      endTime,
+				Service:      "service1",
+				ClusterId:    "cluster1",
+				ClusterEvent: "cluster_event1",
+				SpanID:       "span1",
+				ParentSpanID: "parent_span1",
+				TraceID:      "trace1",
+				ActionName:   "action1",
+				Status: model.Status{
+					Message: "error",
+					Code:    model.ERROR,
+				},
+				Events:     make([]model.SpanEvent, 0),
+				Attributes: make(map[string]string),
+			},
+			{
+				Id:           "2",
+				CreatedAt:    createdAt,
+				StartTime:    startTime,
+				EndTime:      endTime,
+				Service:      "service1",
+				ClusterId:    "cluster1",
+				ClusterEvent: "cluster_event2",
+				SpanID:       "span2",
+				ParentSpanID: "parent_span2",
+				TraceID:      "trace2",
+				ActionName:   "action2",
+				Status: model.Status{
+					Message: "ok",
+					Code:    model.OK,
+				},
+				Events:     make([]model.SpanEvent, 0),
+				Attributes: make(map[string]string),
+			},
+		}
+
+		err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
+		assert.NoError(t, err)
+
+		emptyBody := []byte("{}")
+		req := httptest.NewRequest("GET", "/error", bytes.NewReader(emptyBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		var response handler.ErrorResponseDTO
+		handler.ErrorHandler(context.Background(), qs, logger)(w, req)
+
+		err = json.NewDecoder(w.Result().Body).Decode(&response)
+		assert.NoError(t, err)
+		expectedLogIds := []string{logs[0].Id}
+		expectedSpanIds := []string{spans[0].Id}
+		actualSpanIds := make([]string, 0)
+		actualLogIds := make([]string, 0)
+		for _, logOrSpan := range response.Errors {
+			if logOrSpan.LogDTO != nil {
+				actualLogIds = append(actualLogIds, logOrSpan.LogDTO.Id)
+			} else {
+				actualSpanIds = append(actualSpanIds, logOrSpan.SpanDTO.Id)
+			}
+		}
+
+		assert.EqualValues(t, expectedLogIds, actualLogIds)
+		assert.EqualValues(t, expectedSpanIds, actualSpanIds)
+	})
 }
