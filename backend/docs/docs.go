@@ -34,7 +34,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/log_and_span.ErrorSearchParams"
+                            "$ref": "#/definitions/log_and_span.SearchParams"
                         }
                     }
                 ],
@@ -42,7 +42,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of logs and spans detailing errors",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponseDTO"
+                            "$ref": "#/definitions/handler.DataResponseDTO"
                         }
                     },
                     "500": {
@@ -162,15 +162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.ErrorMessage": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.ErrorResponseDTO": {
+        "handler.DataResponseDTO": {
             "type": "object",
             "properties": {
                 "errors": {
@@ -179,6 +171,14 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/handler.LogAndSpanDTO"
                     }
+                }
+            }
+        },
+        "handler.ErrorMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -335,10 +335,13 @@ const docTemplate = `{
                 }
             }
         },
-        "log_and_span.ErrorSearchParams": {
+        "log_and_span.SearchParams": {
             "type": "object",
             "properties": {
                 "end_time": {
+                    "type": "string"
+                },
+                "operation": {
                     "type": "string"
                 },
                 "service": {
@@ -346,8 +349,31 @@ const docTemplate = `{
                 },
                 "start_time": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/log_and_span.Type"
+                    }
                 }
             }
+        },
+        "log_and_span.Type": {
+            "type": "string",
+            "enum": [
+                "error",
+                "info",
+                "warn",
+                "ok",
+                "unset"
+            ],
+            "x-enum-varnames": [
+                "Error",
+                "Info",
+                "Warn",
+                "Ok",
+                "Unset"
+            ]
         }
     }
 }`

@@ -43,18 +43,18 @@ definitions:
         description: The nodes in the chain of events
         type: object
     type: object
-  handler.ErrorMessage:
-    properties:
-      message:
-        type: string
-    type: object
-  handler.ErrorResponseDTO:
+  handler.DataResponseDTO:
     properties:
       errors:
         description: The log or span representing the error
         items:
           $ref: '#/definitions/handler.LogAndSpanDTO'
         type: array
+    type: object
+  handler.ErrorMessage:
+    properties:
+      message:
+        type: string
     type: object
   handler.LogAndSpanDTO:
     properties:
@@ -162,15 +162,35 @@ definitions:
     - name
     - timestamp
     type: object
-  log_and_span.ErrorSearchParams:
+  log_and_span.SearchParams:
     properties:
       end_time:
+        type: string
+      operation:
         type: string
       service:
         type: string
       start_time:
         type: string
+      type:
+        items:
+          $ref: '#/definitions/log_and_span.Type'
+        type: array
     type: object
+  log_and_span.Type:
+    enum:
+    - error
+    - info
+    - warn
+    - ok
+    - unset
+    type: string
+    x-enum-varnames:
+    - Error
+    - Info
+    - Warn
+    - Ok
+    - Unset
 info:
   contact: {}
   description: This is a monitoring and analytics tool for distributed systems.
@@ -187,14 +207,14 @@ paths:
         name: error
         required: true
         schema:
-          $ref: '#/definitions/log_and_span.ErrorSearchParams'
+          $ref: '#/definitions/log_and_span.SearchParams'
       produces:
       - application/json
       responses:
         "200":
           description: List of logs and spans detailing errors
           schema:
-            $ref: '#/definitions/handler.ErrorResponseDTO'
+            $ref: '#/definitions/handler.DataResponseDTO'
         "500":
           description: Internal server error
           schema:
