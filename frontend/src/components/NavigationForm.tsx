@@ -45,7 +45,6 @@ function NavigationForm() {
                 console.log(response)
             })
             .catch((error) => {
-                console.log("Error")
                 console.error(error)
             })
     }
@@ -149,7 +148,6 @@ function NavigationForm() {
                 type={"submit"}
                 style={{marginTop: '20px', width: '50%', marginBottom: '20px', background: 'gray'}}
                 onClick={() => {
-                    console.log("Submitted");
                     getLogsAndSpans(
                         selectedService,
                         selectedOperation,
