@@ -16,7 +16,7 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/data": {
-            "get": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -55,7 +55,7 @@ const docTemplate = `{
             }
         },
         "/graph": {
-            "get": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],

@@ -198,7 +198,7 @@ info:
   version: "1.0"
 paths:
   /data:
-    get:
+    post:
       consumes:
       - application/json
       parameters:
@@ -223,7 +223,7 @@ paths:
       tags:
       - analytics
   /graph:
-    get:
+    post:
       consumes:
       - application/json
       parameters:

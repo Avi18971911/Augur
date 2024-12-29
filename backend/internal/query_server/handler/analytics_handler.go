@@ -17,7 +17,7 @@ import (
 // @Param logOrSpanData body ChainOfEventsRequestDTO true "The log or span data to get the sub-graph from"
 // @Success 200 {object} ChainOfEventsResponseDTO "Sub-graph from the log or trace"
 // @Failure 500 {object} ErrorMessage "Internal server error"
-// @Router /graph [get]
+// @Router /graph [post]
 func ChainOfEventsHandler(
 	ctx context.Context,
 	s inference.InferenceQueryService,

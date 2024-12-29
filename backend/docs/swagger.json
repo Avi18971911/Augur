@@ -9,7 +9,7 @@
     "basePath": "/backendAPI",
     "paths": {
         "/data": {
-            "get": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -48,7 +48,7 @@
             }
         },
         "/graph": {
-            "get": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
