@@ -27,7 +27,7 @@ func CreateRouter(
 	).Methods("GET")
 
 	r.Handle(
-		"/error", handler.ErrorHandler(
+		"/data", handler.LogAndSpanHandler(
 			ctx,
 			logAndSpanQueryService,
 			logger,

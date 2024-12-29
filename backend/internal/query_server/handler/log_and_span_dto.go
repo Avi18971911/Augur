@@ -9,9 +9,9 @@ type LogAndSpanDTO struct {
 	SpanDTO *SpanDTO `json:"span_dto,omitempty"`
 }
 
-// ErrorResponseDTO represents the response to an error request
-// @swagger:model ErrorResponseDTO
-type ErrorResponseDTO struct {
+// DataResponseDTO represents the response to an error request
+// @swagger:model DataResponseDTO
+type DataResponseDTO struct {
 	// The log or span representing the error
-	Errors []LogAndSpanDTO `json:"errors"`
+	Data []LogAndSpanDTO `json:"errors"`
 }

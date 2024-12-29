@@ -1,6 +1,6 @@
 package log_and_span
 
-func getAllErrorsQuery(params ErrorSearchParams) map[string]interface{} {
+func getLogsAndSpansQuery(params SearchParams) map[string]interface{} {
 	var shouldClauses []map[string]interface{}
 	var filterClauses []map[string]interface{}
 
@@ -20,19 +20,6 @@ func getAllErrorsQuery(params ErrorSearchParams) map[string]interface{} {
 			},
 		})
 	}
-
-	logMustClauses = append(logMustClauses, map[string]interface{}{
-		"term": map[string]interface{}{
-			"severity": "error",
-		},
-	})
-
-	logCondition := map[string]interface{}{
-		"bool": map[string]interface{}{
-			"must": logMustClauses,
-		},
-	}
-	shouldClauses = append(shouldClauses, logCondition)
 
 	var spanMustClauses []map[string]interface{}
 
@@ -57,17 +44,41 @@ func getAllErrorsQuery(params ErrorSearchParams) map[string]interface{} {
 		}
 	}
 
-	spanMustClauses = append(spanMustClauses, map[string]interface{}{
-		"term": map[string]interface{}{
-			"status.code": "error",
+	if params.Types != nil && len(params.Types) > 0 {
+		spanMustClauses = append(spanMustClauses, map[string]interface{}{
+			"terms": map[string]interface{}{
+				"status.code": params.Types,
+			},
+		})
+
+		logMustClauses = append(logMustClauses, map[string]interface{}{
+			"terms": map[string]interface{}{
+				"severity": params.Types,
+			},
+		})
+	}
+
+	if params.Operation != nil {
+		spanMustClauses = append(spanMustClauses, map[string]interface{}{
+			"term": map[string]interface{}{
+				"action_name": *params.Operation,
+			},
+		})
+	}
+
+	logCondition := map[string]interface{}{
+		"bool": map[string]interface{}{
+			"must": logMustClauses,
 		},
-	})
+	}
 
 	spanCondition := map[string]interface{}{
 		"bool": map[string]interface{}{
 			"must": spanMustClauses,
 		},
 	}
+
+	shouldClauses = append(shouldClauses, logCondition)
 	shouldClauses = append(shouldClauses, spanCondition)
 
 	if params.Service != nil {
