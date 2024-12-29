@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/error": {
+        "/data": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -26,11 +26,11 @@ const docTemplate = `{
                 "tags": [
                     "analytics"
                 ],
-                "summary": "Get spans or logs detailing errors.",
+                "summary": "Get spans or logs with their associated information.",
                 "parameters": [
                     {
                         "description": "The optional search parameters",
-                        "name": "error",
+                        "name": "searchParams",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -40,7 +40,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of logs and spans detailing errors",
+                        "description": "List of logs and spans with their corresponding details.",
                         "schema": {
                             "$ref": "#/definitions/handler.DataResponseDTO"
                         }
@@ -165,7 +165,7 @@ const docTemplate = `{
         "handler.DataResponseDTO": {
             "type": "object",
             "properties": {
-                "errors": {
+                "data": {
                     "description": "The log or span representing the error",
                     "type": "array",
                     "items": {

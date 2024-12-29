@@ -9,15 +9,15 @@ import (
 	"net/http"
 )
 
-// LogAndSpanHandler creates a handler for getting errors using search parameters.
-// @Summary Get spans or logs detailing errors.
+// LogAndSpanHandler creates a handler for getting log and span data using search parameters.
+// @Summary Get spans or logs with their associated information.
 // @Tags analytics
 // @Accept json
 // @Produce json
-// @Param error body log_and_span.SearchParams true "The optional search parameters"
-// @Success 200 {object} DataResponseDTO "List of logs and spans detailing errors"
+// @Param searchParams body log_and_span.SearchParams true "The optional search parameters"
+// @Success 200 {object} DataResponseDTO "List of logs and spans with their corresponding details."
 // @Failure 500 {object} ErrorMessage "Internal server error"
-// @Router /error [get]
+// @Router /data [get]
 func LogAndSpanHandler(
 	ctx context.Context,
 	ls log_and_span.LogAndSpanQueryService,

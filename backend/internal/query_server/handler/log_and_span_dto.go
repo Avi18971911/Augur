@@ -13,5 +13,5 @@ type LogAndSpanDTO struct {
 // @swagger:model DataResponseDTO
 type DataResponseDTO struct {
 	// The log or span representing the error
-	Data []LogAndSpanDTO `json:"errors"`
+	Data []LogAndSpanDTO `json:"data"`
 }

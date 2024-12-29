@@ -45,7 +45,7 @@ definitions:
     type: object
   handler.DataResponseDTO:
     properties:
-      errors:
+      data:
         description: The log or span representing the error
         items:
           $ref: '#/definitions/handler.LogAndSpanDTO'
@@ -197,14 +197,14 @@ info:
   title: Augur API
   version: "1.0"
 paths:
-  /error:
+  /data:
     get:
       consumes:
       - application/json
       parameters:
       - description: The optional search parameters
         in: body
-        name: error
+        name: searchParams
         required: true
         schema:
           $ref: '#/definitions/log_and_span.SearchParams'
@@ -212,14 +212,14 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of logs and spans detailing errors
+          description: List of logs and spans with their corresponding details.
           schema:
             $ref: '#/definitions/handler.DataResponseDTO'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/handler.ErrorMessage'
-      summary: Get spans or logs detailing errors.
+      summary: Get spans or logs with their associated information.
       tags:
       - analytics
   /graph:
