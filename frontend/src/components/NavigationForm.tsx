@@ -1,10 +1,22 @@
 import {useState} from "react";
 
+enum Type {
+    ANY = "Any",
+    INFO = "Info",
+    ERROR = "Error",
+    WARNING = "Warning",
+    OK = "OK",
+    UNASSIGNED = "Unassigned"
+}
+
 function NavigationForm() {
-    const [selectedService, setSelectedService] = useState<string | undefined>(undefined)
-    const [selectedOperation, setSelectedOperation] = useState<string | undefined>(undefined)
+    const [selectedService, setSelectedService] = useState<string>("All")
+    const [selectedOperation, setSelectedOperation] = useState<string>("All")
     const [searchStartTime, setSearchStartTime] = useState<string | undefined>(undefined)
     const [searchEndTime, setSearchEndTime] = useState<string | undefined>(undefined)
+    const [searchLimit, setSearchLimit] = useState<number>(20)
+    const [searchType, setSearchType] = useState<Type>(Type.ANY)
+
 
     return (
         <div style={{
@@ -21,7 +33,7 @@ function NavigationForm() {
                     value={selectedService}
                     onChange={(e) => setSelectedService(e.target.value)}
                 >
-                    <option value={"service1"}>Placeholder Service</option>
+                    <option value={"All"}>All Possible Services</option>
                 </select>
 
                 <div
@@ -33,7 +45,23 @@ function NavigationForm() {
                     value={selectedOperation}
                     onChange={(e) => setSelectedOperation(e.target.value)}
                 >
-                    <option value={"operation1"}>Placeholder Operation</option>
+                    <option value={"All"}>All Possible Operations</option>
+                </select>
+
+                <div
+                    style={{marginTop: '20px'}}
+                >
+                    Type
+                </div>
+                <select
+                    value={searchType}
+                    style={{width: '50%', textIndent: '40%'}}
+                    onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
+                >
+                    {Object.values(Type).map((type) => (
+                        <option value={type}>{type}</option>
+                    ))}
+
                 </select>
 
                 <div
@@ -47,7 +75,7 @@ function NavigationForm() {
                 />
 
                 <div
-                    style={{marginTop: '20px'}}
+                    style={{marginTop: '20px', textAlign: 'center'}}
                 >
                     End Time
                 </div>
@@ -61,7 +89,11 @@ function NavigationForm() {
                 >
                     Limit Results
                 </div>
-                <input type={"number"} name={"limit"} />
+                <input
+                    type={"number"} name={"limit"} value={searchLimit} style={{textAlign: 'center', width: '30%'}}
+                    onChange={(e) => setSearchLimit(parseInt(e.target.value))}
+                />
+
             </form>
 
             <button
