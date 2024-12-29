@@ -2,7 +2,7 @@ import NavigationForm from "../components/NavigationForm.tsx";
 
 function SearchPage() {
     return (
-        <div style={{width: '100%'}}>
+        <div style={{width: '100%', marginTop: '70px'}}>
             <h1>Search Page</h1>
             <div style={{ display: 'flex', flexDirection: 'row'}}>
                 <div style={{ display: 'flex', gap: '1rem', flex: '0.8' }}>

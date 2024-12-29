@@ -1,8 +1,10 @@
 import {useState} from "react";
 
 function NavigationForm() {
-    const [selectedService, setSelectedService] = useState("")
-    const [selectedOperation, setSelectedOperation] = useState("")
+    const [selectedService, setSelectedService] = useState<string | undefined>(undefined)
+    const [selectedOperation, setSelectedOperation] = useState<string | undefined>(undefined)
+    const [searchStartTime, setSearchStartTime] = useState<string | undefined>(undefined)
+    const [searchEndTime, setSearchEndTime] = useState<string | undefined>(undefined)
 
     return (
         <div style={{
@@ -22,7 +24,9 @@ function NavigationForm() {
                     <option value={"service1"}>Placeholder Service</option>
                 </select>
 
-                <div>
+                <div
+                    style={{marginTop: '20px'}}
+                >
                     Operation
                 </div>
                 <select
@@ -32,13 +36,40 @@ function NavigationForm() {
                     <option value={"operation1"}>Placeholder Operation</option>
                 </select>
 
-                <div>
+                <div
+                    style={{marginTop: '20px'}}
+                >
+                    Start Time
+                </div>
+                <input
+                    type={"datetime-local"} value={searchStartTime}
+                    name={"startTime"} onChange={(e) => setSearchStartTime(e.target.value)}
+                />
+
+                <div
+                    style={{marginTop: '20px'}}
+                >
+                    End Time
+                </div>
+                <input
+                    type={"datetime-local"} value={searchEndTime}
+                    name={"endTime"} onChange={(e) => setSearchEndTime(e.target.value)}
+                />
+
+                <div
+                    style={{marginTop: '20px'}}
+                >
                     Limit Results
                 </div>
                 <input type={"number"} name={"limit"} />
             </form>
 
-            <button type={"submit"} style={{marginTop: '20px', width: '50%'}}>Search</button>
+            <button
+                type={"submit"}
+                style={{marginTop: '20px', width: '50%', marginBottom: '20px', background: 'gray'}}
+            >
+                Search
+            </button>
         </div>
     )
 }
