@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {AnalyticsApi, Configuration, DataGetRequest, LogAndSpanType} from "../backend_api";
 import {useApiClientContext} from "../provider/ApiClientProvider.tsx";
+import {useDataContext} from "../provider/DataProvider.tsx";
 
 enum Type {
     ANY = "Any",
@@ -23,6 +24,7 @@ function NavigationForm() {
     const [searchType, setSearchType] = useState<Type>(Type.ANY)
 
     const apiClient = useApiClientContext()
+    const { setData } = useDataContext()
 
     function getLogsAndSpans(
         service: string,
@@ -41,7 +43,10 @@ function NavigationForm() {
         }
         apiClient.dataPost({searchParams: searchParams} as DataGetRequest)
             .then((response) => {
-                console.log(response)
+                if (response.data === undefined) {
+                    return
+                }
+                setData(response.data)
             })
             .catch((error) => {
                 console.error(error)

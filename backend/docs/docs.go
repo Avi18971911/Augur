@@ -206,6 +206,7 @@ const docTemplate = `{
         "handler.LogDTO": {
             "type": "object",
             "required": [
+                "cluster_id",
                 "created_at",
                 "id",
                 "message",
@@ -257,6 +258,7 @@ const docTemplate = `{
                 "span_id",
                 "span_kind",
                 "start_time",
+                "status",
                 "trace_id"
             ],
             "properties": {
@@ -305,6 +307,9 @@ const docTemplate = `{
                 "start_time": {
                     "type": "string"
                 },
+                "status": {
+                    "$ref": "#/definitions/handler.StatusDTO"
+                },
                 "trace_id": {
                     "type": "string"
                 }
@@ -331,6 +336,34 @@ const docTemplate = `{
                 },
                 "timestamp": {
                     "description": "The timestamp of the event",
+                    "type": "string"
+                }
+            }
+        },
+        "handler.StatusCode": {
+            "type": "string",
+            "enum": [
+                "unset",
+                "ok",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "UNSET",
+                "OK",
+                "ERROR"
+            ]
+        },
+        "handler.StatusDTO": {
+            "type": "object",
+            "required": [
+                "code",
+                "message"
+            ],
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/handler.StatusCode"
+                },
+                "message": {
                     "type": "string"
                 }
             }

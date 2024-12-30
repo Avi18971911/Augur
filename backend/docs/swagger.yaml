@@ -88,6 +88,7 @@ definitions:
       trace_id:
         type: string
     required:
+    - cluster_id
     - created_at
     - id
     - message
@@ -127,6 +128,8 @@ definitions:
         type: string
       start_time:
         type: string
+      status:
+        $ref: '#/definitions/handler.StatusDTO'
       trace_id:
         type: string
     required:
@@ -141,6 +144,7 @@ definitions:
     - span_id
     - span_kind
     - start_time
+    - status
     - trace_id
     type: object
   handler.SpanEventDTO:
@@ -161,6 +165,26 @@ definitions:
     - attributes
     - name
     - timestamp
+    type: object
+  handler.StatusCode:
+    enum:
+    - unset
+    - ok
+    - error
+    type: string
+    x-enum-varnames:
+    - UNSET
+    - OK
+    - ERROR
+  handler.StatusDTO:
+    properties:
+      code:
+        $ref: '#/definitions/handler.StatusCode'
+      message:
+        type: string
+    required:
+    - code
+    - message
     type: object
   log_and_span.SearchParams:
     properties:
