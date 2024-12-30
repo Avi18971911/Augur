@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {AnalyticsApi, Configuration, DataGetRequest, LogAndSpanType} from "../backend_api";
+import {useApiClientContext} from "../provider/ApiClientProvider.tsx";
 
 enum Type {
     ANY = "Any",
@@ -20,10 +21,8 @@ function NavigationForm() {
     const [searchEndTime, setSearchEndTime] = useState<string | undefined>(undefined)
     const [searchLimit, setSearchLimit] = useState<number>(20)
     const [searchType, setSearchType] = useState<Type>(Type.ANY)
-    const apiConfig = new Configuration({
-        basePath: '/api'
-    })
-    const apiClient = new AnalyticsApi(apiConfig);
+
+    const apiClient = useApiClientContext()
 
     function getLogsAndSpans(
         service: string,
