@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {AnalyticsApi, Configuration, DataGetRequest, LogAndSpanType} from "../backend_api";
+import {DataPostRequest, LogAndSpanType} from "../backend_api";
 import {useApiClientContext} from "../provider/ApiClientProvider.tsx";
 import {useDataContext} from "../provider/DataProvider.tsx";
 
@@ -41,7 +41,7 @@ function NavigationForm() {
             endTime: endTime || null,
             type: convertType([type]) || null,
         }
-        apiClient.dataPost({searchParams: searchParams} as DataGetRequest)
+        apiClient.dataPost({searchParams: searchParams} as DataPostRequest)
             .then((response) => {
                 if (response.data === undefined) {
                     return
