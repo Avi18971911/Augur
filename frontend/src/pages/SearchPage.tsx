@@ -1,5 +1,6 @@
 import NavigationForm from "../components/NavigationForm.tsx";
 import {DataProvider} from "../provider/DataProvider.tsx";
+import DataDisplay from "../components/DataDisplay.tsx";
 
 function SearchPage() {
 
@@ -13,6 +14,7 @@ function SearchPage() {
                         <NavigationForm />
                     </div>
                     <div style={{flex: '2'}}>
+                        <DataDisplay />
                     </div>
                 </DataProvider>
             </div>

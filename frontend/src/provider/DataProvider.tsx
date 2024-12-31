@@ -8,7 +8,7 @@ type DataContextType = {
 
 type LogOrSpan = Log | Span;
 
-type Span = {
+export type Span = {
     id: string;
     createdAt: Date;
     spanId: string;
@@ -43,7 +43,7 @@ enum SpanStatusCode {
     ERROR = "Error",
 }
 
-type Log = {
+export type Log = {
     id: string;
     createdAt: Date;
     timestamp: Date;

@@ -26,6 +26,7 @@ function NavigationForm() {
     const apiClient = useApiClientContext()
     const { setData } = useDataContext()
 
+    // TODO: Move these functions to another component or service
     function getLogsAndSpans(
         service: string,
         operation: string,
