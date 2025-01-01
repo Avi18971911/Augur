@@ -3,8 +3,6 @@ import {DataProvider} from "../provider/DataProvider.tsx";
 import DataDisplay from "../components/DataDisplay.tsx";
 
 function SearchPage() {
-
-
     return (
         <div>
             <div style={{ display: 'flex', flexDirection: 'row'}}>
