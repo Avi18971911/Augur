@@ -72,99 +72,100 @@ function NavigationForm() {
         return typeList.map((type) => typeMap[type]);
     }
     return (
-        <div style={{
-            flexDirection: 'column', display: "flex", width: '100%', borderStyle: 'solid', borderColor: 'white',
-            alignItems: 'center',
-        }}>
-            <h3>Navigation</h3>
-            <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+            <h2>Navigation</h2>
+            <div style={{
+                flexDirection: 'column', display: "flex", width: '100%', borderStyle: 'solid', borderColor: 'white',
+                alignItems: 'center', padding: '20px', marginTop: '20px',
+            }}>
+                <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
+                    <div>
+                        Service
+                    </div>
+                    <select
+                        value={selectedService}
+                        onChange={(e) => setSelectedService(e.target.value)}
+                    >
+                        <option value={allServices}>All Possible Services</option>
+                    </select>
 
-                <div>
-                    Service
-                </div>
-                <select
-                    value={selectedService}
-                    onChange={(e) => setSelectedService(e.target.value)}
+                    <div
+                        style={{marginTop: '20px'}}
+                    >
+                        Operation
+                    </div>
+                    <select
+                        value={selectedOperation}
+                        onChange={(e) => setSelectedOperation(e.target.value)}
+                    >
+                        <option value={allOperations}>All Possible Operations</option>
+                    </select>
+
+                    <div
+                        style={{marginTop: '20px'}}
+                    >
+                        Type
+                    </div>
+                    <select
+                        value={searchType}
+                        style={{width: '70%'}}
+                        onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
+                    >
+                        {Object.values(Type).map((type) => (
+                            <option value={type}>{type}</option>
+                        ))}
+
+                    </select>
+
+                    <div
+                        style={{marginTop: '20px'}}
+                    >
+                        Start Time
+                    </div>
+                    <input
+                        type={"datetime-local"} value={searchStartTime}
+                        name={"startTime"} onChange={(e) => setSearchStartTime(e.target.value)}
+                    />
+
+                    <div
+                        style={{marginTop: '20px', textAlign: 'center'}}
+                    >
+                        End Time
+                    </div>
+                    <input
+                        type={"datetime-local"} value={searchEndTime}
+                        name={"endTime"} onChange={(e) => setSearchEndTime(e.target.value)}
+                    />
+
+                    <div
+                        style={{marginTop: '20px'}}
+                    >
+                        Limit Results
+                    </div>
+                    <input
+                        type={"number"} name={"limit"} value={searchLimit} style={{textAlign: 'center', width: '30%'}}
+                        onChange={(e) => setSearchLimit(parseInt(e.target.value))}
+                    />
+
+                </form>
+
+                <button
+                    type={"submit"}
+                    style={{marginTop: '20px', width: '50%', marginBottom: '20px', background: 'gray'}}
+                    onClick={() => {
+                        getLogsAndSpans(
+                            selectedService,
+                            selectedOperation,
+                            searchStartTime,
+                            searchEndTime,
+                            searchLimit,
+                            searchType,
+                        )
+                    }}
                 >
-                    <option value={allServices}>All Possible Services</option>
-                </select>
-
-                <div
-                    style={{marginTop: '20px'}}
-                >
-                    Operation
-                </div>
-                <select
-                    value={selectedOperation}
-                    onChange={(e) => setSelectedOperation(e.target.value)}
-                >
-                    <option value={allOperations}>All Possible Operations</option>
-                </select>
-
-                <div
-                    style={{marginTop: '20px'}}
-                >
-                    Type
-                </div>
-                <select
-                    value={searchType}
-                    style={{width: '70%'}}
-                    onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
-                >
-                    {Object.values(Type).map((type) => (
-                        <option value={type}>{type}</option>
-                    ))}
-
-                </select>
-
-                <div
-                    style={{marginTop: '20px'}}
-                >
-                    Start Time
-                </div>
-                <input
-                    type={"datetime-local"} value={searchStartTime}
-                    name={"startTime"} onChange={(e) => setSearchStartTime(e.target.value)}
-                />
-
-                <div
-                    style={{marginTop: '20px', textAlign: 'center'}}
-                >
-                    End Time
-                </div>
-                <input
-                    type={"datetime-local"} value={searchEndTime}
-                    name={"endTime"} onChange={(e) => setSearchEndTime(e.target.value)}
-                />
-
-                <div
-                    style={{marginTop: '20px'}}
-                >
-                    Limit Results
-                </div>
-                <input
-                    type={"number"} name={"limit"} value={searchLimit} style={{textAlign: 'center', width: '30%'}}
-                    onChange={(e) => setSearchLimit(parseInt(e.target.value))}
-                />
-
-            </form>
-
-            <button
-                type={"submit"}
-                style={{marginTop: '20px', width: '50%', marginBottom: '20px', background: 'gray'}}
-                onClick={() => {
-                    getLogsAndSpans(
-                        selectedService,
-                        selectedOperation,
-                        searchStartTime,
-                        searchEndTime,
-                        searchLimit,
-                        searchType,
-                    )
-                }}
-            >
-                Search
-            </button>
+                    Search
+                </button>
+            </div>
         </div>
     )
 }
