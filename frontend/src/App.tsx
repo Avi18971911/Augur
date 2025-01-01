@@ -7,14 +7,14 @@ import {ApiClientProvider} from "./provider/ApiClientProvider.tsx";
 function App() {
     return (
         <Router>
-            <div style={{position: 'fixed', top: '0px', width: '100%', left: '0px', zIndex: '9999'}}>
-                <Toolbar/>
-            </div>
             <ApiClientProvider>
-                <div style={{width: '100%', position: 'absolute', top: '20px'}}>
-                    <Routes>
-                        <Route path="/" element={<SearchPage/>}/>
-                    </Routes>
+                <div style={{position: 'absolute', top: '0px', width: '100%', left: '0px'}}>
+                    <Toolbar/>
+                    <div style={{width: '100%', position: 'relative', top: '40px', left: '40px'}}>
+                        <Routes>
+                            <Route path="/" element={<SearchPage/>}/>
+                        </Routes>
+                    </div>
                 </div>
             </ApiClientProvider>
         </Router>

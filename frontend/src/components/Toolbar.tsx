@@ -5,7 +5,7 @@ import styles from "../styles/NavLink.module.css";
 function Toolbar() {
     return (
         <nav style={{
-            display: 'flex', width: '100%', position: 'relative', background: 'gray', height: '40px'
+            background: 'gray', position: 'sticky', top: 0, left: 0, width: '100%', height: '40px', zIndex: 100,
         }}>
             <ul style={{
                 display: 'flex', listStyle: 'none', padding: 0, marginLeft: 20, marginTop: 0,
