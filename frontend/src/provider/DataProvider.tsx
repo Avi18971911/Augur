@@ -113,7 +113,6 @@ const mapSpanStatusDtoToSpanStatus = (statusDto: any): SpanStatus => {
 }
 
 const mapLogDtoToLog = (logDTO: HandlerLogDTO): Log => {
-    console.log(logDTO);
     return {
         id: logDTO.id,
         createdAt: new Date(logDTO.createdAt),
@@ -128,14 +127,14 @@ const mapLogDtoToLog = (logDTO: HandlerLogDTO): Log => {
 }
 
 const mapSeverityDtoToSeverity = (severityDto: string): Severity => {
-    switch (severityDto) {
-        case 'info':
+    switch (severityDto.toLowerCase()) {
+        case Severity.INFO.toLowerCase():
             return Severity.INFO;
-        case 'error':
+        case Severity.ERROR.toLowerCase():
             return Severity.ERROR;
-        case 'debug':
+        case Severity.DEBUG.toLowerCase():
             return Severity.DEBUG;
-        case 'warning':
+        case Severity.WARNING.toLowerCase():
             return Severity.WARNING;
         default:
             throw new Error('Invalid severity ' + severityDto);
