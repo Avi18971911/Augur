@@ -1,0 +1,45 @@
+.tableContainer {
+    overflow: auto; /* Enable scrolling if content overflows */
+    max-height: 100%; /* Limit height to parent container */
+    border: 2px solid white; /* White border around the table */
+    border-radius: 8px; /* Optional: Rounded corners */
+    background-color: #333; /* Optional: Background color for contrast */
+}
+
+.table {
+    width: 100%; /* Ensure the table fills the container's width */
+    border-collapse: collapse; /* Prevent double borders */
+}
+
+.table th,
+.table td {
+    border: 1px solid white; /* White border for table cells */
+    padding: 8px; /* Add padding for readability */
+    text-align: left; /* Align text to the left */
+    color: white; /* White text for visibility */
+}
+
+.table th {
+    background-color: #444; /* Darker background for header */
+    position: sticky; /* Keeps header visible during scroll */
+    top: 0; /* Position the sticky header at the top */
+    z-index: 1; /* Ensure header stays above other elements */
+}
+
+.tableContainer::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+    height: 8px; /* Height of the scrollbar */
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+    background-color: #888; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Round edges of the thumb */
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Darker color on hover */
+}
+
+.tableContainer::-webkit-scrollbar-track {
+    background: #222; /* Background of the scrollbar track */
+}
