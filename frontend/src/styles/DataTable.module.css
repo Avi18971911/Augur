@@ -13,10 +13,12 @@
 
 .table th,
 .table td {
-    border: 1px solid white; /* White border for table cells */
-    padding: 8px; /* Add padding for readability */
+    padding: 4px 8px; /* Reduce padding for closer rows */
     text-align: left; /* Align text to the left */
     color: white; /* White text for visibility */
+    overflow: hidden; /* Ensure text does not overflow the cell */
+    text-overflow: ellipsis; /* Add ellipsis when text is truncated */
+    white-space: nowrap; /* Prevent wrapping to a new line */
 }
 
 .table th {
@@ -24,6 +26,20 @@
     position: sticky; /* Keeps header visible during scroll */
     top: 0; /* Position the sticky header at the top */
     z-index: 1; /* Ensure header stays above other elements */
+}
+
+/* Alternate Row Colors */
+.table tr:nth-child(odd) {
+    background-color: #3a3a3a; /* Darker shade for odd rows */
+}
+
+.table tr:nth-child(even) {
+    background-color: #2f2f2f; /* Lighter shade for even rows */
+}
+
+/* Optional: Hover Effect */
+.table tr:hover {
+    background-color: #555; /* Highlight row on hover */
 }
 
 .tableContainer::-webkit-scrollbar {
