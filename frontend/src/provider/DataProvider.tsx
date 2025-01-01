@@ -6,7 +6,7 @@ type DataContextType = {
     setData: (data: HandlerLogAndSpanDTO[]) => void;
 };
 
-type LogOrSpan = Log | Span;
+export type LogOrSpan = Log | Span;
 
 export type Span = {
     id: string;
@@ -113,6 +113,7 @@ const mapSpanStatusDtoToSpanStatus = (statusDto: any): SpanStatus => {
 }
 
 const mapLogDtoToLog = (logDTO: HandlerLogDTO): Log => {
+    console.log(logDTO);
     return {
         id: logDTO.id,
         createdAt: new Date(logDTO.createdAt),
@@ -126,18 +127,18 @@ const mapLogDtoToLog = (logDTO: HandlerLogDTO): Log => {
     };
 }
 
-const mapSeverityDtoToSeverity = (severityDto: any): Severity => {
+const mapSeverityDtoToSeverity = (severityDto: string): Severity => {
     switch (severityDto) {
-        case Severity.INFO:
+        case 'info':
             return Severity.INFO;
-        case Severity.ERROR:
+        case 'error':
             return Severity.ERROR;
-        case Severity.DEBUG:
+        case 'debug':
             return Severity.DEBUG;
-        case Severity.WARNING:
+        case 'warning':
             return Severity.WARNING;
         default:
-            return Severity.INFO;
+            throw new Error('Invalid severity ' + severityDto);
     }
 }
 
