@@ -112,7 +112,7 @@ function NavigationForm() {
                         onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
                     >
                         {Object.values(Type).map((type) => (
-                            <option value={type}>{type}</option>
+                            <option key={type} value={type}>{type}</option>
                         ))}
 
                     </select>
