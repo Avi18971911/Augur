@@ -8,6 +8,12 @@ type DataTableProps = {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
+    const [expandedRow, setExpandedRow] = React.useState<string | null>(null);
+
+    const toggleExpand = (id: string) => {
+        setExpandedRow((prev) => (prev === id ? null : id));
+    };
+
     return (
         <div className={styles.tableContainer}>
             <table className={styles.table}>
@@ -20,7 +26,12 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                 </thead>
                 <tbody>
                     {data.map((datum) => (
-                        <DataTableCell key={datum.id} datum={datum} />
+                        <DataTableCell
+                            key={datum.id}
+                            datum={datum}
+                            onToggleExpand={toggleExpand}
+                            expanded={expandedRow === datum.id}
+                        />
                     ))}
                 </tbody>
             </table>

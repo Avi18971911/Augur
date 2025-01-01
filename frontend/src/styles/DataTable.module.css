@@ -1,5 +1,5 @@
 .tableContainer {
-    overflow: auto;
+    overflow-y: auto;
     max-height: 500px;
     border: 2px solid white;
     border-radius: 8px;
@@ -55,5 +55,5 @@
 }
 
 .tableContainer::-webkit-scrollbar-track {
-    background: #222; 
+    background: #222;
 }

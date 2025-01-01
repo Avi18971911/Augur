@@ -3,9 +3,12 @@ import React from "react";
 
 type DataTableCellProps = {
     datum: LogOrSpan;
+    expanded: boolean;
+    onToggleExpand: (id: string) => void;
 };
 
 type DatumDetails = {
+    id: string;
     timestamp: string;
     severity: string;
     message: string;
@@ -18,12 +21,14 @@ const isLog = (datum: LogOrSpan): datum is Log => {
 function getDetails(datum: LogOrSpan): DatumDetails {
     if (isLog(datum)) {
         return {
+            id: datum.id,
             timestamp: datum.timestamp.toLocaleString(),
             severity: datum.severity,
             message: datum.message,
         };
     } else {
         return {
+            id: datum.id,
             timestamp: datum.startTime.toLocaleString(),
             severity: datum.status.code,
             message: datum.status.message,
@@ -31,15 +36,29 @@ function getDetails(datum: LogOrSpan): DatumDetails {
     }
 }
 
-const DataTableCell: React.FC<DataTableCellProps> = ({ datum }) => {
+const DataTableCell: React.FC<DataTableCellProps> = ({ datum, expanded, onToggleExpand }) => {
     const details = getDetails(datum);
     return (
         <tr>
-            <td>{details.timestamp}</td>
-            <td>{details.severity}</td>
-            <td>{details.message}</td>
+            <td>
+                <button
+                    onClick={() => onToggleExpand(details.id)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'white',
+                        fontSize: '16px',
+                    }}
+                >
+                    {expanded ? '▼' : '▶'}
+                </button>
+            </td>
+                <td>{details.timestamp}</td>
+                <td>{details.severity}</td>
+                <td>{details.message}</td>
         </tr>
-    );
+);
 };
 
 export default DataTableCell;
