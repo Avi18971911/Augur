@@ -8,7 +8,7 @@ type SpanCardProps = {
 const SpanCard: React.FC<SpanCardProps> = ({ span }) => {
     return (
         <div style={cardStyle}>
-            <h3>Span ID: {span.spanId}</h3>
+            <h3>Span ID: </h3> <p> {span.spanId} </p>
             <p>
                 <strong>Trace ID:</strong> {span.traceId}
             </p>

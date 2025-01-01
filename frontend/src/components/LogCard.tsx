@@ -8,7 +8,7 @@ type LogCardProps = {
 const LogCard: React.FC<LogCardProps> = ({ log }) => {
     return (
         <div style={cardStyle}>
-            <h3>Log ID: </h3> <p style={{fontSize: '6px'}}> {log.id} </p>
+            <h3>Log ID: </h3> <p> {log.id} </p>
             <p>
                 <strong>Timestamp:</strong> {log.timestamp.toLocaleString()}
             </p>

@@ -108,7 +108,7 @@ function NavigationForm() {
                 </div>
                 <select
                     value={searchType}
-                    style={{width: '50%', textIndent: '40%'}}
+                    style={{width: '70%'}}
                     onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
                 >
                     {Object.values(Type).map((type) => (

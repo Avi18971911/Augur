@@ -27,6 +27,7 @@ const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '16px',
+    marginLeft: '50px'
 };
 
 export default DataDisplay
