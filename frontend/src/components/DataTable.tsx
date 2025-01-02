@@ -19,6 +19,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
             <table className={styles.table}>
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Timestamp</th>
                         <th>Severity</th>
                         <th>Message</th>
