@@ -10,7 +10,7 @@ function App() {
             <ApiClientProvider>
                 <div style={{position: 'absolute', top: '0px', width: '100%', left: '0px'}}>
                     <Toolbar/>
-                    <div style={{width: '90%', position: 'relative', top: '40px', left: '40px'}}>
+                    <div style={{width: '95%', position: 'relative', top: '40px', left: '40px'}}>
                         <Routes>
                             <Route path="/" element={<SearchPage/>}/>
                         </Routes>
