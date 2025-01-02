@@ -94,10 +94,11 @@ func TestErrorsQuery(t *testing.T) {
 		startTime := timestamp.Add(-time.Hour).Format(time.RFC3339)
 		endTime := timestamp.Add(time.Hour).Format(time.RFC3339)
 
-		input := log_and_span.ErrorSearchParams{
+		input := log_and_span.SearchParams{
 			Service:   &service,
 			StartTime: &startTime,
 			EndTime:   &endTime,
+			Types:     []log_and_span.Type{log_and_span.Error},
 		}
 		body, err := json.Marshal(input)
 		assert.NoError(t, err)
@@ -105,14 +106,14 @@ func TestErrorsQuery(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
-		var response handler.ErrorResponseDTO
-		handler.ErrorHandler(context.Background(), qs, logger)(w, req)
+		var response handler.DataResponseDTO
+		handler.LogAndSpanHandler(context.Background(), qs, logger)(w, req)
 
 		err = json.NewDecoder(w.Result().Body).Decode(&response)
 		assert.NoError(t, err)
 		expectedLogIds := []string{logs[0].Id, logs[3].Id}
 		actualLogIds := make([]string, 0)
-		for _, log := range response.Errors {
+		for _, log := range response.Data {
 			actualLogIds = append(actualLogIds, log.LogDTO.Id)
 		}
 		assert.EqualValues(t, expectedLogIds, actualLogIds)
@@ -231,10 +232,11 @@ func TestErrorsQuery(t *testing.T) {
 
 		startTimeStr := startTime.Format(time.RFC3339)
 		endTimeStr := endTime.Format(time.RFC3339)
-		input := log_and_span.ErrorSearchParams{
+		input := log_and_span.SearchParams{
 			Service:   &service,
 			StartTime: &startTimeStr,
 			EndTime:   &endTimeStr,
+			Types:     []log_and_span.Type{log_and_span.Error},
 		}
 		body, err := json.Marshal(input)
 		assert.NoError(t, err)
@@ -242,14 +244,14 @@ func TestErrorsQuery(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
-		var response handler.ErrorResponseDTO
-		handler.ErrorHandler(context.Background(), qs, logger)(w, req)
+		var response handler.DataResponseDTO
+		handler.LogAndSpanHandler(context.Background(), qs, logger)(w, req)
 
 		err = json.NewDecoder(w.Result().Body).Decode(&response)
 		assert.NoError(t, err)
 		expectedSpanIds := []string{spans[0].Id, spans[3].Id}
 		actualSpanIds := make([]string, 0)
-		for _, span := range response.Errors {
+		for _, span := range response.Data {
 			actualSpanIds = append(actualSpanIds, span.SpanDTO.Id)
 		}
 		assert.EqualValues(t, expectedSpanIds, actualSpanIds)
@@ -290,7 +292,7 @@ func TestErrorsQuery(t *testing.T) {
 
 		spans := []model.Span{
 			{
-				Id:           "1",
+				Id:           "3",
 				CreatedAt:    createdAt,
 				StartTime:    startTime,
 				EndTime:      endTime,
@@ -309,7 +311,7 @@ func TestErrorsQuery(t *testing.T) {
 				Attributes: make(map[string]string),
 			},
 			{
-				Id:           "2",
+				Id:           "4",
 				CreatedAt:    createdAt,
 				StartTime:    startTime,
 				EndTime:      endTime,
@@ -332,13 +334,17 @@ func TestErrorsQuery(t *testing.T) {
 		err = loadDataIntoElasticsearch(ac, spans, bootstrapper.SpanIndexName)
 		assert.NoError(t, err)
 
-		emptyBody := []byte("{}")
-		req := httptest.NewRequest("GET", "/error", bytes.NewReader(emptyBody))
+		input := log_and_span.SearchParams{
+			Types: []log_and_span.Type{log_and_span.Error},
+		}
+		body, err := json.Marshal(input)
+		assert.NoError(t, err)
+		req := httptest.NewRequest("GET", "/error", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
-		var response handler.ErrorResponseDTO
-		handler.ErrorHandler(context.Background(), qs, logger)(w, req)
+		var response handler.DataResponseDTO
+		handler.LogAndSpanHandler(context.Background(), qs, logger)(w, req)
 
 		err = json.NewDecoder(w.Result().Body).Decode(&response)
 		assert.NoError(t, err)
@@ -346,7 +352,7 @@ func TestErrorsQuery(t *testing.T) {
 		expectedSpanIds := []string{spans[0].Id}
 		actualSpanIds := make([]string, 0)
 		actualLogIds := make([]string, 0)
-		for _, logOrSpan := range response.Errors {
+		for _, logOrSpan := range response.Data {
 			if logOrSpan.LogDTO != nil {
 				actualLogIds = append(actualLogIds, logOrSpan.LogDTO.Id)
 			} else {

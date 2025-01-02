@@ -9,13 +9,22 @@ import (
 	"net/http"
 )
 
-func ErrorHandler(
+// LogAndSpanHandler creates a handler for getting log and span data using search parameters.
+// @Summary Get spans or logs with their associated information.
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param searchParams body log_and_span.SearchParams true "The optional search parameters"
+// @Success 200 {object} DataResponseDTO "List of logs and spans with their corresponding details."
+// @Failure 500 {object} ErrorMessage "Internal server error"
+// @Router /data [post]
+func LogAndSpanHandler(
 	ctx context.Context,
 	ls log_and_span.LogAndSpanQueryService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req log_and_span.ErrorSearchParams
+		var req log_and_span.SearchParams
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			logger.Error("Error encountered when decoding request body", zap.Error(err))
@@ -30,15 +39,15 @@ func ErrorHandler(
 			}
 		}(r.Body)
 
-		logOrSpanData, err := ls.GetAllErrors(ctx, req)
+		logOrSpanData, err := ls.GetLogsAndSpans(ctx, req)
 		if err != nil {
 			logger.Error("Error encountered when getting chain of events", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
 			return
 		}
 
-		errorResult := convertLogAndSpanDataToErrorResult(logOrSpanData)
-		err = json.NewEncoder(w).Encode(errorResult)
+		dataResult := convertLogAndSpanDataToDTO(logOrSpanData)
+		err = json.NewEncoder(w).Encode(dataResult)
 		if err != nil {
 			logger.Error("Error encountered when encoding response", zap.Error(err))
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)

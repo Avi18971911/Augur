@@ -15,14 +15,26 @@ import (
 const timeout = 10 * time.Second
 const querySize = 10000
 
-type ErrorSearchParams struct {
+type Type string
+
+const (
+	Error Type = "error"
+	Info  Type = "info"
+	Warn  Type = "warn"
+	Ok    Type = "ok"
+	Unset Type = "unset"
+)
+
+type SearchParams struct {
 	Service   *string `json:"service,omitempty"`
+	Operation *string `json:"operation,omitempty"`
 	StartTime *string `json:"start_time,omitempty"`
 	EndTime   *string `json:"end_time,omitempty"`
+	Types     []Type  `json:"type,omitempty"`
 }
 
 type LogAndSpanQueryService interface {
-	GetAllErrors(ctx context.Context, errorSearchParams ErrorSearchParams) ([]model.LogAndSpan, error)
+	GetLogsAndSpans(ctx context.Context, errorSearchParams SearchParams) ([]model.LogAndSpan, error)
 }
 
 type LogAndSpanService struct {
@@ -37,11 +49,11 @@ func NewLogAndSpanService(ac client.AugurClient, logger *zap.Logger) *LogAndSpan
 	}
 }
 
-func (lss *LogAndSpanService) GetAllErrors(
+func (lss *LogAndSpanService) GetLogsAndSpans(
 	ctx context.Context,
-	errorSearchParams ErrorSearchParams,
+	searchParams SearchParams,
 ) ([]model.LogAndSpan, error) {
-	query := getAllErrorsQuery(errorSearchParams)
+	query := getLogsAndSpansQuery(searchParams)
 	queryJson, err := json.Marshal(query)
 	if err != nil {
 		lss.logger.Error("Error when marshalling query to JSON", zap.Error(err))

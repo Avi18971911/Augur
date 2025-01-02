@@ -24,15 +24,15 @@ func CreateRouter(
 			inferenceQueryService,
 			logger,
 		),
-	).Methods("GET")
+	).Methods("POST")
 
 	r.Handle(
-		"/error", handler.ErrorHandler(
+		"/data", handler.LogAndSpanHandler(
 			ctx,
 			logAndSpanQueryService,
 			logger,
 		),
-	)
+	).Methods("POST")
 
 	return r
 }

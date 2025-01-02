@@ -6,13 +6,13 @@ import (
 	"github.com/Avi18971911/Augur/internal/query_server/service/log_and_span/model"
 )
 
-func convertLogAndSpanDataToErrorResult(input []model.LogAndSpan) ErrorResponseDTO {
+func convertLogAndSpanDataToDTO(input []model.LogAndSpan) DataResponseDTO {
 	logAndSpanData := make([]LogAndSpanDTO, len(input))
 	for i, logAndSpan := range input {
 		logAndSpanData[i] = mapLogAndSpanToDTO(logAndSpan)
 	}
-	return ErrorResponseDTO{
-		Errors: logAndSpanData,
+	return DataResponseDTO{
+		Data: logAndSpanData,
 	}
 }
 

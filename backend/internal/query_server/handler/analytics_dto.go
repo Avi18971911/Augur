@@ -28,6 +28,7 @@ type SpanDTO struct {
 	ClusterId    string            `json:"cluster_id" validate:"required"`
 	Attributes   map[string]string `json:"attributes,omitempty"`
 	Events       []SpanEventDTO    `json:"events,omitempty"`
+	Status       StatusDTO         `json:"status" validate:"required"`
 }
 
 type SpanEventDTO struct {
@@ -38,6 +39,19 @@ type SpanEventDTO struct {
 	// The timestamp of the event
 	Timestamp time.Time `json:"timestamp" validate:"required"`
 }
+
+type StatusDTO struct {
+	Message string     `json:"message" validate:"required"`
+	Code    StatusCode `json:"code" validate:"required"`
+}
+
+type StatusCode string
+
+const (
+	UNSET StatusCode = "unset"
+	OK    StatusCode = "ok"
+	ERROR StatusCode = "error"
+)
 
 // LogDTO represents the details of a log
 // @swagger:model LogDTO
@@ -50,7 +64,7 @@ type LogDTO struct {
 	Service   string    `json:"service" validate:"required"`
 	TraceId   string    `json:"trace_id,omitempty"`
 	SpanId    string    `json:"span_id,omitempty"`
-	ClusterId string    `json:"cluster_id,omitempty"`
+	ClusterId string    `json:"cluster_id" validate:"required"`
 }
 
 // ChainOfEventsResponseDTO represents the response to a chain of events request in the form of a graph

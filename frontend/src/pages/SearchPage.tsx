@@ -1,15 +1,19 @@
 import NavigationForm from "../components/NavigationForm.tsx";
+import {DataProvider} from "../provider/DataProvider.tsx";
+import DataDisplay from "../components/DataDisplay.tsx";
 
 function SearchPage() {
     return (
-        <div style={{width: '100%'}}>
-            <h1>Search Page</h1>
+        <div>
             <div style={{ display: 'flex', flexDirection: 'row'}}>
-                <div style={{ display: 'flex', gap: '1rem', flex: '0.8' }}>
-                    <NavigationForm />
-                </div>
-                <div style={{flex: '2'}}>
-                </div>
+                <DataProvider>
+                    <div style={{ display: 'flex', flex: '0.8', paddingBottom: '25px' }}>
+                        <NavigationForm />
+                    </div>
+                    <div style={{flex: '2'}}>
+                        <DataDisplay />
+                    </div>
+                </DataProvider>
             </div>
         </div>
     )
