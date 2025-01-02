@@ -39,26 +39,38 @@ function getDetails(datum: LogOrSpan): DatumDetails {
 const DataTableCell: React.FC<DataTableCellProps> = ({ datum, expanded, onToggleExpand }) => {
     const details = getDetails(datum);
     return (
-        <tr>
-            <td>
-                <button
-                    onClick={() => onToggleExpand(details.id)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'white',
-                        fontSize: '16px',
-                    }}
-                >
-                    {expanded ? '▼' : '▶'}
-                </button>
-            </td>
-                <td>{details.timestamp}</td>
-                <td>{details.severity}</td>
-                <td>{details.message}</td>
-        </tr>
-);
+        <>
+            <tr>
+                <td>
+                    <button
+                        onClick={() => onToggleExpand(details.id)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'white',
+                            fontSize: '16px',
+                        }}
+                    >
+                        {expanded ? '▼' : '▶'}
+                    </button>
+                </td>
+                    <td>{details.timestamp}</td>
+                    <td>{details.severity}</td>
+                    <td>{details.message}</td>
+            </tr>
+
+            {expanded && (
+                <tr>
+                    <td colSpan={4}>
+                        <pre>
+                            {JSON.stringify(datum, null, 2)}
+                        </pre>
+                    </td>
+                </tr>
+            )}
+        </>
+    );
 };
 
 export default DataTableCell;
