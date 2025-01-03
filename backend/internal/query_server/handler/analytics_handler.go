@@ -25,12 +25,11 @@ func ChainOfEventsHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Info(
-			"Login request received with URL and method",
+			"Received Chain of Events Handler",
 			zap.String("URL Path", r.URL.Path),
 			zap.String("Method", r.Method),
 		)
 		var req ChainOfEventsRequestDTO
-		logger.Info("Decoding request body", zap.Any("Request", r.Body))
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			logger.Error("Error encountered when decoding request body", zap.Error(err))
@@ -53,6 +52,7 @@ func ChainOfEventsHandler(
 		}
 
 		logOrSpanData, err := s.GetSpanOrLogData(ctx, req.Id)
+		logger.Info("Log or Span Data", zap.Any("Log or Span Data", logOrSpanData))
 		res, err := s.GetChainOfEvents(ctx, logOrSpanData)
 		if err != nil {
 			logger.Error("Error encountered when getting chain of events", zap.Error(err))
@@ -61,6 +61,7 @@ func ChainOfEventsHandler(
 		}
 		logger.Info("Encoding response", zap.Any("Response", res))
 		resDTO := mapChainOfEventsResponseToDTO(res)
+		logger.Info("Response encoded", zap.Any("Response", resDTO))
 		err = json.NewEncoder(w).Encode(resDTO)
 		if err != nil {
 			logger.Error("Error encountered when encoding response", zap.Error(err))
