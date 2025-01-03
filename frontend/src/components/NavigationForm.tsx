@@ -18,8 +18,12 @@ const allOperations = "allOperations"
 function NavigationForm() {
     const [selectedService, setSelectedService] = useState<string>(allServices)
     const [selectedOperation, setSelectedOperation] = useState<string>(allOperations)
-    const [searchStartTime, setSearchStartTime] = useState<string | undefined>(undefined)
-    const [searchEndTime, setSearchEndTime] = useState<string | undefined>(undefined)
+    const [searchStartTime, setSearchStartTime] = useState<string>(
+        new Date().toISOString().slice(0, 16) // To match the datetime-local input format
+    )
+    const [searchEndTime, setSearchEndTime] = useState<string>(
+        new Date().toISOString().slice(0, 16) // To match the datetime-local input format
+    )
     const [searchLimit, setSearchLimit] = useState<number>(20)
     const [searchType, setSearchType] = useState<Type>(Type.ANY)
 
@@ -129,7 +133,9 @@ function NavigationForm() {
                     </div>
                     <input
                         type={"datetime-local"} value={searchStartTime}
-                        name={"startTime"} onChange={(e) => setSearchStartTime(e.target.value)}
+                        name={"startTime"} onChange={
+                            (e) => setSearchStartTime(e.target.value)
+                        }
                     />
 
                     <div
@@ -139,7 +145,9 @@ function NavigationForm() {
                     </div>
                     <input
                         type={"datetime-local"} value={searchEndTime}
-                        name={"endTime"} onChange={(e) => setSearchEndTime(e.target.value)}
+                        name={"endTime"} onChange={
+                            (e) => setSearchEndTime(e.target.value)
+                        }
                     />
 
                     <div
