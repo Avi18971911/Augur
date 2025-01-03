@@ -19,7 +19,7 @@ function NavigationForm() {
     const [selectedService, setSelectedService] = useState<string>(allServices)
     const [selectedOperation, setSelectedOperation] = useState<string>(allOperations)
     const [searchStartTime, setSearchStartTime] = useState<string>(
-        new Date().toISOString().slice(0, 16) // To match the datetime-local input format
+        new Date("2021-01-01").toISOString().slice(0, 16) // To match the datetime-local input format
     )
     const [searchEndTime, setSearchEndTime] = useState<string>(
         new Date().toISOString().slice(0, 16) // To match the datetime-local input format

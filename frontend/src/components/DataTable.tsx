@@ -1,13 +1,14 @@
-import {LogOrSpan} from "../provider/DataProvider.tsx";
 import React from "react";
 import DataTableCell from "./DataTableCell.tsx";
 import styles from "../styles/DataTable.module.css";
+import {LogOrSpan} from "../provider/DataProvider.tsx";
 
 type DataTableProps = {
     data: LogOrSpan[];
+    showChainOfEvents: (id: string) => void;
 }
 
-const DataTable: React.FC<DataTableProps> = ({ data }) => {
+const DataTable: React.FC<DataTableProps> = ({ data, showChainOfEvents }) => {
     const [expandedRow, setExpandedRow] = React.useState<string | null>(null);
 
     const toggleExpand = (id: string) => {
@@ -23,6 +24,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                         <th>Timestamp</th>
                         <th>Severity</th>
                         <th>Message</th>
+                        <th>ChainOfEvents</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +34,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                             datum={datum}
                             onToggleExpand={toggleExpand}
                             expanded={expandedRow === datum.id}
+                            triggerChainOfEvents={showChainOfEvents}
                         />
                     ))}
                 </tbody>
