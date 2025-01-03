@@ -72,11 +72,11 @@ function NavigationForm() {
         return typeList.map((type) => typeMap[type]);
     }
     return (
-        <div style={{display: 'flex', flexDirection: 'column'}}>
+        <div style={{display: 'flex', flexDirection: 'column', flex: '1.0'}}>
             <h2>Navigation</h2>
             <div style={{
                 flexDirection: 'column', display: "flex", width: '100%', borderStyle: 'solid', borderColor: 'white',
-                alignItems: 'center', padding: '20px', marginTop: '20px',
+                alignItems: 'center', padding: '20px', marginTop: '20px'
             }}>
                 <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
                     <div>
