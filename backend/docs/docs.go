@@ -152,6 +152,9 @@ const docTemplate = `{
         },
         "handler.ChainOfEventsResponseDTO": {
             "type": "object",
+            "required": [
+                "graph"
+            ],
             "properties": {
                 "graph": {
                     "description": "The nodes in the chain of events",

@@ -42,6 +42,8 @@ definitions:
           $ref: '#/definitions/handler.ChainOfEventsNodeDTO'
         description: The nodes in the chain of events
         type: object
+    required:
+    - graph
     type: object
   handler.DataResponseDTO:
     properties:

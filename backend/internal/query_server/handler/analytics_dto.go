@@ -71,7 +71,7 @@ type LogDTO struct {
 // @swagger:model ChainOfEventsResponseDTO
 type ChainOfEventsResponseDTO struct {
 	// The nodes in the chain of events
-	Graph map[string]ChainOfEventsNodeDTO
+	Graph map[string]ChainOfEventsNodeDTO `json:"graph" validate:"required"`
 }
 
 // ChainOfEventsNodeDTO represents a node in the chain of events
