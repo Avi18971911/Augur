@@ -26,6 +26,11 @@ definitions:
         items:
           type: string
         type: array
+    required:
+    - cluster_id
+    - id
+    - predecessors
+    - successors
     type: object
   handler.ChainOfEventsRequestDTO:
     properties:

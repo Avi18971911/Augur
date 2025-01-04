@@ -78,13 +78,13 @@ type ChainOfEventsResponseDTO struct {
 // @swagger:model ChainOfEventsNodeDTO
 type ChainOfEventsNodeDTO struct {
 	// The ID of the log or span data
-	Id string `json:"id"`
+	Id string `json:"id" validate:"required"`
 	// The Cluster ID of the cluster belonging to the log or span data
-	ClusterId string `json:"cluster_id"`
+	ClusterId string `json:"cluster_id" validate:"required"`
 	// The IDs of the successors of the log or span data
-	Successors []string `json:"successors"`
+	Successors []string `json:"successors" validate:"required"`
 	// The IDs of the predecessors of the log or span data
-	Predecessors []string `json:"predecessors"`
+	Predecessors []string `json:"predecessors" validate:"required"`
 	// The details of the span data, if the data is a span
 	SpanDTO *SpanDTO `json:"span_dto"`
 	// The details of the log data, if the data is a log

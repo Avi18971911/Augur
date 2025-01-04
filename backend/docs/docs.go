@@ -97,6 +97,12 @@ const docTemplate = `{
     "definitions": {
         "handler.ChainOfEventsNodeDTO": {
             "type": "object",
+            "required": [
+                "cluster_id",
+                "id",
+                "predecessors",
+                "successors"
+            ],
             "properties": {
                 "cluster_id": {
                     "description": "The Cluster ID of the cluster belonging to the log or span data",

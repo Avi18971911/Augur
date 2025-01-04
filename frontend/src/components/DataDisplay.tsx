@@ -2,17 +2,19 @@ import DataTable from "./DataTable.tsx";
 import React from "react";
 import {useDataContext} from "../provider/DataProvider.tsx";
 import {useApiClientContext} from "../provider/ApiClientProvider.tsx";
-import {GraphPostRequest, HandlerChainOfEventsRequestDTO} from "../backend_api";
+import {GraphPostRequest} from "../backend_api";
+import {mapChainOfEventsResponseToChainOfEventsGraph} from "../services/ChainOfEventsService.ts";
+import ChainOfEventsGraph from "./ChainOfEventsGraph.tsx";
+import type {ChainOfEventsGraph as ChainOfEventsGraphModel} from "../model/ChainOfEventsGraph.ts";
 
 
 
 function DataDisplay() {
     const apiClient = useApiClientContext();
     const { data } = useDataContext()
-    const [shouldShowChainOfEvents, setShowChainOfEvents] = React.useState<boolean>(false);
+    const [chainOfEventsGraph, setChainOfEventsGraph] = React.useState<ChainOfEventsGraphModel | undefined>(undefined);
 
-    function showChainOfEvents(id: string) {
-        setShowChainOfEvents(true);
+    function setChainOfEvents(id: string) {
         const payload: GraphPostRequest = {
             logOrSpanData: {
                 id: id,
@@ -20,7 +22,9 @@ function DataDisplay() {
         }
         apiClient.graphPost(payload)
             .then((response) => {
-              console.log(response)
+                console.log(response)
+                const graph = mapChainOfEventsResponseToChainOfEventsGraph(response)
+                setChainOfEventsGraph(graph)
             })
             .catch((error) => {
                 console.error(error)
@@ -32,11 +36,14 @@ function DataDisplay() {
             <div>
                 <h2> Data </h2>
                 <div>
-                    <DataTable data={data} showChainOfEvents={showChainOfEvents} />
+                    <DataTable data={data} showChainOfEvents={setChainOfEvents} />
                 </div>
             </div>
         :
             <div>
+                {chainOfEventsGraph ? (
+                    <ChainOfEventsGraph chainOfEvents={chainOfEventsGraph} />
+                ) : null}
             </div>
     );
 }
