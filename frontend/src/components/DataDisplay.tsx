@@ -4,8 +4,8 @@ import {useDataContext} from "../provider/DataProvider.tsx";
 import {useApiClientContext} from "../provider/ApiClientProvider.tsx";
 import {GraphPostRequest} from "../backend_api";
 import {mapChainOfEventsResponseToChainOfEventsGraph} from "../services/ChainOfEventsService.ts";
-import ChainOfEventsGraph from "./ChainOfEventsGraph.tsx";
 import type {ChainOfEventsGraph as ChainOfEventsGraphModel} from "../model/ChainOfEventsGraph.ts";
+import ChainOfEventsGraph from "./ChainOfEventsGraph.tsx";
 
 
 
@@ -32,19 +32,33 @@ function DataDisplay() {
     }
 
     return (
-        data.length?
-            <div>
-                <h2> Data </h2>
-                <div>
-                    <DataTable data={data} showChainOfEvents={setChainOfEvents} />
-                </div>
-            </div>
-        :
-            <div>
-                {chainOfEventsGraph ? (
-                    <ChainOfEventsGraph chainOfEvents={chainOfEventsGraph} />
-                ) : null}
-            </div>
+        <>
+            {
+                data.length ?
+                    <div>
+                        <h2> Data </h2>
+                        <div>
+                            <DataTable data={data} showChainOfEvents={setChainOfEvents}/>
+                        </div>
+                    </div>
+                :
+                    <div>
+                        <h2> No Data </h2>
+                    </div>
+            }
+
+            {
+                chainOfEventsGraph ?
+                    <div>
+                        <h2> Chain of Events </h2>
+                        <ChainOfEventsGraph chainOfEvents={chainOfEventsGraph!} />
+                    </div>
+                :
+                    <div>
+                        <h2> No Chain of Events </h2>
+                    </div>
+            }
+        </>
     );
 }
 
