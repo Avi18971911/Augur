@@ -1,7 +1,10 @@
 import {Span} from "./Span.ts";
 import {Log} from "./Log.ts";
 
-export type ChainOfEventsGraph = Record<string, ChainOfEventsGraphNode>;
+export type ChainOfEventsGraph = {
+    graph: Record<string, ChainOfEventsGraphNode>;
+    rootId: string;
+}
 
 export type ChainOfEventsGraphNode = {
     id: string;

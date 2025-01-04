@@ -3,13 +3,17 @@ import {ChainOfEventsGraph, ChainOfEventsGraphNode} from "../model/ChainOfEvents
 import {mapLogDtoToLog, mapSpanDTOToSpan} from "./LogOrSpanService.ts";
 
 export const mapChainOfEventsResponseToChainOfEventsGraph = (
-    response: HandlerChainOfEventsResponseDTO
+    response: HandlerChainOfEventsResponseDTO,
+    rootId: string,
 ): ChainOfEventsGraph => {
     const ret: Record<string, ChainOfEventsGraphNode> = {};
     Object.entries(response.graph).forEach(([key, value]) => {
         ret[key] = mapChainOfEventsNodeDTOToChainOfEventsGraphNode(value)
     })
-    return ret;
+    return {
+        graph: ret,
+        rootId: rootId
+    };
 }
 
 const mapChainOfEventsNodeDTOToChainOfEventsGraphNode = (

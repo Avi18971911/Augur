@@ -23,7 +23,7 @@ function DataDisplay() {
         apiClient.graphPost(payload)
             .then((response) => {
                 console.log(response)
-                const graph = mapChainOfEventsResponseToChainOfEventsGraph(response)
+                const graph = mapChainOfEventsResponseToChainOfEventsGraph(response, id)
                 setChainOfEventsGraph(graph)
             })
             .catch((error) => {
