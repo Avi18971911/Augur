@@ -16,7 +16,7 @@ const csTimeOut = 10 * time.Second
 const DefaultClusterId = "NOT_ASSIGNED"
 
 type ClusterService interface {
-	ClusterData(ctx context.Context, input model.ClusterInput) ([]model.ClusterOutput, error)
+	GetLikeData(ctx context.Context, input model.ClusterInput) ([]model.ClusterOutput, error)
 }
 
 type ClusterServiceImpl struct {
@@ -31,7 +31,7 @@ func NewClusterService(ac client.AugurClient, logger *zap.Logger) ClusterService
 	}
 }
 
-func (cls *ClusterServiceImpl) ClusterData(
+func (cls *ClusterServiceImpl) GetLikeData(
 	ctx context.Context,
 	input model.ClusterInput,
 ) ([]model.ClusterOutput, error) {

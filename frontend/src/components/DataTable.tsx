@@ -1,7 +1,7 @@
 import React from "react";
 import DataTableCell from "./DataTableCell.tsx";
 import styles from "../styles/DataTable.module.css";
-import {LogOrSpan} from "../provider/DataProvider.tsx";
+import {LogOrSpan} from "../model/LogOrSpan.ts";
 
 type DataTableProps = {
     data: LogOrSpan[];

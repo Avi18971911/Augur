@@ -34,7 +34,7 @@ func TestChainOfEvents(t *testing.T) {
 		logger,
 	)
 
-	as := inferenceService.NewAnalyticsQueryService(
+	as := inferenceService.NewInferenceQueryService(
 		ac,
 		logger,
 	)

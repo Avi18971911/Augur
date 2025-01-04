@@ -12,7 +12,7 @@ import "github.com/gorilla/mux"
 
 func CreateRouter(
 	ctx context.Context,
-	inferenceQueryService inferenceService.InferenceQueryService,
+	inferenceQueryService inferenceService.QueryService,
 	logAndSpanQueryService log_and_span.LogAndSpanQueryService,
 	logger *zap.Logger,
 ) http.Handler {

@@ -1,5 +1,6 @@
 import React from "react";
-import {Log, LogOrSpan} from "../provider/DataProvider.tsx";
+import {LogOrSpan} from "../model/LogOrSpan.ts";
+import {Log} from "../model/Log.ts";
 
 type DataTableCellProps = {
     datum: LogOrSpan;

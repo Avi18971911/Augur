@@ -20,7 +20,7 @@ import (
 const timeout = 10 * time.Second
 const querySize = 100
 
-type InferenceQueryService interface {
+type QueryService interface {
 	GetChainOfEvents(
 		ctx context.Context,
 		input inferenceModel.LogOrSpanData,
@@ -28,19 +28,19 @@ type InferenceQueryService interface {
 	GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error)
 }
 
-type InferenceQueryServiceImpl struct {
+type QueryServiceImpl struct {
 	ac     client.AugurClient
 	logger *zap.Logger
 }
 
-func NewAnalyticsQueryService(ac client.AugurClient, logger *zap.Logger) InferenceQueryService {
-	return &InferenceQueryServiceImpl{
+func NewInferenceQueryService(ac client.AugurClient, logger *zap.Logger) QueryService {
+	return &QueryServiceImpl{
 		ac:     ac,
 		logger: logger,
 	}
 }
 
-func (as *InferenceQueryServiceImpl) GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error) {
+func (as *QueryServiceImpl) GetSpanOrLogData(ctx context.Context, id string) (inferenceModel.LogOrSpanData, error) {
 	query := getLogOrSpanQuery(id)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
@@ -68,7 +68,7 @@ func (as *InferenceQueryServiceImpl) GetSpanOrLogData(ctx context.Context, id st
 	return logOrSpanData[0], nil
 }
 
-func (as *InferenceQueryServiceImpl) GetChainOfEvents(
+func (as *QueryServiceImpl) GetChainOfEvents(
 	ctx context.Context,
 	logOrSpanData inferenceModel.LogOrSpanData,
 ) (mleSequence map[string]*inferenceModel.ClusterNode, err error) {
@@ -105,7 +105,7 @@ func (as *InferenceQueryServiceImpl) GetChainOfEvents(
 	return mleSequence, nil
 }
 
-func (as *InferenceQueryServiceImpl) getClusterGraph(
+func (as *QueryServiceImpl) getClusterGraph(
 	ctx context.Context,
 	clusterToSearchOn string,
 ) (clustersInGraph map[string]*inferenceModel.ClusterNode, err error) {
@@ -162,7 +162,7 @@ func (as *InferenceQueryServiceImpl) getClusterGraph(
 	return visitedClusters, nil
 }
 
-func (as *InferenceQueryServiceImpl) getSucceedingClusters(
+func (as *QueryServiceImpl) getSucceedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]inferenceModel.ClusterNode, error) {
@@ -190,7 +190,7 @@ func (as *InferenceQueryServiceImpl) getSucceedingClusters(
 	return clusterNodes, nil
 }
 
-func (as *InferenceQueryServiceImpl) getPrecedingClusters(
+func (as *QueryServiceImpl) getPrecedingClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]inferenceModel.ClusterNode, error) {
@@ -212,7 +212,7 @@ func (as *InferenceQueryServiceImpl) getPrecedingClusters(
 	return clusterNodes, nil
 }
 
-func (as *InferenceQueryServiceImpl) getClusterSubGraph(
+func (as *QueryServiceImpl) getClusterSubGraph(
 	ctx context.Context,
 	query map[string]interface{},
 ) ([]analyticsModel.Cluster, error) {
@@ -234,7 +234,7 @@ func (as *InferenceQueryServiceImpl) getClusterSubGraph(
 	return clusters, nil
 }
 
-func (as *InferenceQueryServiceImpl) getMostLikelySequence(
+func (as *QueryServiceImpl) getMostLikelySequence(
 	ctx context.Context,
 	clusterIdToSearchOn string,
 	clusterGraph map[string]*inferenceModel.ClusterNode,
@@ -270,7 +270,7 @@ func (as *InferenceQueryServiceImpl) getMostLikelySequence(
 			if err != nil {
 				return nil, fmt.Errorf("failed to get cluster details: %w", err)
 			}
-			spanOrLogDetailsOfCurrentNode, err := as.getSpanOrLogDetails(
+			spanOrLogCandidatesOfCurrentNode, err := as.getSpanOrLogCandidates(
 				ctx,
 				currentNode.ClusterId,
 				previousNode.LogOrSpanData,
@@ -280,7 +280,7 @@ func (as *InferenceQueryServiceImpl) getMostLikelySequence(
 				return nil, fmt.Errorf("failed to get span or log details: %w", err)
 			}
 			mostLikelyLogOrSpan := as.getMostLikelyLogOrSpan(
-				spanOrLogDetailsOfCurrentNode,
+				spanOrLogCandidatesOfCurrentNode,
 				previousNode.LogOrSpanData,
 				countClusterDetails,
 			)
@@ -327,7 +327,7 @@ func (as *InferenceQueryServiceImpl) getMostLikelySequence(
 	return clusterGraph, nil
 }
 
-func (as *InferenceQueryServiceImpl) getCountClusterDetails(
+func (as *QueryServiceImpl) getCountClusterDetails(
 	ctx context.Context,
 	previousClusterId string,
 	nextClusterId string,
@@ -349,12 +349,14 @@ func (as *InferenceQueryServiceImpl) getCountClusterDetails(
 		return inferenceModel.CountCluster{}, fmt.Errorf("failed to convert docs to count clusters: %w", err)
 	}
 	if len(countClusters) != 1 {
-		return inferenceModel.CountCluster{}, fmt.Errorf("expected 1 count cluster from composite ID, got %d", len(countClusters))
+		return inferenceModel.CountCluster{}, fmt.Errorf(
+			"expected 1 count cluster from composite ID, got %d", len(countClusters),
+		)
 	}
 	return countClusters[0], nil
 }
 
-func (as *InferenceQueryServiceImpl) getSpanOrLogDetails(
+func (as *QueryServiceImpl) getSpanOrLogCandidates(
 	ctx context.Context,
 	clusterId string,
 	previousLogOrSpanData inferenceModel.LogOrSpanData,
@@ -393,12 +395,12 @@ func (as *InferenceQueryServiceImpl) getSpanOrLogDetails(
 	return logOrSpanData, nil
 }
 
-func (as *InferenceQueryServiceImpl) getMostLikelyLogOrSpan(
-	spanOrLogDetails []inferenceModel.LogOrSpanData,
+func (as *QueryServiceImpl) getMostLikelyLogOrSpan(
+	spanOrLogCandidates []inferenceModel.LogOrSpanData,
 	previousSpanOrLogDetails inferenceModel.LogOrSpanData,
 	clusterDetails inferenceModel.CountCluster,
 ) *inferenceModel.LogOrSpanData {
-	probabilities := make([]float64, len(spanOrLogDetails))
+	probabilities := make([]float64, len(spanOrLogCandidates))
 	var previousTime time.Time
 	var TDOA float64
 	if previousSpanOrLogDetails.SpanDetails != nil {
@@ -406,7 +408,7 @@ func (as *InferenceQueryServiceImpl) getMostLikelyLogOrSpan(
 	} else {
 		previousTime = previousSpanOrLogDetails.LogDetails.Timestamp
 	}
-	for i, logOrSpanData := range spanOrLogDetails {
+	for i, logOrSpanData := range spanOrLogCandidates {
 		if logOrSpanData.SpanDetails != nil {
 			span := logOrSpanData.SpanDetails
 			TDOA = span.StartTime.Sub(previousTime).Seconds()
@@ -438,7 +440,7 @@ func (as *InferenceQueryServiceImpl) getMostLikelyLogOrSpan(
 	if maxIndex == -1 {
 		return nil
 	} else {
-		return &spanOrLogDetails[maxIndex]
+		return &spanOrLogCandidates[maxIndex]
 	}
 }
 

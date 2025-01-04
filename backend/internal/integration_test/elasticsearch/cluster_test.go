@@ -60,7 +60,7 @@ func TestSpanCluster(t *testing.T) {
 			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
@@ -119,7 +119,7 @@ func TestSpanCluster(t *testing.T) {
 			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
@@ -170,7 +170,7 @@ func TestLogCluster(t *testing.T) {
 			ClusterId:   clusterService.DefaultClusterId,
 			Id:          "test",
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
@@ -220,7 +220,7 @@ func TestLogCluster(t *testing.T) {
 			Id:          "Test",
 			ServiceName: serviceName,
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
@@ -270,7 +270,7 @@ func TestLogCluster(t *testing.T) {
 			Id:          "Test",
 			ServiceName: serviceName,
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}
@@ -316,7 +316,7 @@ func TestLogCluster(t *testing.T) {
 			Id:          "Test",
 			ServiceName: serviceName,
 		}
-		output, err := cls.ClusterData(ctx, input)
+		output, err := cls.GetLikeData(ctx, input)
 		if err != nil {
 			t.Errorf("Failed to cluster span with error: %v", err)
 		}

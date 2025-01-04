@@ -20,7 +20,7 @@ import (
 // @Router /graph [post]
 func ChainOfEventsHandler(
 	ctx context.Context,
-	s inference.InferenceQueryService,
+	s inference.QueryService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
