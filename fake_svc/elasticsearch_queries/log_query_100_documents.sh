@@ -3,5 +3,8 @@ curl -X GET "http://localhost:9200/log_index/_search?pretty" -H "Content-Type: a
   "query": {
     "match_all": {}
   },
-  "size": 100
+  "size": 100,
+  "sort": [
+    { "timestamp": { "order": "asc" } }
+  ]
 }'
