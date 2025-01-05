@@ -40,3 +40,12 @@
 .read-the-docs {
   color: #888;
 }
+
+canvas {
+  all: unset;
+  pointer-events: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
