@@ -102,6 +102,7 @@ func (as *QueryServiceImpl) GetChainOfEvents(
 		as.logger.Error("failed to get most likely sequence", zap.Error(err))
 		return nil, err
 	}
+	assignTDOAsToGraph(mleSequence)
 	return mleSequence, nil
 }
 
@@ -513,4 +514,35 @@ func convertDocsToLogOrSpanData(docs []map[string]interface{}) ([]inferenceModel
 
 	}
 	return logOrSpanData, nil
+}
+
+func assignTDOAsToGraph(
+	graph map[string]*inferenceModel.ClusterNode,
+) {
+	for _, node := range graph {
+		for i, _ := range node.Successors {
+			node.Successors[i].TDOA = calculateTDOA(node, graph[node.Successors[i].ClusterId])
+		}
+		for i, _ := range node.Predecessors {
+			node.Predecessors[i].TDOA = calculateTDOA(node, graph[node.Predecessors[i].ClusterId])
+		}
+	}
+}
+
+func calculateTDOA(node *inferenceModel.ClusterNode, relatedNode *inferenceModel.ClusterNode) float64 {
+	var nodeTime time.Time
+	if node.LogOrSpanData.SpanDetails != nil {
+		nodeTime = node.LogOrSpanData.SpanDetails.StartTime
+	} else if node.LogOrSpanData.LogDetails != nil {
+		nodeTime = node.LogOrSpanData.LogDetails.Timestamp
+	} else {
+		return 0.0
+	}
+	if relatedNode.LogOrSpanData.SpanDetails != nil {
+		return relatedNode.LogOrSpanData.SpanDetails.StartTime.Sub(nodeTime).Seconds()
+	} else if relatedNode.LogOrSpanData.LogDetails != nil {
+		return relatedNode.LogOrSpanData.LogDetails.Timestamp.Sub(nodeTime).Seconds()
+	} else {
+		return 0.0
+	}
 }

@@ -7,8 +7,7 @@ type ClusterNode struct {
 }
 
 type SimpleClusterNode struct {
-	Id          string
-	ClusterId   string
-	TDOA        float64
-	Probability float64
+	Id        string
+	ClusterId string
+	TDOA      float64
 }
