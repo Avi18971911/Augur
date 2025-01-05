@@ -7,21 +7,24 @@ import (
 )
 
 func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) ChainOfEventsResponseDTO {
+	// TODO: Reconcile the fact that there may not be log or span data
 	graph := make(map[string]ChainOfEventsNodeDTO)
 	for _, node := range mleSequence {
-		successors := make([]string, len(node.Successors))
+		successors := make([]EdgeDTO, len(node.Successors))
 		for i, successor := range node.Successors {
 			if mleSequence[successor.ClusterId] == nil {
 				continue
 			}
-			successors[i] = mleSequence[successor.ClusterId].LogOrSpanData.Id
+			successors[i].Id = mleSequence[successor.ClusterId].LogOrSpanData.Id
+			successors[i].TDOA = successor.TDOA
 		}
-		predecessors := make([]string, len(node.Predecessors))
+		predecessors := make([]EdgeDTO, len(node.Predecessors))
 		for i, predecessor := range node.Predecessors {
 			if mleSequence[predecessor.ClusterId] == nil {
 				continue
 			}
-			predecessors[i] = mleSequence[predecessor.ClusterId].LogOrSpanData.Id
+			predecessors[i].Id = mleSequence[predecessor.ClusterId].LogOrSpanData.Id
+			predecessors[i].TDOA = predecessor.TDOA
 		}
 		var spanDTO = SpanDTO{}
 		var logDTO = LogDTO{}
