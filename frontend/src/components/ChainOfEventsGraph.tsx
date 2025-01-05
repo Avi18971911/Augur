@@ -9,7 +9,7 @@ type ChainOfEventsGraphProps = {
 const mapChainOfEventsToGraph = (chainOfEvents: ChainOfEventsGraph)  => {
     const { graph } = chainOfEvents;
     const nodes = Object.values(graph);
-    const edges = nodes.flatMap(node => node.successors.map(successor => ({ source: node.id, target: successor })));
+    const edges = nodes.flatMap(node => node.predecessors.map(predecessor => ({ source: predecessor, target: node.id })));
     return {
         nodes: nodes.map(node => ({
             id: node.id,
