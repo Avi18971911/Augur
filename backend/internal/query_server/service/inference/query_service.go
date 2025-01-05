@@ -279,7 +279,7 @@ func (as *QueryServiceImpl) getMostLikelySequence(
 			if err != nil {
 				return nil, fmt.Errorf("failed to get span or log details: %w", err)
 			}
-			mostLikelyLogOrSpan := as.getMostLikelyLogOrSpan(
+			mostLikelyLogOrSpan, TDOA, probability := as.getMostLikelyLogOrSpan(
 				spanOrLogCandidatesOfCurrentNode,
 				previousNode.LogOrSpanData,
 				countClusterDetails,
@@ -292,7 +292,9 @@ func (as *QueryServiceImpl) getMostLikelySequence(
 				)
 				continue
 			} else {
+				assignTDOAAndProbability(clusterGraph, currentNode, previousNode, TDOA, probability)
 				clusterGraph[currentNode.ClusterId].LogOrSpanData = *mostLikelyLogOrSpan
+
 			}
 
 			successorsNextNodes := make([]inferenceModel.SimpleClusterNode, 0)
@@ -399,10 +401,10 @@ func (as *QueryServiceImpl) getMostLikelyLogOrSpan(
 	spanOrLogCandidates []inferenceModel.LogOrSpanData,
 	previousSpanOrLogDetails inferenceModel.LogOrSpanData,
 	clusterDetails inferenceModel.CountCluster,
-) *inferenceModel.LogOrSpanData {
+) (mostLikelyLogOrSpan *inferenceModel.LogOrSpanData, TDOA float64, probability float64) {
+	// TODO: Consider multiple candidates and a more sophisticated model
 	probabilities := make([]float64, len(spanOrLogCandidates))
 	var previousTime time.Time
-	var TDOA float64
 	if previousSpanOrLogDetails.SpanDetails != nil {
 		previousTime = previousSpanOrLogDetails.SpanDetails.StartTime
 	} else {
@@ -438,9 +440,9 @@ func (as *QueryServiceImpl) getMostLikelyLogOrSpan(
 		}
 	}
 	if maxIndex == -1 {
-		return nil
+		return nil, 0.0, 0.0
 	} else {
-		return &spanOrLogCandidates[maxIndex]
+		return &spanOrLogCandidates[maxIndex], TDOA, maxProbability
 	}
 }
 
@@ -513,4 +515,25 @@ func convertDocsToLogOrSpanData(docs []map[string]interface{}) ([]inferenceModel
 
 	}
 	return logOrSpanData, nil
+}
+
+func assignTDOAAndProbability(
+	clusterGraph map[string]*inferenceModel.ClusterNode,
+	currentNode inferenceModel.SimpleClusterNode,
+	previousNode *inferenceModel.ClusterNode,
+	TDOA float64,
+	probability float64,
+) {
+	for _, successor := range clusterGraph[currentNode.ClusterId].Successors {
+		if successor.ClusterId == previousNode.LogOrSpanData.ClusterId {
+			successor.TDOA = TDOA
+			successor.Probability = probability
+		}
+	}
+	for _, predecessor := range clusterGraph[currentNode.ClusterId].Predecessors {
+		if predecessor.ClusterId == previousNode.LogOrSpanData.ClusterId {
+			predecessor.TDOA = TDOA
+			predecessor.Probability = probability
+		}
+	}
 }

@@ -78,6 +78,7 @@ func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	i := 0
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
 		compositeId := GetIDFromConstituents(clusterId, otherClusterId)
+		// TODO: Reconsider this decision and perhaps never average or sum the TDOA values
 		newValue := coClusterDetails.TotalTDOA / float64(coClusterDetails.Occurrences) // Calculate the average of the matching coClusters
 		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, newValue)
 		metaMap[i] = meta
