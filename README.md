@@ -70,7 +70,7 @@ the database with some indices. These indices are as follows:
 For now, the fake server is merely hosting a fake login endpoint on a default of `http://localhost:8080`. Any username 
 and every password except for `fake_password` will fail, emitting the associated logs and spans. Feel free to attempt to send a sample payload below.
 ```bash
-curl -X POST http://localhost:8080/login -d '{"username": "fake_username", "password": "fake_password"}'
+curl -X POST http://localhost:8080/accounts/login -d '{"username": "fake_username", "password": "fake_password"}'
 ```
 Sending enough of these messages will trigger the database buffer to flush, allowing you to see the logs and spans in the
 database. You can then query the database using the various commands in the `./fake_svc/elasticsearch_queries` folder.
