@@ -123,7 +123,7 @@ Make sure the following are installed on your machine:
 
 Note that the front-end only has one working component: the navigation page. You can immediately click on `Search` to
 receive the list of logs and spans you triggered in Back-end Step 4. You can expand the logs and spans to see the
-JSON package of all the details of that specific log or span. If you scroll in the table to the right, you can show the Chain
+JSONized version of all the details of that specific log or span. If you scroll in the table to the right, you can show the Chain
 of Events in a DAG below the table by clicking on the `Show CoE` button. This will show the causal relationships between the logs
 and spans in the database. Note that the CoE is not yet fully functional, and is a work in progress. To receive the best results,
 heavily stagger (2s between each curl command) the login attempts in Back-end Step 4.
