@@ -1,12 +1,13 @@
 package model
 
 type ClusterNode struct {
-	Successors    []SimpleClusterNode `json:"successors"`
-	Predecessors  []SimpleClusterNode `json:"predecessors"`
+	Successors    []SimpleClusterNode
+	Predecessors  []SimpleClusterNode
 	LogOrSpanData LogOrSpanData
 }
 
 type SimpleClusterNode struct {
-	Id        string `json:"id"`
-	ClusterId string `json:"cluster_id"`
+	Id        string
+	ClusterId string
+	TDOA      float64
 }

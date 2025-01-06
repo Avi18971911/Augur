@@ -20,17 +20,11 @@ import (
 // @Router /graph [post]
 func ChainOfEventsHandler(
 	ctx context.Context,
-	s inference.InferenceQueryService,
+	s inference.QueryService,
 	logger *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Info(
-			"Login request received with URL and method",
-			zap.String("URL Path", r.URL.Path),
-			zap.String("Method", r.Method),
-		)
 		var req ChainOfEventsRequestDTO
-		logger.Info("Decoding request body", zap.Any("Request", r.Body))
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			logger.Error("Error encountered when decoding request body", zap.Error(err))
@@ -59,7 +53,6 @@ func ChainOfEventsHandler(
 			HttpError(w, "Internal server error", http.StatusInternalServerError, logger)
 			return
 		}
-		logger.Info("Encoding response", zap.Any("Response", res))
 		resDTO := mapChainOfEventsResponseToDTO(res)
 		err = json.NewEncoder(w).Encode(resDTO)
 		if err != nil {

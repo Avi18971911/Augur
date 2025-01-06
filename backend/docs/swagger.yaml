@@ -1,4 +1,3 @@
-basePath: /backendAPI
 definitions:
   handler.ChainOfEventsNodeDTO:
     properties:
@@ -15,7 +14,7 @@ definitions:
       predecessors:
         description: The IDs of the predecessors of the log or span data
         items:
-          type: string
+          $ref: '#/definitions/handler.EdgeDTO'
         type: array
       span_dto:
         allOf:
@@ -24,8 +23,13 @@ definitions:
       successors:
         description: The IDs of the successors of the log or span data
         items:
-          type: string
+          $ref: '#/definitions/handler.EdgeDTO'
         type: array
+    required:
+    - cluster_id
+    - id
+    - predecessors
+    - successors
     type: object
   handler.ChainOfEventsRequestDTO:
     properties:
@@ -42,6 +46,8 @@ definitions:
           $ref: '#/definitions/handler.ChainOfEventsNodeDTO'
         description: The nodes in the chain of events
         type: object
+    required:
+    - graph
     type: object
   handler.DataResponseDTO:
     properties:
@@ -50,6 +56,19 @@ definitions:
         items:
           $ref: '#/definitions/handler.LogAndSpanDTO'
         type: array
+    type: object
+  handler.EdgeDTO:
+    properties:
+      id:
+        description: The ID of the associated log or span data
+        type: string
+      tdoa:
+        description: The TDOA of the associated log or span data assuming a log or
+          span was successfully inferred
+        type: number
+    required:
+    - id
+    - tdoa
     type: object
   handler.ErrorMessage:
     properties:

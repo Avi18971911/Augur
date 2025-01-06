@@ -25,7 +25,7 @@ func TestAnalyticsQuery(t *testing.T) {
 		t.Errorf("Failed to create logger: %v", err)
 	}
 
-	as := inference.NewAnalyticsQueryService(
+	as := inference.NewInferenceQueryService(
 		ac,
 		logger,
 	)

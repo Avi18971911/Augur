@@ -97,6 +97,12 @@ const docTemplate = `{
     "definitions": {
         "handler.ChainOfEventsNodeDTO": {
             "type": "object",
+            "required": [
+                "cluster_id",
+                "id",
+                "predecessors",
+                "successors"
+            ],
             "properties": {
                 "cluster_id": {
                     "description": "The Cluster ID of the cluster belonging to the log or span data",
@@ -118,7 +124,7 @@ const docTemplate = `{
                     "description": "The IDs of the predecessors of the log or span data",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/handler.EdgeDTO"
                     }
                 },
                 "span_dto": {
@@ -133,7 +139,7 @@ const docTemplate = `{
                     "description": "The IDs of the successors of the log or span data",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/handler.EdgeDTO"
                     }
                 }
             }
@@ -152,6 +158,9 @@ const docTemplate = `{
         },
         "handler.ChainOfEventsResponseDTO": {
             "type": "object",
+            "required": [
+                "graph"
+            ],
             "properties": {
                 "graph": {
                     "description": "The nodes in the chain of events",
@@ -171,6 +180,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/handler.LogAndSpanDTO"
                     }
+                }
+            }
+        },
+        "handler.EdgeDTO": {
+            "type": "object",
+            "required": [
+                "id",
+                "tdoa"
+            ],
+            "properties": {
+                "id": {
+                    "description": "The ID of the associated log or span data",
+                    "type": "string"
+                },
+                "tdoa": {
+                    "description": "The TDOA of the associated log or span data assuming a log or span was successfully inferred",
+                    "type": "number"
                 }
             }
         },
@@ -415,7 +441,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/backendAPI",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Augur API",
 	Description:      "This is a monitoring and analytics tool for distributed systems.",

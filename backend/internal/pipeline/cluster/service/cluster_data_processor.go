@@ -65,7 +65,7 @@ func (cdp *ClusterDataProcessor) clusterDataIntoLikeIds(
 			ctx context.Context,
 			input clusterModel.ClusterInput,
 		) ([]clusterModel.ClusterOutput, string, error) {
-			outputList, err := cdp.cls.ClusterData(ctx, input)
+			outputList, err := cdp.cls.GetLikeData(ctx, input)
 			if err != nil {
 				return nil, clusterErrorMsg, err
 			}
@@ -93,22 +93,22 @@ func (cdp *ClusterDataProcessor) clusterDataIntoLikeIds(
 }
 
 func (cdp *ClusterDataProcessor) finalizeOutput(
-	ids []string,
+	idsFromClustering []string,
 	clusterIds []string,
-	data []map[string]interface{},
+	newData []map[string]interface{},
 ) []model.ClusterOutput {
-	dataMap := getDataMap(data)
-	output := make([]model.ClusterOutput, len(dataMap))
+	idToNewDataMap := getIdToDataMap(newData)
+	output := make([]model.ClusterOutput, len(idToNewDataMap))
 	i := 0
-	for _, id := range ids {
-		// the ids and clusterIds are from the clustering algorithm, whereas we only need to pass on new entries
-		if _, ok := dataMap[id]; !ok {
+	for _, id := range idsFromClustering {
+		// the ids and clusterIds are the total (new + old) from the clustering algorithm, whereas we only need to pass on new entries
+		if _, ok := idToNewDataMap[id]; !ok {
 			continue
 		}
 		clusterId := clusterIds[i]
-		dataType, spanTimeDetails, logTimeDetails, err := getDetails(dataMap[id])
+		dataType, spanTimeDetails, logTimeDetails, err := getDetails(idToNewDataMap[id])
 		if err != nil {
-			cdp.logger.Error("failed to get details from the data", zap.Error(err))
+			cdp.logger.Error("failed to get details from the newData", zap.Error(err))
 			continue
 		}
 		output[i] = model.ClusterOutput{
@@ -396,16 +396,16 @@ func getSpanOutput(item map[string]interface{}) (
 	return spanDetails, nil
 }
 
-func getDataMap(
+func getIdToDataMap(
 	data []map[string]interface{},
 ) map[string]map[string]interface{} {
-	dataMap := make(map[string]map[string]interface{}, len(data))
+	idToDataMap := make(map[string]map[string]interface{}, len(data))
 	for _, item := range data {
 		id, ok := item["_id"].(string)
 		if !ok {
 			continue
 		}
-		dataMap[id] = item
+		idToDataMap[id] = item
 	}
-	return dataMap
+	return idToDataMap
 }

@@ -25,7 +25,6 @@ import (
 //   name: Apache 2.0
 //   url: http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @BasePath /backendAPI
 func main() {
 	logger, err := zap.NewProduction()
 	defer logger.Sync()
@@ -42,11 +41,11 @@ func main() {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	as := inference.NewAnalyticsQueryService(ac, logger)
+	as := inference.NewInferenceQueryService(ac, logger)
 	errorQueryService := log_and_span.NewLogAndSpanService(ac, logger)
 
 	r := router.CreateRouter(context.Background(), as, errorQueryService, logger)
-	logger.Info("Starting server at :8081")
+	logger.Info("Starting query server at :8081")
 	if err := http.ListenAndServe(":8081", r); err != nil {
 		logger.Fatal("Failed to serve: %v", zap.Error(err))
 	}

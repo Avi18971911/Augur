@@ -18,8 +18,12 @@ const allOperations = "allOperations"
 function NavigationForm() {
     const [selectedService, setSelectedService] = useState<string>(allServices)
     const [selectedOperation, setSelectedOperation] = useState<string>(allOperations)
-    const [searchStartTime, setSearchStartTime] = useState<string | undefined>(undefined)
-    const [searchEndTime, setSearchEndTime] = useState<string | undefined>(undefined)
+    const [searchStartTime, setSearchStartTime] = useState<string>(
+        new Date("2021-01-01").toISOString().slice(0, 16) // To match the datetime-local input format
+    )
+    const [searchEndTime, setSearchEndTime] = useState<string>(
+        new Date().toISOString().slice(0, 16) // To match the datetime-local input format
+    )
     const [searchLimit, setSearchLimit] = useState<number>(20)
     const [searchType, setSearchType] = useState<Type>(Type.ANY)
 
@@ -72,11 +76,11 @@ function NavigationForm() {
         return typeList.map((type) => typeMap[type]);
     }
     return (
-        <div style={{display: 'flex', flexDirection: 'column'}}>
+        <div style={{display: 'flex', flexDirection: 'column', flex: '1.0'}}>
             <h2>Navigation</h2>
             <div style={{
                 flexDirection: 'column', display: "flex", width: '100%', borderStyle: 'solid', borderColor: 'white',
-                alignItems: 'center', padding: '20px', marginTop: '20px',
+                alignItems: 'center', padding: '20px', marginTop: '20px'
             }}>
                 <form action={"/search"} method={"post"} style={{flexDirection: 'column'}}>
                     <div>
@@ -109,7 +113,12 @@ function NavigationForm() {
                     <select
                         value={searchType}
                         style={{width: '70%'}}
-                        onChange={(e) => setSearchType(Type[e.target.value as keyof typeof Type])}
+                        onChange={(e) => {
+                            const matchingType = Object.values(Type).find(
+                                (type) => type === e.target.value
+                            ) ?? Type.ANY;
+                            setSearchType(matchingType);
+                        }}
                     >
                         {Object.values(Type).map((type) => (
                             <option key={type} value={type}>{type}</option>
@@ -124,7 +133,9 @@ function NavigationForm() {
                     </div>
                     <input
                         type={"datetime-local"} value={searchStartTime}
-                        name={"startTime"} onChange={(e) => setSearchStartTime(e.target.value)}
+                        name={"startTime"} onChange={
+                            (e) => setSearchStartTime(e.target.value)
+                        }
                     />
 
                     <div
@@ -134,7 +145,9 @@ function NavigationForm() {
                     </div>
                     <input
                         type={"datetime-local"} value={searchEndTime}
-                        name={"endTime"} onChange={(e) => setSearchEndTime(e.target.value)}
+                        name={"endTime"} onChange={
+                            (e) => setSearchEndTime(e.target.value)
+                        }
                     />
 
                     <div

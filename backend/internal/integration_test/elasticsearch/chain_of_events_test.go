@@ -34,7 +34,7 @@ func TestChainOfEvents(t *testing.T) {
 		logger,
 	)
 
-	as := inferenceService.NewAnalyticsQueryService(
+	as := inferenceService.NewInferenceQueryService(
 		ac,
 		logger,
 	)
@@ -443,6 +443,112 @@ func TestChainOfEvents(t *testing.T) {
 		assert.Equal(t, logs[8], *graph[clusterIdC].LogOrSpanData.LogDetails)
 	})
 
+	t.Run("should be able to assign the correct TDOAs to the edges", func(t *testing.T) {
+		err := deleteAllDocuments(es)
+		if err != nil {
+			t.Errorf("Failed to delete all documents: %v", err)
+		}
+		createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		timestampOne := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+		messageA := "The message for cluster A"
+		messageB := "Der Message Cluster B"
+		messageC := "El mensaje para el cluster C"
+		clusterIdA := "1"
+		clusterIdB := "2"
+		clusterIdC := "3"
+		const TDOA = time.Second * 5
+
+		logs := []logModel.LogEntry{
+			{
+				Id:        "1",
+				ClusterId: clusterIdA,
+				CreatedAt: createdAt,
+				Timestamp: timestampOne,
+				Severity:  "INFO",
+				Message:   messageA,
+				Service:   "serviceA",
+			},
+			{
+				Id:        "2",
+				ClusterId: clusterIdB,
+				CreatedAt: createdAt,
+				Timestamp: timestampOne.Add(TDOA),
+				Severity:  "INFO",
+				Message:   messageB,
+				Service:   "serviceA",
+			},
+			{
+				Id:        "3",
+				ClusterId: clusterIdC,
+				CreatedAt: createdAt,
+				Timestamp: timestampOne.Add(TDOA * 2),
+				Severity:  "INFO",
+				Message:   messageC,
+				Service:   "serviceA",
+			},
+		}
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+
+		err = loadDataIntoElasticsearch(ac, logs, bootstrapper.LogIndexName)
+		if err != nil {
+			t.Errorf("Failed to load data into Elasticsearch: %v", err)
+		}
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+
+		updatedClusters, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
+		assert.NoError(t, err)
+
+		err = an.UpdateAnalytics(context.Background(), updatedClusters)
+		if err != nil {
+			t.Errorf("Failed to update analytics: %v", err)
+		}
+
+		spanOrLogDatum := inferenceModel.LogOrSpanData{
+			Id:         logs[0].Id,
+			ClusterId:  logs[0].ClusterId,
+			LogDetails: &logs[0],
+		}
+		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
+		assert.NoError(t, err)
+
+		for _, successor := range graph[clusterIdA].Successors {
+			if successor.ClusterId == clusterIdB {
+				assert.Equal(t, TDOA.Seconds(), successor.TDOA)
+			} else if successor.ClusterId == clusterIdC {
+				assert.Equal(t, (TDOA * 2).Seconds(), successor.TDOA)
+			} else {
+				t.Errorf("Unexpected successor: %v", successor.ClusterId)
+			}
+		}
+
+		for _, successor := range graph[clusterIdB].Successors {
+			if successor.ClusterId == clusterIdC {
+				assert.Equal(t, TDOA.Seconds(), successor.TDOA)
+			} else {
+				t.Errorf("Unexpected successor: %v", successor.ClusterId)
+			}
+		}
+
+		for _, predecessor := range graph[clusterIdB].Predecessors {
+			if predecessor.ClusterId == clusterIdA {
+				assert.Equal(t, -TDOA.Seconds(), predecessor.TDOA)
+			} else {
+				t.Errorf("Unexpected predecessor: %v", predecessor.ClusterId)
+			}
+		}
+
+		for _, predecessor := range graph[clusterIdC].Predecessors {
+			if predecessor.ClusterId == clusterIdA {
+				assert.Equal(t, -(TDOA * 2).Seconds(), predecessor.TDOA)
+			} else if predecessor.ClusterId == clusterIdB {
+				assert.Equal(t, -TDOA.Seconds(), predecessor.TDOA)
+			} else {
+				t.Errorf("Unexpected predecessor: %v", predecessor.ClusterId)
+			}
+		}
+	})
+
 	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
@@ -484,7 +590,7 @@ func TestChainOfEvents(t *testing.T) {
 		}
 	})
 
-	t.Run("should be able to handle real data with the last log in sequence", func(t *testing.T) {
+	t.Run("should be able to handle easy real data with the first log in sequence", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")

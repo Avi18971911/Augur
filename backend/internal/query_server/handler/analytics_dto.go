@@ -71,22 +71,31 @@ type LogDTO struct {
 // @swagger:model ChainOfEventsResponseDTO
 type ChainOfEventsResponseDTO struct {
 	// The nodes in the chain of events
-	Graph map[string]ChainOfEventsNodeDTO
+	Graph map[string]ChainOfEventsNodeDTO `json:"graph" validate:"required"`
 }
 
 // ChainOfEventsNodeDTO represents a node in the chain of events
 // @swagger:model ChainOfEventsNodeDTO
 type ChainOfEventsNodeDTO struct {
 	// The ID of the log or span data
-	Id string `json:"id"`
+	Id string `json:"id" validate:"required"`
 	// The Cluster ID of the cluster belonging to the log or span data
-	ClusterId string `json:"cluster_id"`
+	ClusterId string `json:"cluster_id" validate:"required"`
 	// The IDs of the successors of the log or span data
-	Successors []string `json:"successors"`
+	Successors []EdgeDTO `json:"successors" validate:"required"`
 	// The IDs of the predecessors of the log or span data
-	Predecessors []string `json:"predecessors"`
+	Predecessors []EdgeDTO `json:"predecessors" validate:"required"`
 	// The details of the span data, if the data is a span
 	SpanDTO *SpanDTO `json:"span_dto"`
 	// The details of the log data, if the data is a log
 	LogDTO *LogDTO `json:"log_dto"`
+}
+
+// EdgeDTO represents an edge in the chain of events
+// @swagger:model EdgeDTO
+type EdgeDTO struct {
+	// The ID of the associated log or span data
+	Id string `json:"id" validate:"required"`
+	// The TDOA of the associated log or span data assuming a log or span was successfully inferred
+	TDOA float64 `json:"tdoa" validate:"required"`
 }
