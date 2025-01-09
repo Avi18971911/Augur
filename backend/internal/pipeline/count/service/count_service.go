@@ -107,6 +107,8 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
+		cs.logger.Info("Bucket of size", zap.Duration("bucket", time.Duration(bucket)*time.Millisecond))
+		cs.logger.Info("Time range", zap.Time("fromTime", fromTime), zap.Time("toTime", toTime))
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, indices, fromTime, toTime)
 		if err != nil {
 			cs.logger.Error(
@@ -205,7 +207,7 @@ func (cs *CountService) getNonMatchingCoClusterIds(
 	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
 	defer searchCancel()
 	querySize := 10000
-	res, err := cs.ac.Search(searchCtx, string(queryBody), []string{bootstrapper.CountIndexName}, &querySize)
+	res, err := cs.ac.Search(searchCtx, string(queryBody), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 	nonMatchingCoClusters, err := convertDocsToCoClusters(res)
 	if err != nil {
 		cs.logger.Error(

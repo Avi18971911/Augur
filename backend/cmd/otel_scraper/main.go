@@ -53,7 +53,7 @@ func main() {
 	codp := count.NewCountDataProcessorService(
 		ac,
 		countService,
-		[]countModel.Bucket{2500},
+		[]countModel.Bucket{20},
 		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
 		logger,
 	)

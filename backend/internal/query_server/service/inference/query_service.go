@@ -224,7 +224,7 @@ func (as *QueryServiceImpl) getClusterSubGraph(
 	var localQuerySize = querySize
 	searchCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	docs, err := as.ac.Search(searchCtx, string(queryJSON), []string{bootstrapper.ClusterIndexName}, &localQuerySize)
+	docs, err := as.ac.Search(searchCtx, string(queryJSON), []string{bootstrapper.ClusterGraphNodeIndexName}, &localQuerySize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for preceding clusters: %w", err)
 	}
@@ -341,7 +341,7 @@ func (as *QueryServiceImpl) getCountClusterDetails(
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	docs, err := as.ac.Search(queryCtx, string(queryJSON), []string{bootstrapper.CountIndexName}, nil)
+	docs, err := as.ac.Search(queryCtx, string(queryJSON), []string{bootstrapper.ClusterTotalCountIndexName}, nil)
 	if err != nil {
 		return inferenceModel.CountCluster{}, fmt.Errorf("failed to search for cluster details: %w", err)
 	}

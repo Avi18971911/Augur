@@ -101,7 +101,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -191,7 +191,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -259,7 +259,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 			searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
+			count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName})
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
@@ -329,7 +329,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}

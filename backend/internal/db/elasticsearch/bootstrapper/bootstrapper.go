@@ -39,12 +39,16 @@ func (bs *Bootstrapper) BootstrapElasticsearch() error {
 		return fmt.Errorf("error creating index trace template: %w", err)
 	}
 
-	if err := bs.createIndex(CountIndexName, countIndex); err != nil {
+	if err := bs.createIndex(ClusterTotalCountIndexName, clusterTotalCountIndex); err != nil {
 		return fmt.Errorf("error creating index count template: %w", err)
 	}
 
-	if err := bs.createIndex(ClusterIndexName, clusterIndex); err != nil {
+	if err := bs.createIndex(ClusterGraphNodeIndexName, clusterGraphNodeIndex); err != nil {
 		return fmt.Errorf("error creating index cluster template: %w", err)
+	}
+
+	if err := bs.createIndex(ClusterWindowCountIndexName, clusterWindowCountIndex); err != nil {
+		return fmt.Errorf("error creating index cluster edge template: %w", err)
 	}
 
 	return nil

@@ -60,7 +60,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
+		index := bootstrapper.ClusterTotalCountIndexName
 		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
@@ -80,7 +80,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -136,7 +136,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
 		}
-		index := bootstrapper.CountIndexName
+		index := bootstrapper.ClusterTotalCountIndexName
 		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
@@ -161,7 +161,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -281,7 +281,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
+		index := bootstrapper.ClusterTotalCountIndexName
 		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
@@ -306,7 +306,7 @@ func TestSpanCount(t *testing.T) {
 		}
 		searchQueryBody := countQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -366,14 +366,14 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
+		index := bootstrapper.ClusterTotalCountIndexName
 		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}

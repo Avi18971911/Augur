@@ -113,7 +113,7 @@ func (cdp *CountDataProcessorService) processCountsForOverlaps(
 	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	index := bootstrapper.CountIndexName
+	index := bootstrapper.ClusterTotalCountIndexName
 	err := cdp.ac.BulkIndex(updateCtx, metaMapList, documentMapList, &index)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -207,7 +207,7 @@ func (cdp *CountDataProcessorService) processIncrementsForMisses(
 	}
 	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
 	defer updateCancel()
-	index := bootstrapper.CountIndexName
+	index := bootstrapper.ClusterTotalCountIndexName
 	err := cdp.ac.BulkIndex(updateCtx, metaMapList, documentMapList, &index)
 	if err != nil {
 		cdp.logger.Error("Failed to bulk index when incrementing misses", zap.Error(err))

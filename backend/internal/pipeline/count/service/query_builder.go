@@ -97,7 +97,7 @@ func buildIncrementNonMatchedCoClusterIdsQuery(
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":               id,
-			"_index":            bootstrapper.CountIndexName,
+			"_index":            bootstrapper.ClusterTotalCountIndexName,
 			"retry_on_conflict": 5,
 		},
 	}
@@ -138,7 +138,7 @@ func buildUpdateClusterCountsQuery(
 	metaInfo := map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":               id,
-			"_index":            bootstrapper.CountIndexName,
+			"_index":            bootstrapper.ClusterTotalCountIndexName,
 			"retry_on_conflict": 5,
 		},
 	}
