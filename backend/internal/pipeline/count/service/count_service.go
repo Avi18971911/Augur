@@ -12,6 +12,7 @@ import (
 )
 
 const csTimeOut = 2 * time.Second
+const clusterWindowSizeMs = 50
 
 type CountService struct {
 	ac     client.AugurClient
@@ -118,7 +119,17 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 			)
 			return nil, err
 		}
-		err = addCoOccurringClustersToCoClusterInfoMap(coClusterInfoMap, coOccurringClusters, timeInfo)
+		clusterWindows, err := cs.getClusterWindows(
+			ctx,
+			clusterId,
+			getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
+		)
+		err = addCoOccurringClustersToCoClusterInfoMap(
+			coClusterInfoMap,
+			coOccurringClusters,
+			clusterWindows,
+			timeInfo,
+		)
 	}
 	return coClusterInfoMap, nil
 }
@@ -238,9 +249,54 @@ func (cs *CountService) getIncrementMissesDetails(
 	return metaMap, updateMap
 }
 
+func (cs *CountService) getClusterWindows(
+	ctx context.Context,
+	clusterId string,
+	coOccurringClusterIds []string,
+) ([]model.ClusterWindowCount, error) {
+	clusterWindowQuery := buildGetClusterWindowsQuery(clusterId, coOccurringClusterIds)
+	queryBody, err := json.Marshal(clusterWindowQuery)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to marshal cluster window query",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("error marshaling cluster window query: %w", err)
+	}
+	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
+	defer searchCancel()
+	querySize := 10000
+	res, err := cs.ac.Search(
+		searchCtx,
+		string(queryBody),
+		[]string{bootstrapper.ClusterTotalCountIndexName},
+		&querySize,
+	)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to search for cluster windows",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("error searching for cluster windows: %w", err)
+	}
+	clusterWindows, err := convertDocsToClusterWindows(res)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to convert search results to cluster windows",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("error converting search results to cluster windows: %w", err)
+	}
+	return clusterWindows, nil
+}
+
 func addCoOccurringClustersToCoClusterInfoMap(
 	coClusterInfoMap map[string]model.CountInfo,
 	clusters []model.ClusterQueryResult,
+	clusterWindows []model.ClusterWindowCount,
 	timeInfo model.TimeInfo,
 ) error {
 	for _, cluster := range clusters {
@@ -248,15 +304,54 @@ func addCoOccurringClustersToCoClusterInfoMap(
 		if err != nil {
 			return fmt.Errorf("error calculating TDOA: %w", err)
 		}
+		matchingWindow := getMatchingClusterWindow(cluster, clusterWindows, TDOA)
+		var coClusterToWindowMap map[string]model.ClusterWindowCountInfo
 		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
 			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
-				Occurrences: 1,
-				TotalTDOA:   TDOA,
+				Occurrences:            1,
+				ClusterWindowCountInfo: map[string]model.ClusterWindowCountInfo{},
 			}
+			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
 		} else {
 			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
 				Occurrences: coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
-				TotalTDOA:   coClusterInfoMap[cluster.ClusterId].TotalTDOA + TDOA,
+			}
+			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
+		}
+
+		var windowDetails model.ClusterWindowCount
+		if matchingWindow != nil {
+			windowDetails = *matchingWindow
+		} else {
+			start, end := getTimeRangeForClusterWindow(TDOA, clusterWindowSizeMs)
+			windowDetails = model.ClusterWindowCount{
+				CoClusterId:  cluster.CoClusterId,
+				ClusterId:    cluster.ClusterId,
+				Occurrences:  0,
+				MeanTDOA:     0,
+				VarianceTDOA: 0,
+				Start:        start,
+				End:          end,
+			}
+		}
+
+		stringStart := windowDetails.Start.Format(time.RFC3339)
+		if _, ok := coClusterToWindowMap[stringStart]; !ok {
+			coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart] = model.ClusterWindowCountInfo{
+				Occurrences: 1,
+				TotalTDOA:   TDOA,
+				Start:       windowDetails.Start,
+				End:         windowDetails.End,
+			}
+		} else {
+			previousOccurrences := coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart].Occurrences
+			previousTotalTDOA := coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart].TotalTDOA
+
+			coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart] = model.ClusterWindowCountInfo{
+				Occurrences: previousOccurrences + 1,
+				TotalTDOA:   previousTotalTDOA + TDOA,
+				Start:       windowDetails.Start,
+				End:         windowDetails.End,
 			}
 		}
 	}
@@ -315,6 +410,58 @@ func convertDocsToCoClusters(res []map[string]interface{}) ([]model.ClusterQuery
 	return clusters, nil
 }
 
+func convertDocsToClusterWindows(res []map[string]interface{}) ([]model.ClusterWindowCount, error) {
+	clusterWindowCounts := make([]model.ClusterWindowCount, len(res))
+	for i, hit := range res {
+		doc := model.ClusterWindowCount{}
+		if clusterId, ok := hit["cluster_id"].(string); !ok {
+			return nil, fmt.Errorf("error parsing cluster_id for cluster window")
+		} else {
+			doc.ClusterId = clusterId
+		}
+		if coClusterId, ok := hit["co_cluster_id"].(string); !ok {
+			return nil, fmt.Errorf("error parsing co_cluster_id for cluster window")
+		} else {
+			doc.CoClusterId = coClusterId
+		}
+		if occurrences, ok := hit["occurrences"].(float64); !ok {
+			return nil, fmt.Errorf("error parsing occurrences for cluster window")
+		} else {
+			doc.Occurrences = int64(occurrences)
+		}
+		if meanTDOA, ok := hit["mean_TDOA"].(float64); !ok {
+			return nil, fmt.Errorf("error parsing mean_TDOA for cluster window")
+		} else {
+			doc.MeanTDOA = meanTDOA
+		}
+		if varianceTDOA, ok := hit["variance_TDOA"].(float64); !ok {
+			return nil, fmt.Errorf("error parsing variance_TDOA for cluster window")
+		} else {
+			doc.VarianceTDOA = varianceTDOA
+		}
+		if start, ok := hit["start"].(string); !ok {
+			return nil, fmt.Errorf("error parsing start for cluster window")
+		} else {
+			startTime, err := client.NormalizeTimestampToNanoseconds(start)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing start into time.Time for cluster window")
+			}
+			doc.Start = startTime
+		}
+		if end, ok := hit["end"].(string); !ok {
+			return nil, fmt.Errorf("error parsing end for cluster window")
+		} else {
+			endTime, err := client.NormalizeTimestampToNanoseconds(end)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing end into time.Time for cluster window")
+			}
+			doc.End = endTime
+		}
+		clusterWindowCounts[i] = doc
+	}
+	return clusterWindowCounts, nil
+}
+
 func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
 		return model.CalculatedTimeInfo{
@@ -362,4 +509,44 @@ func getCoClusterIdsFromMap(coClusterMapCount map[string]model.CountInfo) []stri
 		i++
 	}
 	return coClusterIds
+}
+
+func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult) []string {
+	coClusterIds := make([]string, len(clusters))
+	for i, cluster := range clusters {
+		coClusterIds[i] = cluster.CoClusterId
+	}
+	return coClusterIds
+}
+
+func getMatchingClusterWindow(
+	cluster model.ClusterQueryResult,
+	clusterWindows []model.ClusterWindowCount,
+	TDOA float64,
+) *model.ClusterWindowCount {
+	for _, window := range clusterWindows {
+		if window.CoClusterId == cluster.CoClusterId &&
+			window.ClusterId == cluster.ClusterId &&
+			windowOverlapsWithSample(window, TDOA) {
+			return &window
+		}
+	}
+	return nil
+}
+
+func windowOverlapsWithSample(
+	window model.ClusterWindowCount,
+	TDOA float64,
+) bool {
+	start := float64(window.Start.UnixMicro()) / 1e6
+	end := float64(window.End.UnixMicro()) / 1e6
+	return start <= TDOA && TDOA <= end
+}
+
+func getTimeRangeForClusterWindow(TDOA float64, windowSizeMs int) (time.Time, time.Time) {
+	increment := float64(windowSizeMs) / 2
+	middlePoint := time.Unix(0, int64(TDOA*1e9))
+	start := middlePoint.Add(-time.Millisecond * time.Duration(increment))
+	end := middlePoint.Add(time.Millisecond * time.Duration(increment))
+	return start, end
 }

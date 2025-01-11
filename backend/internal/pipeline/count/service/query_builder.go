@@ -144,3 +144,25 @@ func buildUpdateClusterCountsQuery(
 	}
 	return metaInfo, updateStatement
 }
+
+func buildGetClusterWindowsQuery(clusterId string, coClusterIds []string) map[string]interface{} {
+
+	return map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"term": map[string]interface{}{
+							"cluster_id": clusterId,
+						},
+					},
+					{
+						"terms": map[string]interface{}{
+							"co_cluster_id": coClusterIds,
+						},
+					},
+				},
+			},
+		},
+	}
+}

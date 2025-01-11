@@ -12,6 +12,12 @@ var clusterWindowCountIndex = map[string]interface{}{
 	},
 	"mappings": map[string]interface{}{
 		"properties": map[string]interface{}{
+			"cluster_id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"co_cluster_id": map[string]interface{}{
+				"type": "keyword",
+			},
 			"start": map[string]interface{}{
 				"type": "date",
 			},
