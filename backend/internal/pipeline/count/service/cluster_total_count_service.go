@@ -417,3 +417,32 @@ func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult)
 	}
 	return coClusterIds
 }
+
+func ConvertCountDocsToCountEntries(docs []map[string]interface{}) ([]model.ClusterTotalCountEntry, error) {
+	var countEntries []model.ClusterTotalCountEntry
+	for _, doc := range docs {
+		countEntry := model.ClusterTotalCountEntry{}
+		coClusterId, ok := doc["co_cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
+		}
+		countEntry.CoClusterId = coClusterId
+		clusterId, ok := doc["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string")
+		}
+		countEntry.ClusterId = clusterId
+		totalInstances, ok := doc["total_instances"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances to float64")
+		}
+		countEntry.TotalInstances = int64(totalInstances)
+		totalInstancesWithCoCluster, ok := doc["total_instances_with_co_cluster"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances_with_co_cluster to float64")
+		}
+		countEntry.TotalInstancesWithCoCluster = int64(totalInstancesWithCoCluster)
+		countEntries = append(countEntries, countEntry)
+	}
+	return countEntries, nil
+}

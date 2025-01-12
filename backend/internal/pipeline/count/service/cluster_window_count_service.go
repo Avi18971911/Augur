@@ -201,3 +201,47 @@ func getTimeRangeForClusterWindow(tdoaInSeconds float64, windowSizeMs int) (floa
 func getIndexFromWindowDetails(window model.ClusterWindowCount) string {
 	return strconv.FormatFloat(window.Start, 'f', -1, 64)
 }
+
+func ConvertCountDocsToWindowCountEntries(docs []map[string]interface{}) ([]model.ClusterWindowCountEntry, error) {
+	var countEntries []model.ClusterWindowCountEntry
+	for _, doc := range docs {
+		countEntry := model.ClusterWindowCountEntry{}
+		coClusterId, ok := doc["co_cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
+		}
+		countEntry.CoClusterId = coClusterId
+		clusterId, ok := doc["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string")
+		}
+		countEntry.ClusterId = clusterId
+		start, ok := doc["start"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert start to float64")
+		}
+		countEntry.Start = start
+		end, ok := doc["end"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert end to float64")
+		}
+		countEntry.End = end
+		occurrences, ok := doc["occurrences"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert occurrences to float64")
+		}
+		countEntry.Occurrences = int64(occurrences)
+		meanTDOA, ok := doc["mean_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
+		}
+		countEntry.MeanTDOA = meanTDOA
+		varianceTDOA, ok := doc["variance_TDOA"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert variance_tdoa to float64")
+		}
+		countEntry.VarianceTDOA = varianceTDOA
+		countEntries = append(countEntries, countEntry)
+	}
+	return countEntries, nil
+}

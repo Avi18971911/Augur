@@ -108,7 +108,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToWindowCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -213,7 +213,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToWindowCountEntries(docs)
+			countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -324,7 +324,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToWindowCountEntries(docs)
+			countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -428,7 +428,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToWindowCountEntries(docs)
+			countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -504,7 +504,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToWindowCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -578,7 +578,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToWindowCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}

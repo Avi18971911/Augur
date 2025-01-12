@@ -169,7 +169,7 @@ func TestChainOfEvents(t *testing.T) {
 			LogDetails: &logs[0],
 		}
 		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 
 		clusterASuccessors := make([]string, 0)
 		clusterAPredecessors := make([]string, 0)
