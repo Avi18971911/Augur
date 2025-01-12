@@ -76,18 +76,20 @@ func (cs *ClusterWindowCountService) getClusterWindows(
 
 func (cs *ClusterWindowCountService) addWindowDataToCoClusterInfoMap(
 	coClusterToWindowMap map[string]model.ClusterWindowCountInfo,
-	matchingWindow *model.ClusterWindowCount,
+	clusterWindows []model.ClusterWindowCount,
+	clusterId string,
+	coClusterId string,
 	TDOA float64,
-	cluster model.ClusterQueryResult,
-) {
+) model.ClusterWindowCount {
+	matchingWindow := getMatchingClusterWindow(clusterId, coClusterId, clusterWindows, TDOA)
 	var windowDetails model.ClusterWindowCount
 	if matchingWindow != nil {
 		windowDetails = *matchingWindow
 	} else {
 		start, end := getTimeRangeForClusterWindow(TDOA, clusterWindowSizeMs)
 		windowDetails = model.ClusterWindowCount{
-			CoClusterId:  cluster.CoClusterId,
-			ClusterId:    cluster.ClusterId,
+			CoClusterId:  coClusterId,
+			ClusterId:    clusterId,
 			Occurrences:  0,
 			MeanTDOA:     0,
 			VarianceTDOA: 0,
@@ -115,6 +117,7 @@ func (cs *ClusterWindowCountService) addWindowDataToCoClusterInfoMap(
 			End:         windowDetails.End,
 		}
 	}
+	return windowDetails
 }
 func convertDocsToClusterWindows(res []map[string]interface{}) ([]model.ClusterWindowCount, error) {
 	clusterWindowCounts := make([]model.ClusterWindowCount, len(res))

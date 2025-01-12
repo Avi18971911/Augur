@@ -274,7 +274,6 @@ func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
 		if err != nil {
 			return fmt.Errorf("error calculating TDOA: %w", err)
 		}
-		matchingWindow := getMatchingClusterWindow(clusterId, coCluster.ClusterId, clusterWindows, TDOA)
 		var coClusterToWindowMap map[string]model.ClusterWindowCountInfo
 		if _, ok := coClusterInfoMap[coCluster.ClusterId]; !ok {
 			coClusterInfoMap[coCluster.ClusterId] = model.ClusterTotalCountInfo{
@@ -289,12 +288,14 @@ func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
 			}
 			coClusterToWindowMap = coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo
 		}
-		cs.wc.addWindowDataToCoClusterInfoMap(
+		newWindowDetail := cs.wc.addWindowDataToCoClusterInfoMap(
 			coClusterToWindowMap,
-			matchingWindow,
+			clusterWindows,
+			clusterId,
+			coCluster.ClusterId,
 			TDOA,
-			coCluster,
 		)
+		clusterWindows = append(clusterWindows, newWindowDetail)
 	}
 	return nil
 }

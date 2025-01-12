@@ -112,11 +112,11 @@ func TestCountDataProcessor(t *testing.T) {
 			}
 		}
 
-		assert.Equal(t, int64(2), clusterAEntries[0].TotalInstances)
+		assert.Equal(t, int64(2), clusterAEntries[0].TotalInstancesWithCoCluster)
 		assert.Equal(t, int64(2), clusterBEntries[0].TotalInstancesWithCoCluster)
 
 		assert.Equal(t, int64(3), clusterAEntries[0].TotalInstances)
-		assert.Equal(t, int64(2), clusterBEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(2), clusterBEntries[0].TotalInstances)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
