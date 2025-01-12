@@ -61,7 +61,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -75,7 +75,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -137,7 +137,7 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(firstCtx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -282,7 +282,7 @@ func TestSpanCount(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -297,7 +297,7 @@ func TestSpanCount(t *testing.T) {
 			indices,
 			buckets,
 		)
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -367,7 +367,7 @@ func TestAlgorithm(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}

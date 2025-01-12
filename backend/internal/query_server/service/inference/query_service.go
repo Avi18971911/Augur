@@ -333,7 +333,7 @@ func (as *QueryServiceImpl) getCountClusterDetails(
 	previousClusterId string,
 	nextClusterId string,
 ) (inferenceModel.CountCluster, error) {
-	countId := service.GetIDFromConstituents(previousClusterId, nextClusterId)
+	countId := service.GetTotalCountId(previousClusterId, nextClusterId)
 	query := getCountClusterDetailsQuery(countId)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {

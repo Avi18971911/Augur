@@ -72,7 +72,7 @@ func TestMeandAndSTD(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -87,7 +87,7 @@ func TestMeandAndSTD(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, secondRes.TotalCountMetaMapList, secondRes.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -173,7 +173,7 @@ func TestMeandAndSTD(t *testing.T) {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
 			index := bootstrapper.ClusterTotalCountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -192,7 +192,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.TotalCountMetaMapList, secondRes.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -284,7 +284,7 @@ func TestMeandAndSTD(t *testing.T) {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
 			index := bootstrapper.ClusterTotalCountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -303,7 +303,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.TotalCountMetaMapList, secondRes.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -392,7 +392,7 @@ func TestMeandAndSTD(t *testing.T) {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
 			index := bootstrapper.ClusterTotalCountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -407,7 +407,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.TotalCountMetaMapList, secondRes.TotalCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -483,7 +483,7 @@ func TestMeandAndSTD(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -557,7 +557,7 @@ func TestMeandAndSTD(t *testing.T) {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
 		index := bootstrapper.ClusterTotalCountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}

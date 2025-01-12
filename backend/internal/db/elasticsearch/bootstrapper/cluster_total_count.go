@@ -18,7 +18,7 @@ var clusterTotalCountIndex = map[string]interface{}{
 			"co_cluster_id": map[string]interface{}{
 				"type": "keyword",
 			},
-			"total_instances_without_co_cluster": map[string]interface{}{
+			"total_instances": map[string]interface{}{
 				"type": "integer",
 			},
 			"total_instances_with_co_cluster": map[string]interface{}{

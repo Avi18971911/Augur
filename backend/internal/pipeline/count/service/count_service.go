@@ -53,15 +53,15 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	increaseForMissesInput := getIncrementOccurrencesForMissesInput(clusterId, coClusterMapCount)
 	result := &model.GetCountAndUpdateQueryDetails{
 		IncreaseIncrementForMissesInput: increaseForMissesInput,
-		MetaMapList:                     metaMapList,
-		DocumentMapList:                 documentMapList,
+		TotalCountMetaMapList:           metaMapList,
+		TotalCountDocumentMapList:       documentMapList,
 	}
 	return result, nil
 }
 
 func getIncrementOccurrencesForMissesInput(
 	clusterId string,
-	coClusterToExcludeMapCount map[string]model.CountInfo,
+	coClusterToExcludeMapCount map[string]model.ClusterTotalCountInfo,
 ) model.IncreaseMissesInput {
 	coClusterIdsToExclude := getCoClusterIdsFromMap(coClusterToExcludeMapCount)
 	return model.IncreaseMissesInput{
@@ -72,19 +72,29 @@ func getIncrementOccurrencesForMissesInput(
 
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
-	coClusterMapCount map[string]model.CountInfo,
+	coClusterMapCount map[string]model.ClusterTotalCountInfo,
 ) ([]client.MetaMap, []client.DocumentMap) {
 	metaMap := make([]client.MetaMap, len(coClusterMapCount))
 	updateMap := make([]client.DocumentMap, len(coClusterMapCount))
-	i := 0
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
-		compositeId := GetIDFromConstituents(clusterId, otherClusterId)
-		// TODO: Reconsider this decision and perhaps never average or sum the TDOA values
-		newValue := coClusterDetails.TotalTDOA / float64(coClusterDetails.Occurrences) // Calculate the average of the matching coClusters
-		meta, update := buildUpdateClusterCountsQuery(compositeId, clusterId, otherClusterId, newValue)
-		metaMap[i] = meta
-		updateMap[i] = update
-		i++
+		compositeId := GetTotalCountId(clusterId, otherClusterId)
+		totalCountMeta, totalCountUpdate := buildUpdateClusterTotalCountsQuery(compositeId, clusterId, otherClusterId)
+		metaMap = append(metaMap, totalCountMeta)
+		updateMap = append(updateMap, totalCountUpdate)
+		for windowStart, windowDetails := range coClusterDetails.ClusterWindowCountInfo {
+			windowId := getWindowId(compositeId, windowStart)
+			avgTDOA := windowDetails.TotalTDOA / float64(windowDetails.Occurrences)
+			windowMeta, windowUpdate := buildUpdateClusterWindowCountsQuery(
+				windowId,
+				clusterId,
+				otherClusterId,
+				avgTDOA,
+				windowDetails.Start,
+				windowDetails.End,
+			)
+			metaMap = append(metaMap, windowMeta)
+			updateMap = append(updateMap, windowUpdate)
+		}
 	}
 	return metaMap, updateMap
 }
@@ -95,8 +105,8 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 	timeInfo model.TimeInfo,
 	indices []string,
 	buckets []model.Bucket,
-) (map[string]model.CountInfo, error) {
-	var coClusterInfoMap = make(map[string]model.CountInfo)
+) (map[string]model.ClusterTotalCountInfo, error) {
+	var coClusterInfoMap = make(map[string]model.ClusterTotalCountInfo)
 	for _, bucket := range buckets {
 		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
 		if err != nil {
@@ -238,7 +248,7 @@ func (cs *CountService) getIncrementMissesDetails(
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
 	for i, missingCoClusterId := range missingCoClusterIds {
-		compositeKey := GetIDFromConstituents(clusterId, missingCoClusterId.CoClusterId)
+		compositeKey := GetTotalCountId(clusterId, missingCoClusterId.CoClusterId)
 		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
@@ -294,7 +304,7 @@ func (cs *CountService) getClusterWindows(
 }
 
 func addCoOccurringClustersToCoClusterInfoMap(
-	coClusterInfoMap map[string]model.CountInfo,
+	coClusterInfoMap map[string]model.ClusterTotalCountInfo,
 	clusters []model.ClusterQueryResult,
 	clusterWindows []model.ClusterWindowCount,
 	timeInfo model.TimeInfo,
@@ -307,13 +317,13 @@ func addCoOccurringClustersToCoClusterInfoMap(
 		matchingWindow := getMatchingClusterWindow(cluster, clusterWindows, TDOA)
 		var coClusterToWindowMap map[string]model.ClusterWindowCountInfo
 		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
-			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
+			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
 				Occurrences:            1,
 				ClusterWindowCountInfo: map[string]model.ClusterWindowCountInfo{},
 			}
 			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
 		} else {
-			coClusterInfoMap[cluster.ClusterId] = model.CountInfo{
+			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
 				Occurrences: coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
 			}
 			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
@@ -479,8 +489,12 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.
 	}
 }
 
-func GetIDFromConstituents(clusterId, coClusterId string) string {
+func GetTotalCountId(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
+}
+
+func getWindowId(compositeId string, windowStart string) string {
+	return fmt.Sprintf("%s;%s", compositeId, windowStart)
 }
 
 func getTDOA(coCluster model.ClusterQueryResult, clusterTimeInfo model.TimeInfo) (float64, error) {
@@ -501,7 +515,7 @@ func getTDOA(coCluster model.ClusterQueryResult, clusterTimeInfo model.TimeInfo)
 	return 0, fmt.Errorf("clusterTimeInfo.spanInfo or clusterTimeInfo.logInfo is required")
 }
 
-func getCoClusterIdsFromMap(coClusterMapCount map[string]model.CountInfo) []string {
+func getCoClusterIdsFromMap(coClusterMapCount map[string]model.ClusterTotalCountInfo) []string {
 	coClusterIds := make([]string, len(coClusterMapCount))
 	i := 0
 	for coClusterId := range coClusterMapCount {

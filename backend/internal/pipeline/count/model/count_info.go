@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type CountInfo struct {
+type ClusterTotalCountInfo struct {
 	Occurrences            int64
 	ClusterWindowCountInfo map[string]ClusterWindowCountInfo
 }

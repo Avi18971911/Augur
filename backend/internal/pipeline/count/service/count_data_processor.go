@@ -228,15 +228,15 @@ func (cdp *CountDataProcessorService) unpackCoClusterResults(
 			continue
 		}
 		increaseMissesList = append(increaseMissesList, result.IncreaseIncrementForMissesInput)
-		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
-			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
+		if result.TotalCountMetaMapList != nil && len(result.TotalCountMetaMapList) > 0 {
+			if result.TotalCountDocumentMapList == nil || len(result.TotalCountDocumentMapList) == 0 {
 				cdp.logger.Error(
-					"DocumentMapList is nil or empty, despite MetaMapList being non-empty when co-clustering",
+					"TotalCountDocumentMapList is nil or empty, despite TotalCountMetaMapList being non-empty when co-clustering",
 				)
 				continue
 			}
-			metaMapList = append(metaMapList, result.MetaMapList...)
-			documentMapList = append(documentMapList, result.DocumentMapList...)
+			metaMapList = append(metaMapList, result.TotalCountMetaMapList...)
+			documentMapList = append(documentMapList, result.TotalCountDocumentMapList...)
 		}
 	}
 	return increaseMissesList, metaMapList, documentMapList
@@ -255,7 +255,7 @@ func (cdp *CountDataProcessorService) unpackMissResults(
 		if result.MetaMapList != nil && len(result.MetaMapList) > 0 {
 			if result.DocumentMapList == nil || len(result.DocumentMapList) == 0 {
 				cdp.logger.Error(
-					"DocumentMapList is nil or empty, despite MetaMapList being non-empty " +
+					"TotalCountDocumentMapList is nil or empty, despite TotalCountMetaMapList being non-empty " +
 						"when incrementing misses",
 				)
 				continue
