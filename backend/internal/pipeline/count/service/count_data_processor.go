@@ -18,7 +18,7 @@ const workerCount = 50
 type CountDataProcessorService struct {
 	ac      client.AugurClient
 	cs      *ClusterTotalCountService
-	buckets []countModel.Bucket
+	bucket  countModel.Bucket
 	indices []string
 	logger  *zap.Logger
 }
@@ -26,14 +26,14 @@ type CountDataProcessorService struct {
 func NewCountDataProcessorService(
 	ac client.AugurClient,
 	cs *ClusterTotalCountService,
-	buckets []countModel.Bucket,
+	bucket countModel.Bucket,
 	indices []string,
 	logger *zap.Logger,
 ) *CountDataProcessorService {
 	return &CountDataProcessorService{
 		ac:      ac,
 		cs:      cs,
-		buckets: buckets,
+		bucket:  bucket,
 		indices: indices,
 		logger:  logger,
 	}
@@ -167,7 +167,7 @@ func (cdp *CountDataProcessorService) processLog(
 			},
 		},
 		cdp.indices,
-		cdp.buckets,
+		cdp.bucket,
 	)
 	if err != nil {
 		cdp.logger.Error("Failed to count and update occurrences for logs", zap.Error(err))
@@ -192,7 +192,7 @@ func (cdp *CountDataProcessorService) processSpan(
 			},
 		},
 		cdp.indices,
-		cdp.buckets,
+		cdp.bucket,
 	)
 	if err != nil {
 		cdp.logger.Error("Failed to count and update occurrences for spans", zap.Error(err))

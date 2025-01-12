@@ -23,12 +23,12 @@ func TestCountDataProcessor(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
-	buckets := []countModel.Bucket{100}
+	bucket := countModel.Bucket(100)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, buckets, cdpIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, bucket, cdpIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -120,7 +120,7 @@ func TestCountDataProcessor(t *testing.T) {
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, buckets, cdpIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, bucket, cdpIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -210,7 +210,7 @@ func TestCountDataProcessor(t *testing.T) {
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := countService.NewCountDataProcessorService(ac, cs, []countModel.Bucket{10}, cdpIndices, logger)
+			dp := countService.NewCountDataProcessorService(ac, cs, countModel.Bucket(10), cdpIndices, logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -245,7 +245,7 @@ func TestCountDataProcessor(t *testing.T) {
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, []countModel.Bucket{10}, cdpIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, countModel.Bucket(10), cdpIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)

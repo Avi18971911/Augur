@@ -42,14 +42,14 @@ func (cs *ClusterTotalCountService) GetCountAndUpdateOccurrencesQueryConstituent
 	clusterId string,
 	timeInfo model.TimeInfo,
 	indices []string,
-	buckets []model.Bucket,
+	bucket model.Bucket,
 ) (*model.GetCountAndUpdateQueryDetails, error) {
 	coClusterMapCount, err := cs.countOccurrencesAndCoOccurrencesByCoClusterId(
 		ctx,
 		clusterId,
 		timeInfo,
 		indices,
-		buckets,
+		bucket,
 	)
 	if err != nil {
 		return nil, err
@@ -108,42 +108,40 @@ func (cs *ClusterTotalCountService) countOccurrencesAndCoOccurrencesByCoClusterI
 	clusterId string,
 	timeInfo model.TimeInfo,
 	indices []string,
-	buckets []model.Bucket,
+	bucket model.Bucket,
 ) (map[string]model.ClusterTotalCountInfo, error) {
 	var coClusterInfoMap = make(map[string]model.ClusterTotalCountInfo)
-	for _, bucket := range buckets {
-		calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
-		if err != nil {
-			cs.logger.Error(
-				"Failed to calculate time range for bucket",
-				zap.Any("timeInfo", timeInfo),
-				zap.Error(err),
-			)
-			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
-		}
-		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
-		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, indices, fromTime, toTime)
-		if err != nil {
-			cs.logger.Error(
-				"Failed to get co-occurring clusters",
-				zap.String("clusterId", clusterId),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-		clusterWindows, err := cs.wc.getClusterWindows(
-			ctx,
-			clusterId,
-			getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
+	calculatedTimeInfo, err := getTimeRangeForBucket(timeInfo, bucket)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to calculate time range for bucket",
+			zap.Any("timeInfo", timeInfo),
+			zap.Error(err),
 		)
-		err = cs.addCoOccurringClustersToCoClusterInfoMap(
-			clusterId,
-			coClusterInfoMap,
-			coOccurringClusters,
-			clusterWindows,
-			timeInfo,
-		)
+		return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 	}
+	fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
+	coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, indices, fromTime, toTime)
+	if err != nil {
+		cs.logger.Error(
+			"Failed to get co-occurring clusters",
+			zap.String("clusterId", clusterId),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+	clusterWindows, err := cs.wc.getClusterWindows(
+		ctx,
+		clusterId,
+		getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
+	)
+	err = cs.addCoOccurringClustersToCoClusterInfoMap(
+		clusterId,
+		coClusterInfoMap,
+		coOccurringClusters,
+		clusterWindows,
+		timeInfo,
+	)
 	return coClusterInfoMap, nil
 }
 

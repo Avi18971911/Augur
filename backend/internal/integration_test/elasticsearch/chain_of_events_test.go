@@ -7,7 +7,7 @@ import (
 	logModel "github.com/Avi18971911/Augur/internal/otel_server/log/model"
 	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
 	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
-	analyticsModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	"github.com/Avi18971911/Augur/internal/pipeline/count/model"
 	countService "github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	inferenceService "github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	inferenceModel "github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
@@ -38,13 +38,13 @@ func TestChainOfEvents(t *testing.T) {
 		ac,
 		logger,
 	)
-	buckets := []analyticsModel.Bucket{1000 * 30}
+	bucket := model.Bucket(1000 * 30)
 	indices := []string{bootstrapper.LogIndexName}
 	cls := clusterService.NewClusterService(ac, logger)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	cdp := clusterService.NewClusterDataProcessor(ac, cls, logger)
-	csp := countService.NewCountDataProcessorService(ac, cs, buckets, indices, logger)
+	csp := countService.NewCountDataProcessorService(ac, cs, bucket, indices, logger)
 
 	t.Run("should be able to find out a simple A-B-C relation", func(t *testing.T) {
 		err := deleteAllDocuments(es)

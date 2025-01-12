@@ -25,7 +25,7 @@ func TestLogCount(t *testing.T) {
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
@@ -48,7 +48,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -56,7 +56,7 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -71,7 +71,7 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -124,7 +124,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		firstCtx, firstCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer firstCancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -132,7 +132,7 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
@@ -228,7 +228,7 @@ func TestSpanCount(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
@@ -266,7 +266,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
-		buckets := []countModel.Bucket{1000}
+		bucket := countModel.Bucket(1000)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -278,7 +278,7 @@ func TestSpanCount(t *testing.T) {
 				},
 			},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -297,7 +297,7 @@ func TestSpanCount(t *testing.T) {
 				},
 			},
 			indices,
-			buckets,
+			bucket,
 		)
 		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
@@ -328,7 +328,7 @@ func TestAlgorithm(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	t.Run("should insert two different matches into the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -356,7 +356,7 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -364,7 +364,7 @@ func TestAlgorithm(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)

@@ -13,20 +13,22 @@ import (
 )
 
 const wcTimeOut = 2 * time.Second
-const clusterWindowSizeMs = 50
 
 type ClusterWindowCountService struct {
-	ac     client.AugurClient
-	logger *zap.Logger
+	ac                client.AugurClient
+	clusterWindowSize int
+	logger            *zap.Logger
 }
 
 func NewClusterWindowCountService(
 	ac client.AugurClient,
+	clusterWindowSizeMs int,
 	logger *zap.Logger,
 ) *ClusterWindowCountService {
 	return &ClusterWindowCountService{
-		ac:     ac,
-		logger: logger,
+		ac:                ac,
+		clusterWindowSize: clusterWindowSizeMs,
+		logger:            logger,
 	}
 }
 
@@ -86,7 +88,7 @@ func (cs *ClusterWindowCountService) addWindowDataToCoClusterInfoMap(
 	if matchingWindow != nil {
 		windowDetails = *matchingWindow
 	} else {
-		start, end := getTimeRangeForClusterWindow(TDOA, clusterWindowSizeMs)
+		start, end := getTimeRangeForClusterWindow(TDOA, cs.clusterWindowSize)
 		windowDetails = model.ClusterWindowCount{
 			CoClusterId:  coClusterId,
 			ClusterId:    clusterId,

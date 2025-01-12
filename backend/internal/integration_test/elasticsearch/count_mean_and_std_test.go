@@ -24,7 +24,7 @@ func TestMeanAndSTD(t *testing.T) {
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	wc := countService.NewClusterWindowCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
 	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should maintain a running average for the time difference of arrival for logs", func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -69,7 +69,7 @@ func TestMeanAndSTD(t *testing.T) {
 			firstTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -89,7 +89,7 @@ func TestMeanAndSTD(t *testing.T) {
 			secondTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: secondTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -166,7 +166,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load spans into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -178,7 +178,7 @@ func TestMeanAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -198,7 +198,7 @@ func TestMeanAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -277,7 +277,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load logs into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -289,7 +289,7 @@ func TestMeanAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -309,7 +309,7 @@ func TestMeanAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -389,7 +389,7 @@ func TestMeanAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load logs into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -397,7 +397,7 @@ func TestMeanAndSTD(t *testing.T) {
 				logAtFirstTime.ClusterId,
 				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtFirstTime.Timestamp}},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -413,7 +413,7 @@ func TestMeanAndSTD(t *testing.T) {
 				logAtSecondTime.ClusterId,
 				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtSecondTime.Timestamp}},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
@@ -480,7 +480,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -488,7 +488,7 @@ func TestMeanAndSTD(t *testing.T) {
 			firstTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
@@ -554,7 +554,7 @@ func TestMeanAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -562,7 +562,7 @@ func TestMeanAndSTD(t *testing.T) {
 			firstTimeLogOne.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLogOne.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
