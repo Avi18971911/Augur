@@ -499,16 +499,17 @@ func convertCountDocsToWindowCountEntries(docs []map[string]interface{}) ([]coun
 			return nil, fmt.Errorf("failed to convert occurrences to float64")
 		}
 		countEntry.Occurrences = int64(occurrences)
-		meanTDOA, ok := doc["mean_tdoa"].(float64)
+		meanTDOA, ok := doc["mean_TDOA"].(float64)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
 		}
 		countEntry.MeanTDOA = meanTDOA
-		varianceTDOA, ok := doc["variance_tdoa"].(float64)
+		varianceTDOA, ok := doc["variance_TDOA"].(float64)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert variance_tdoa to float64")
 		}
 		countEntry.VarianceTDOA = varianceTDOA
+		countEntries = append(countEntries, countEntry)
 	}
 	return countEntries, nil
 }

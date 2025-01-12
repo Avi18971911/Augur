@@ -288,7 +288,7 @@ func (cs *CountService) getClusterWindows(
 	res, err := cs.ac.Search(
 		searchCtx,
 		string(queryBody),
-		[]string{bootstrapper.ClusterTotalCountIndexName},
+		[]string{bootstrapper.ClusterWindowCountIndexName},
 		&querySize,
 	)
 	if err != nil {
@@ -537,7 +537,7 @@ func getCoClusterIdsFromMap(coClusterMapCount map[string]model.ClusterTotalCount
 func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult) []string {
 	coClusterIds := make([]string, len(clusters))
 	for i, cluster := range clusters {
-		coClusterIds[i] = cluster.CoClusterId
+		coClusterIds[i] = cluster.ClusterId
 	}
 	return coClusterIds
 }
