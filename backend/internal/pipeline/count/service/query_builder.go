@@ -149,7 +149,7 @@ func buildUpdateClusterWindowCountsQuery(
 			"source": "ctx._source.occurrences += params.increment;" +
 				// Update mean and variance using Welford's online algorithm
 				"def delta = params.new_value - ctx._source.mean_TDOA;" +
-				"ctx._source.mean_TDOA = ctx._source.mean_TDOA + (delta * 1.0) / ctx._source.co_occurrences;" +
+				"ctx._source.mean_TDOA = ctx._source.mean_TDOA + (delta * 1.0) / ctx._source.occurrences;" +
 				"def delta2 = params.new_value - ctx._source.mean_TDOA;" +
 				"ctx._source.variance_TDOA = ctx._source.variance_TDOA + delta * delta2;",
 			"params": map[string]interface{}{

@@ -64,6 +64,7 @@ func deleteAllDocuments(es *elasticsearch.Client) error {
 		bootstrapper.SpanIndexName,
 		bootstrapper.ClusterTotalCountIndexName,
 		bootstrapper.ClusterGraphNodeIndexName,
+		bootstrapper.ClusterWindowCountIndexName,
 	}
 
 	query := map[string]interface{}{

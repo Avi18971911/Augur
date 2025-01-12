@@ -165,13 +165,14 @@ func getWindowId(compositeId string, windowStart string) string {
 }
 
 func getMatchingClusterWindow(
-	cluster model.ClusterQueryResult,
+	clusterId string,
+	coClusterId string,
 	clusterWindows []model.ClusterWindowCount,
 	TDOA float64,
 ) *model.ClusterWindowCount {
 	for _, window := range clusterWindows {
-		if window.CoClusterId == cluster.CoClusterId &&
-			window.ClusterId == cluster.ClusterId &&
+		if window.CoClusterId == coClusterId &&
+			window.ClusterId == clusterId &&
 			windowOverlapsWithSample(window, TDOA) {
 			return &window
 		}

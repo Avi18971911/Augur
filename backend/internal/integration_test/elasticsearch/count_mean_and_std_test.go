@@ -15,6 +15,8 @@ import (
 
 var meanAndSTDIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
+const tolerance = 0.0001
+
 func TestMeanAndSTD(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
@@ -46,7 +48,7 @@ func TestMeanAndSTD(t *testing.T) {
 		}
 		secondTimeTwoSecondsAfter := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: secondTime.Add(time.Second * 2),
+			Timestamp: secondTime.Add(time.Millisecond * 1010),
 		}
 		err = loadDataIntoElasticsearch(
 			ac, []model.LogEntry{
@@ -119,7 +121,7 @@ func TestMeanAndSTD(t *testing.T) {
 		expectedVarianceSecondTerm := (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean) * (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean)
 		expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-		assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+		assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 	})
 
 	t.Run(
@@ -139,7 +141,7 @@ func TestMeanAndSTD(t *testing.T) {
 			}
 			firstTimeSpanSecondAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: firstTime.Add(time.Second),
+				StartTime: firstTime.Add(time.Millisecond * 15),
 				EndTime:   firstTime.Add(time.Second * 2),
 			}
 			secondTimeSpan := spanModel.Span{
@@ -149,7 +151,7 @@ func TestMeanAndSTD(t *testing.T) {
 			}
 			secondTimeSpanTwoSecondsAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: secondTime.Add(time.Second * 2),
+				StartTime: secondTime.Add(time.Millisecond * 20),
 				EndTime:   secondTime.Add(time.Second * 4),
 			}
 			err = loadDataIntoElasticsearch(
@@ -224,7 +226,7 @@ func TestMeanAndSTD(t *testing.T) {
 			expectedVarianceSecondTerm := (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
 			expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 			assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -244,7 +246,7 @@ func TestMeanAndSTD(t *testing.T) {
 			}
 			firstTimeLogOneSecondAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				Timestamp: firstTime.Add(time.Second),
+				Timestamp: firstTime.Add(time.Millisecond * 23),
 			}
 			secondTimeSpan := spanModel.Span{
 				ClusterId: "initialClusterId",
@@ -253,7 +255,7 @@ func TestMeanAndSTD(t *testing.T) {
 			}
 			secondTimeLogTwoSecondsAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				Timestamp: secondTime.Add(time.Second * 2),
+				Timestamp: secondTime.Add(time.Millisecond * 17),
 			}
 			err = loadDataIntoElasticsearch(
 				ac, []spanModel.Span{
@@ -336,7 +338,7 @@ func TestMeanAndSTD(t *testing.T) {
 			firstVarianceTerm := (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean) * (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean)
 			secondVarianceTerm := (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
 			expectedVariance := (firstVarianceTerm + secondVarianceTerm) / 1
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -359,12 +361,12 @@ func TestMeanAndSTD(t *testing.T) {
 			}
 			spanOneSecondAfterFirstTime := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: firstTime.Add(time.Second),
+				StartTime: firstTime.Add(time.Millisecond * 38),
 				EndTime:   firstTime.Add(time.Second * 2),
 			}
 			spanTwoSecondsAfterSecondTime := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: secondTime.Add(time.Second * 2),
+				StartTime: secondTime.Add(time.Millisecond * 47),
 				EndTime:   secondTime.Add(time.Second * 3),
 			}
 			err = loadDataIntoElasticsearch(
@@ -440,7 +442,7 @@ func TestMeanAndSTD(t *testing.T) {
 			expectedVarianceFirstTime := (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean) * (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean)
 			expectedVarianceSecondTime := (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean) * (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean)
 			expectedVariance := (expectedVarianceFirstTime + expectedVarianceSecondTime) / 1
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -456,15 +458,15 @@ func TestMeanAndSTD(t *testing.T) {
 		}
 		firstTimeOverlapOne := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second),
+			Timestamp: firstTime.Add(time.Millisecond * 4),
 		}
 		firstTimeOverlapTwo := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+			Timestamp: firstTime.Add(time.Millisecond * 12),
 		}
 		firstTimeOverlapThree := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+			Timestamp: firstTime.Add(time.Millisecond * 22),
 		}
 
 		err = loadDataIntoElasticsearch(
@@ -514,7 +516,7 @@ func TestMeanAndSTD(t *testing.T) {
 		expectedMean := (expectedMeanFirstTerm + expectedMeanSecondTerm + expectedMeanThirdTerm) / 3
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
 		// count service will condense all three in the one-to-many relationship into one mean value before processing
-		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+		assert.InDelta(t, float64(0), countEntry.VarianceTDOA, tolerance)
 	})
 
 	t.Run("should deal with many-to-one relationships", func(t *testing.T) {
@@ -529,15 +531,15 @@ func TestMeanAndSTD(t *testing.T) {
 		}
 		firstTimeLogTwo := model.LogEntry{
 			ClusterId: "initialClusterId",
-			Timestamp: firstTime.Add(time.Second),
+			Timestamp: firstTime.Add(time.Millisecond * 10),
 		}
 		firstTimeLogThree := model.LogEntry{
 			ClusterId: "initialClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+			Timestamp: firstTime.Add(time.Millisecond * 20),
 		}
 		firstTimeLogOverlap := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+			Timestamp: firstTime.Add(time.Millisecond * 30),
 		}
 
 		err = loadDataIntoElasticsearch(
@@ -584,6 +586,6 @@ func TestMeanAndSTD(t *testing.T) {
 		countEntry := countEntries[0]
 		expectedMean := firstTimeLogOverlap.Timestamp.Sub(firstTimeLogOne.Timestamp).Seconds()
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+		assert.InDelta(t, float64(0), countEntry.VarianceTDOA, tolerance)
 	})
 }

@@ -137,6 +137,7 @@ func (cs *ClusterTotalCountService) countOccurrencesAndCoOccurrencesByCoClusterI
 			getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
 		)
 		err = cs.addCoOccurringClustersToCoClusterInfoMap(
+			clusterId,
 			coClusterInfoMap,
 			coOccurringClusters,
 			clusterWindows,
@@ -262,36 +263,37 @@ func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 }
 
 func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
+	clusterId string,
 	coClusterInfoMap map[string]model.ClusterTotalCountInfo,
-	clusters []model.ClusterQueryResult,
+	coClusters []model.ClusterQueryResult,
 	clusterWindows []model.ClusterWindowCount,
 	timeInfo model.TimeInfo,
 ) error {
-	for _, cluster := range clusters {
-		TDOA, err := getTDOA(cluster, timeInfo)
+	for _, coCluster := range coClusters {
+		TDOA, err := getTDOA(coCluster, timeInfo)
 		if err != nil {
 			return fmt.Errorf("error calculating TDOA: %w", err)
 		}
-		matchingWindow := getMatchingClusterWindow(cluster, clusterWindows, TDOA)
+		matchingWindow := getMatchingClusterWindow(clusterId, coCluster.ClusterId, clusterWindows, TDOA)
 		var coClusterToWindowMap map[string]model.ClusterWindowCountInfo
-		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
-			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
+		if _, ok := coClusterInfoMap[coCluster.ClusterId]; !ok {
+			coClusterInfoMap[coCluster.ClusterId] = model.ClusterTotalCountInfo{
 				Occurrences:            1,
 				ClusterWindowCountInfo: make(map[string]model.ClusterWindowCountInfo),
 			}
-			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
+			coClusterToWindowMap = coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo
 		} else {
-			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
-				Occurrences:            coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
-				ClusterWindowCountInfo: coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo,
+			coClusterInfoMap[coCluster.ClusterId] = model.ClusterTotalCountInfo{
+				Occurrences:            coClusterInfoMap[coCluster.ClusterId].Occurrences + 1,
+				ClusterWindowCountInfo: coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo,
 			}
-			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
+			coClusterToWindowMap = coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo
 		}
 		cs.wc.addWindowDataToCoClusterInfoMap(
 			coClusterToWindowMap,
 			matchingWindow,
 			TDOA,
-			cluster,
+			coCluster,
 		)
 	}
 	return nil
