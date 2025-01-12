@@ -11,6 +11,15 @@ type GetCountAndUpdateQueryDetails struct {
 	IncreaseIncrementForMissesInput IncreaseMissesInput
 	TotalCountMetaMapList           []client.MetaMap
 	TotalCountDocumentMapList       []client.DocumentMap
+	WindowCountMetaMapList          []client.MetaMap
+	WindowCountDocumentMapList      []client.DocumentMap
+}
+
+type GetCountQueryDetails struct {
+	TotalCountMetaMapList      []client.MetaMap
+	TotalCountDocumentMapList  []client.DocumentMap
+	WindowCountMetaMapList     []client.MetaMap
+	WindowCountDocumentMapList []client.DocumentMap
 }
 
 type GetIncrementMissesQueryDetails struct {

@@ -105,22 +105,51 @@ func (cdp *CountDataProcessorService) processCountsForOverlaps(
 		cdp.logger,
 	)
 
-	increaseMissesList, metaMapList, documentMapList := cdp.unpackCoClusterResults(resultChannel, len(clusterOutput))
+	bulkResult := cdp.unpackCoClusterResults(resultChannel, len(clusterOutput))
 
-	if metaMapList == nil || len(metaMapList) == 0 {
+	if bulkResult.TotalCountMetaMap == nil || len(bulkResult.TotalCountMetaMap) == 0 {
 		cdp.logger.Info("No co-clusters to increment")
-		return increaseMissesList, nil
+		return bulkResult.MissesInput, nil
 	}
-	updateCtx, updateCancel := context.WithTimeout(ctx, timeout)
-	defer updateCancel()
-	index := bootstrapper.ClusterTotalCountIndexName
-	err := cdp.ac.BulkIndex(updateCtx, metaMapList, documentMapList, &index)
+	totalCountUpdateCtx, totalCountUpdateCancel := context.WithTimeout(ctx, timeout)
+	defer totalCountUpdateCancel()
+	totalCountIndex := bootstrapper.ClusterTotalCountIndexName
+	err := cdp.ac.BulkIndex(
+		totalCountUpdateCtx,
+		bulkResult.TotalCountMetaMap,
+		bulkResult.TotalCountDocumentMap,
+		&totalCountIndex,
+	)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to bulk index count increments: %w for documentMapList %s", err, documentMapList,
+			"failed to bulk index count increments: %w for documentMapList %s",
+			err,
+			bulkResult.TotalCountDocumentMap,
 		)
 	}
-	return increaseMissesList, nil
+
+	if bulkResult.WindowCountMetaMap == nil || len(bulkResult.WindowCountMetaMap) == 0 {
+		cdp.logger.Info("No window co-clusters to increment")
+		return bulkResult.MissesInput, nil
+	}
+	windowCountUpdateCtx, windowCountUpdateCancel := context.WithTimeout(ctx, timeout)
+	defer windowCountUpdateCancel()
+	windowCountIndex := bootstrapper.ClusterWindowCountIndexName
+	err = cdp.ac.BulkIndex(
+		windowCountUpdateCtx,
+		bulkResult.WindowCountMetaMap,
+		bulkResult.WindowCountDocumentMap,
+		&windowCountIndex,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to bulk index window count increments: %w for documentMapList %s",
+			err,
+			bulkResult.WindowCountDocumentMap,
+		)
+	}
+
+	return bulkResult.MissesInput, nil
 }
 
 func (cdp *CountDataProcessorService) processLog(
@@ -218,10 +247,12 @@ func (cdp *CountDataProcessorService) processIncrementsForMisses(
 func (cdp *CountDataProcessorService) unpackCoClusterResults(
 	resultChannel chan *countModel.GetCountAndUpdateQueryDetails,
 	startingLength int,
-) ([]countModel.IncreaseMissesInput, []client.MetaMap, []client.DocumentMap) {
+) countModel.BulkClusterQueryResult {
 	increaseMissesList := make([]countModel.IncreaseMissesInput, 0, startingLength)
-	metaMapList := make([]client.MetaMap, 0, startingLength)
-	documentMapList := make([]client.DocumentMap, 0, startingLength)
+	totalCountMetaMapList := make([]client.MetaMap, 0, startingLength)
+	totalCountDocumentMapList := make([]client.DocumentMap, 0, startingLength)
+	windowCountMetaMapList := make([]client.MetaMap, 0, startingLength)
+	windowCountDocumentMapList := make([]client.DocumentMap, 0, startingLength)
 
 	for result := range resultChannel {
 		if result == nil {
@@ -235,11 +266,19 @@ func (cdp *CountDataProcessorService) unpackCoClusterResults(
 				)
 				continue
 			}
-			metaMapList = append(metaMapList, result.TotalCountMetaMapList...)
-			documentMapList = append(documentMapList, result.TotalCountDocumentMapList...)
+			totalCountMetaMapList = append(totalCountMetaMapList, result.TotalCountMetaMapList...)
+			totalCountDocumentMapList = append(totalCountDocumentMapList, result.TotalCountDocumentMapList...)
+			windowCountDocumentMapList = append(windowCountDocumentMapList, result.WindowCountDocumentMapList...)
+			windowCountMetaMapList = append(windowCountMetaMapList, result.WindowCountMetaMapList...)
 		}
 	}
-	return increaseMissesList, metaMapList, documentMapList
+	return countModel.BulkClusterQueryResult{
+		MissesInput:            increaseMissesList,
+		TotalCountMetaMap:      totalCountMetaMapList,
+		TotalCountDocumentMap:  totalCountDocumentMapList,
+		WindowCountMetaMap:     windowCountMetaMapList,
+		WindowCountDocumentMap: windowCountDocumentMapList,
+	}
 }
 
 func (cdp *CountDataProcessorService) unpackMissResults(

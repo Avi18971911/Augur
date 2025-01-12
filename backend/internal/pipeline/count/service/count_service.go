@@ -49,12 +49,14 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	if err != nil {
 		return nil, err
 	}
-	metaMapList, documentMapList := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, coClusterMapCount)
+	countResult := cs.getUpdateCoOccurrencesQueryConstituents(clusterId, coClusterMapCount)
 	increaseForMissesInput := getIncrementOccurrencesForMissesInput(clusterId, coClusterMapCount)
 	result := &model.GetCountAndUpdateQueryDetails{
 		IncreaseIncrementForMissesInput: increaseForMissesInput,
-		TotalCountMetaMapList:           metaMapList,
-		TotalCountDocumentMapList:       documentMapList,
+		TotalCountMetaMapList:           countResult.TotalCountMetaMapList,
+		TotalCountDocumentMapList:       countResult.TotalCountDocumentMapList,
+		WindowCountMetaMapList:          countResult.WindowCountMetaMapList,
+		WindowCountDocumentMapList:      countResult.WindowCountDocumentMapList,
 	}
 	return result, nil
 }
@@ -73,14 +75,17 @@ func getIncrementOccurrencesForMissesInput(
 func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
 	coClusterMapCount map[string]model.ClusterTotalCountInfo,
-) ([]client.MetaMap, []client.DocumentMap) {
-	metaMap := make([]client.MetaMap, len(coClusterMapCount))
-	updateMap := make([]client.DocumentMap, len(coClusterMapCount))
+) model.GetCountQueryDetails {
+	totalCountMetaMap := make([]client.MetaMap, 0)
+	totalCountUpdateMap := make([]client.DocumentMap, 0)
+	windowCountMetaMap := make([]client.MetaMap, 0)
+	windowCountUpdateMap := make([]client.DocumentMap, 0)
+
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
 		compositeId := GetTotalCountId(clusterId, otherClusterId)
 		totalCountMeta, totalCountUpdate := buildUpdateClusterTotalCountsQuery(compositeId, clusterId, otherClusterId)
-		metaMap = append(metaMap, totalCountMeta)
-		updateMap = append(updateMap, totalCountUpdate)
+		totalCountMetaMap = append(totalCountMetaMap, totalCountMeta)
+		totalCountUpdateMap = append(totalCountUpdateMap, totalCountUpdate)
 		for windowStart, windowDetails := range coClusterDetails.ClusterWindowCountInfo {
 			windowId := getWindowId(compositeId, windowStart)
 			avgTDOA := windowDetails.TotalTDOA / float64(windowDetails.Occurrences)
@@ -92,11 +97,16 @@ func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 				windowDetails.Start,
 				windowDetails.End,
 			)
-			metaMap = append(metaMap, windowMeta)
-			updateMap = append(updateMap, windowUpdate)
+			windowCountMetaMap = append(windowCountMetaMap, windowMeta)
+			windowCountUpdateMap = append(windowCountUpdateMap, windowUpdate)
 		}
 	}
-	return metaMap, updateMap
+	return model.GetCountQueryDetails{
+		TotalCountMetaMapList:      totalCountMetaMap,
+		TotalCountDocumentMapList:  totalCountUpdateMap,
+		WindowCountMetaMapList:     windowCountMetaMap,
+		WindowCountDocumentMapList: windowCountUpdateMap,
+	}
 }
 
 func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
@@ -118,8 +128,6 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 			return nil, fmt.Errorf("error calculating time range for bucket: %w", err)
 		}
 		fromTime, toTime := calculatedTimeInfo.FromTime, calculatedTimeInfo.ToTime
-		cs.logger.Info("Bucket of size", zap.Duration("bucket", time.Duration(bucket)*time.Millisecond))
-		cs.logger.Info("Time range", zap.Time("fromTime", fromTime), zap.Time("toTime", toTime))
 		coOccurringClusters, err := cs.getCoOccurringCluster(ctx, clusterId, indices, fromTime, toTime)
 		if err != nil {
 			cs.logger.Error(
