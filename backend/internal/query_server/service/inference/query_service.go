@@ -10,7 +10,6 @@ import (
 	spanHelper "github.com/Avi18971911/Augur/internal/otel_server/trace/helper"
 	analyticsModel "github.com/Avi18971911/Augur/internal/pipeline/analytics/model"
 	analyticsService "github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
-	"github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	inferenceModel "github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
 	"go.uber.org/zap"
 	"math"
@@ -333,15 +332,19 @@ func (as *QueryServiceImpl) getCountClusterDetails(
 	previousClusterId string,
 	nextClusterId string,
 ) (inferenceModel.CountCluster, error) {
-	countId := service.GetTotalCountId(previousClusterId, nextClusterId)
-	query := getCountClusterDetailsQuery(countId)
+	query := getCountClusterDetailsQuery(previousClusterId, nextClusterId)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
 		return inferenceModel.CountCluster{}, fmt.Errorf("failed to marshal cluster details query: %w", err)
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	docs, err := as.ac.Search(queryCtx, string(queryJSON), []string{bootstrapper.ClusterTotalCountIndexName}, nil)
+	docs, err := as.ac.Search(
+		queryCtx,
+		string(queryJSON),
+		[]string{bootstrapper.ClusterTotalCountIndexName, bootstrapper.ClusterWindowCountIndexName},
+		nil,
+	)
 	if err != nil {
 		return inferenceModel.CountCluster{}, fmt.Errorf("failed to search for cluster details: %w", err)
 	}

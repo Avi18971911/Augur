@@ -76,7 +76,7 @@ func (cs *ClusterTotalCountService) getUpdateCoOccurrencesQueryConstituents(
 	windowCountUpdateMap := make([]client.DocumentMap, 0)
 
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
-		compositeId := GetTotalCountId(clusterId, otherClusterId)
+		compositeId := getTotalCountId(clusterId, otherClusterId)
 		totalCountMeta, totalCountUpdate := buildUpdateClusterTotalCountsQuery(compositeId, clusterId, otherClusterId)
 		totalCountMetaMap = append(totalCountMetaMap, totalCountMeta)
 		totalCountUpdateMap = append(totalCountUpdateMap, totalCountUpdate)
@@ -249,7 +249,7 @@ func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
 	for i, missingCoClusterId := range missingCoClusterIds {
-		compositeKey := GetTotalCountId(clusterId, missingCoClusterId.CoClusterId)
+		compositeKey := getTotalCountId(clusterId, missingCoClusterId.CoClusterId)
 		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
@@ -378,7 +378,7 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.
 	}
 }
 
-func GetTotalCountId(clusterId, coClusterId string) string {
+func getTotalCountId(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
 }
 
