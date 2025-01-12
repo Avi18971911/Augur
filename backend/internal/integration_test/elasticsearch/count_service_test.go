@@ -25,7 +25,8 @@ func TestLogCount(t *testing.T) {
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -227,7 +228,8 @@ func TestSpanCount(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -326,7 +328,8 @@ func TestAlgorithm(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	t.Run("should insert two different matches into the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
@@ -476,22 +479,14 @@ func convertCountDocsToWindowCountEntries(docs []map[string]interface{}) ([]coun
 			return nil, fmt.Errorf("failed to convert cluster_id to string")
 		}
 		countEntry.ClusterId = clusterId
-		stringStart, ok := doc["start"].(string)
+		start, ok := doc["start"].(float64)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert start to string")
-		}
-		start, err := client.NormalizeTimestampToNanoseconds(stringStart)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert start to time.Time: %v", err)
+			return nil, fmt.Errorf("failed to convert start to float64")
 		}
 		countEntry.Start = start
-		stringEnd, ok := doc["end"].(string)
+		end, ok := doc["end"].(float64)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert end to string")
-		}
-		end, err := client.NormalizeTimestampToNanoseconds(stringEnd)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert end to time.Time: %v", err)
+			return nil, fmt.Errorf("failed to convert end to float64")
 		}
 		countEntry.End = end
 		occurrences, ok := doc["occurrences"].(float64)

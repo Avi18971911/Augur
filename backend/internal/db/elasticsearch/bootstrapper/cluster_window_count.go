@@ -3,7 +3,7 @@ package bootstrapper
 const ClusterWindowCountIndexName = "cluster_window_count_index"
 
 /**
- * Note that the id will be the composite key cluster_id;co_cluster_id
+ * Note that the id will be the composite key cluster_id;co_cluster_id;start
  */
 var clusterWindowCountIndex = map[string]interface{}{
 	"settings": map[string]interface{}{
@@ -19,19 +19,19 @@ var clusterWindowCountIndex = map[string]interface{}{
 				"type": "keyword",
 			},
 			"start": map[string]interface{}{
-				"type": "date",
+				"type": "double",
 			},
 			"end": map[string]interface{}{
-				"type": "date",
+				"type": "double",
 			},
 			"occurrences": map[string]interface{}{
 				"type": "integer",
 			},
 			"mean_TDOA": map[string]interface{}{
-				"type": "float",
+				"type": "double",
 			},
 			"variance_TDOA": map[string]interface{}{
-				"type": "float",
+				"type": "double",
 			},
 		},
 	},

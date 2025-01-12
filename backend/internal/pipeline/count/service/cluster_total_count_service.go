@@ -12,16 +12,21 @@ import (
 )
 
 const csTimeOut = 2 * time.Second
-const clusterWindowSizeMs = 50
 
-type CountService struct {
+type ClusterTotalCountService struct {
 	ac     client.AugurClient
+	wc     *ClusterWindowCountService
 	logger *zap.Logger
 }
 
-func NewCountService(ac client.AugurClient, logger *zap.Logger) *CountService {
-	return &CountService{
+func NewClusterTotalCountService(
+	ac client.AugurClient,
+	wc *ClusterWindowCountService,
+	logger *zap.Logger,
+) *ClusterTotalCountService {
+	return &ClusterTotalCountService{
 		ac:     ac,
+		wc:     wc,
 		logger: logger,
 	}
 }
@@ -32,7 +37,7 @@ func getTimeRange(timestamp time.Time, bucket model.Bucket) (time.Time, time.Tim
 	return fromTime, toTime
 }
 
-func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
+func (cs *ClusterTotalCountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	ctx context.Context,
 	clusterId string,
 	timeInfo model.TimeInfo,
@@ -61,18 +66,7 @@ func (cs *CountService) GetCountAndUpdateOccurrencesQueryConstituents(
 	return result, nil
 }
 
-func getIncrementOccurrencesForMissesInput(
-	clusterId string,
-	coClusterToExcludeMapCount map[string]model.ClusterTotalCountInfo,
-) model.IncreaseMissesInput {
-	coClusterIdsToExclude := getCoClusterIdsFromMap(coClusterToExcludeMapCount)
-	return model.IncreaseMissesInput{
-		ClusterId:                 clusterId,
-		CoClusterDetailsToExclude: coClusterIdsToExclude,
-	}
-}
-
-func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
+func (cs *ClusterTotalCountService) getUpdateCoOccurrencesQueryConstituents(
 	clusterId string,
 	coClusterMapCount map[string]model.ClusterTotalCountInfo,
 ) model.GetCountQueryDetails {
@@ -109,7 +103,7 @@ func (cs *CountService) getUpdateCoOccurrencesQueryConstituents(
 	}
 }
 
-func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
+func (cs *ClusterTotalCountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 	ctx context.Context,
 	clusterId string,
 	timeInfo model.TimeInfo,
@@ -137,12 +131,12 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 			)
 			return nil, err
 		}
-		clusterWindows, err := cs.getClusterWindows(
+		clusterWindows, err := cs.wc.getClusterWindows(
 			ctx,
 			clusterId,
 			getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
 		)
-		err = addCoOccurringClustersToCoClusterInfoMap(
+		err = cs.addCoOccurringClustersToCoClusterInfoMap(
 			coClusterInfoMap,
 			coOccurringClusters,
 			clusterWindows,
@@ -152,7 +146,7 @@ func (cs *CountService) countOccurrencesAndCoOccurrencesByCoClusterId(
 	return coClusterInfoMap, nil
 }
 
-func (cs *CountService) getCoOccurringCluster(
+func (cs *ClusterTotalCountService) getCoOccurringCluster(
 	ctx context.Context,
 	clusterId string,
 	indices []string,
@@ -192,7 +186,7 @@ func (cs *CountService) getCoOccurringCluster(
 	return coOccurringClusters, nil
 }
 
-func (cs *CountService) GetIncrementMissesQueryInfo(
+func (cs *ClusterTotalCountService) GetIncrementMissesQueryInfo(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
 ) (*model.GetIncrementMissesQueryDetails, error) {
@@ -212,7 +206,7 @@ func (cs *CountService) GetIncrementMissesQueryInfo(
 	return &result, nil
 }
 
-func (cs *CountService) getNonMatchingCoClusterIds(
+func (cs *ClusterTotalCountService) getNonMatchingCoClusterIds(
 	ctx context.Context,
 	input model.IncreaseMissesInput,
 ) ([]model.ClusterQueryResult, error) {
@@ -249,7 +243,7 @@ func (cs *CountService) getNonMatchingCoClusterIds(
 	return nonMatchingCoClusters, nil
 }
 
-func (cs *CountService) getIncrementMissesDetails(
+func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 	clusterId string,
 	missingCoClusterIds []model.ClusterQueryResult,
 ) ([]client.MetaMap, []client.DocumentMap) {
@@ -267,51 +261,7 @@ func (cs *CountService) getIncrementMissesDetails(
 	return metaMap, updateMap
 }
 
-func (cs *CountService) getClusterWindows(
-	ctx context.Context,
-	clusterId string,
-	coOccurringClusterIds []string,
-) ([]model.ClusterWindowCount, error) {
-	clusterWindowQuery := buildGetClusterWindowsQuery(clusterId, coOccurringClusterIds)
-	queryBody, err := json.Marshal(clusterWindowQuery)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to marshal cluster window query",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error marshaling cluster window query: %w", err)
-	}
-	searchCtx, searchCancel := context.WithTimeout(ctx, csTimeOut)
-	defer searchCancel()
-	querySize := 10000
-	res, err := cs.ac.Search(
-		searchCtx,
-		string(queryBody),
-		[]string{bootstrapper.ClusterWindowCountIndexName},
-		&querySize,
-	)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to search for cluster windows",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error searching for cluster windows: %w", err)
-	}
-	clusterWindows, err := convertDocsToClusterWindows(res)
-	if err != nil {
-		cs.logger.Error(
-			"Failed to convert search results to cluster windows",
-			zap.String("clusterId", clusterId),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("error converting search results to cluster windows: %w", err)
-	}
-	return clusterWindows, nil
-}
-
-func addCoOccurringClustersToCoClusterInfoMap(
+func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
 	coClusterInfoMap map[string]model.ClusterTotalCountInfo,
 	clusters []model.ClusterQueryResult,
 	clusterWindows []model.ClusterWindowCount,
@@ -337,44 +287,25 @@ func addCoOccurringClustersToCoClusterInfoMap(
 			}
 			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
 		}
-
-		var windowDetails model.ClusterWindowCount
-		if matchingWindow != nil {
-			windowDetails = *matchingWindow
-		} else {
-			start, end := getTimeRangeForClusterWindow(TDOA, clusterWindowSizeMs)
-			windowDetails = model.ClusterWindowCount{
-				CoClusterId:  cluster.CoClusterId,
-				ClusterId:    cluster.ClusterId,
-				Occurrences:  0,
-				MeanTDOA:     0,
-				VarianceTDOA: 0,
-				Start:        start,
-				End:          end,
-			}
-		}
-
-		stringStart := windowDetails.Start.Format(time.RFC3339)
-		if _, ok := coClusterToWindowMap[stringStart]; !ok {
-			coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart] = model.ClusterWindowCountInfo{
-				Occurrences: 1,
-				TotalTDOA:   TDOA,
-				Start:       windowDetails.Start,
-				End:         windowDetails.End,
-			}
-		} else {
-			previousOccurrences := coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart].Occurrences
-			previousTotalTDOA := coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart].TotalTDOA
-
-			coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo[stringStart] = model.ClusterWindowCountInfo{
-				Occurrences: previousOccurrences + 1,
-				TotalTDOA:   previousTotalTDOA + TDOA,
-				Start:       windowDetails.Start,
-				End:         windowDetails.End,
-			}
-		}
+		cs.wc.addWindowDataToCoClusterInfoMap(
+			coClusterToWindowMap,
+			matchingWindow,
+			TDOA,
+			cluster,
+		)
 	}
 	return nil
+}
+
+func getIncrementOccurrencesForMissesInput(
+	clusterId string,
+	coClusterToExcludeMapCount map[string]model.ClusterTotalCountInfo,
+) model.IncreaseMissesInput {
+	coClusterIdsToExclude := getCoClusterIdsFromMap(coClusterToExcludeMapCount)
+	return model.IncreaseMissesInput{
+		ClusterId:                 clusterId,
+		CoClusterDetailsToExclude: coClusterIdsToExclude,
+	}
 }
 
 func convertDocsToClusters(res []map[string]interface{}) ([]model.ClusterQueryResult, error) {
@@ -429,58 +360,6 @@ func convertDocsToCoClusters(res []map[string]interface{}) ([]model.ClusterQuery
 	return clusters, nil
 }
 
-func convertDocsToClusterWindows(res []map[string]interface{}) ([]model.ClusterWindowCount, error) {
-	clusterWindowCounts := make([]model.ClusterWindowCount, len(res))
-	for i, hit := range res {
-		doc := model.ClusterWindowCount{}
-		if clusterId, ok := hit["cluster_id"].(string); !ok {
-			return nil, fmt.Errorf("error parsing cluster_id for cluster window")
-		} else {
-			doc.ClusterId = clusterId
-		}
-		if coClusterId, ok := hit["co_cluster_id"].(string); !ok {
-			return nil, fmt.Errorf("error parsing co_cluster_id for cluster window")
-		} else {
-			doc.CoClusterId = coClusterId
-		}
-		if occurrences, ok := hit["occurrences"].(float64); !ok {
-			return nil, fmt.Errorf("error parsing occurrences for cluster window")
-		} else {
-			doc.Occurrences = int64(occurrences)
-		}
-		if meanTDOA, ok := hit["mean_TDOA"].(float64); !ok {
-			return nil, fmt.Errorf("error parsing mean_TDOA for cluster window")
-		} else {
-			doc.MeanTDOA = meanTDOA
-		}
-		if varianceTDOA, ok := hit["variance_TDOA"].(float64); !ok {
-			return nil, fmt.Errorf("error parsing variance_TDOA for cluster window")
-		} else {
-			doc.VarianceTDOA = varianceTDOA
-		}
-		if start, ok := hit["start"].(string); !ok {
-			return nil, fmt.Errorf("error parsing start for cluster window")
-		} else {
-			startTime, err := client.NormalizeTimestampToNanoseconds(start)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing start into time.Time for cluster window")
-			}
-			doc.Start = startTime
-		}
-		if end, ok := hit["end"].(string); !ok {
-			return nil, fmt.Errorf("error parsing end for cluster window")
-		} else {
-			endTime, err := client.NormalizeTimestampToNanoseconds(end)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing end into time.Time for cluster window")
-			}
-			doc.End = endTime
-		}
-		clusterWindowCounts[i] = doc
-	}
-	return clusterWindowCounts, nil
-}
-
 func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.CalculatedTimeInfo, error) {
 	if timeInfo.SpanInfo != nil {
 		return model.CalculatedTimeInfo{
@@ -500,10 +379,6 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.
 
 func GetTotalCountId(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
-}
-
-func getWindowId(compositeId string, windowStart string) string {
-	return fmt.Sprintf("%s;%s", compositeId, windowStart)
 }
 
 func getTDOA(coCluster model.ClusterQueryResult, clusterTimeInfo model.TimeInfo) (float64, error) {
@@ -540,36 +415,4 @@ func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult)
 		coClusterIds[i] = cluster.ClusterId
 	}
 	return coClusterIds
-}
-
-func getMatchingClusterWindow(
-	cluster model.ClusterQueryResult,
-	clusterWindows []model.ClusterWindowCount,
-	TDOA float64,
-) *model.ClusterWindowCount {
-	for _, window := range clusterWindows {
-		if window.CoClusterId == cluster.CoClusterId &&
-			window.ClusterId == cluster.ClusterId &&
-			windowOverlapsWithSample(window, TDOA) {
-			return &window
-		}
-	}
-	return nil
-}
-
-func windowOverlapsWithSample(
-	window model.ClusterWindowCount,
-	TDOA float64,
-) bool {
-	start := float64(window.Start.UnixMicro()) / 1e6
-	end := float64(window.End.UnixMicro()) / 1e6
-	return start <= TDOA && TDOA <= end
-}
-
-func getTimeRangeForClusterWindow(TDOA float64, windowSizeMs int) (time.Time, time.Time) {
-	increment := float64(windowSizeMs) / 2
-	middlePoint := time.Unix(0, int64(TDOA*1e9))
-	start := middlePoint.Add(-time.Millisecond * time.Duration(increment))
-	end := middlePoint.Add(time.Millisecond * time.Duration(increment))
-	return start, end
 }

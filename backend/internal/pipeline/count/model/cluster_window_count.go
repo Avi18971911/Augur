@@ -1,12 +1,10 @@
 package model
 
-import "time"
-
 type ClusterWindowCount struct {
 	ClusterId    string
 	CoClusterId  string
-	Start        time.Time
-	End          time.Time
+	Start        float64
+	End          float64
 	Occurrences  int64
 	MeanTDOA     float64
 	VarianceTDOA float64

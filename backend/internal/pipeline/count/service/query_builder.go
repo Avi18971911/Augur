@@ -141,8 +141,8 @@ func buildUpdateClusterWindowCountsQuery(
 	clusterId string,
 	coClusterId string,
 	newTDOA float64,
-	start time.Time,
-	end time.Time,
+	start float64,
+	end float64,
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{

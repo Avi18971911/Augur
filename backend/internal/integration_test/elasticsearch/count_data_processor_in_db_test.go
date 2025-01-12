@@ -21,7 +21,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	buckets := []countModel.Bucket{100}
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {

@@ -17,7 +17,7 @@ const workerCount = 50
 
 type CountDataProcessorService struct {
 	ac      client.AugurClient
-	cs      *CountService
+	cs      *ClusterTotalCountService
 	buckets []countModel.Bucket
 	indices []string
 	logger  *zap.Logger
@@ -25,7 +25,7 @@ type CountDataProcessorService struct {
 
 func NewCountDataProcessorService(
 	ac client.AugurClient,
-	cs *CountService,
+	cs *ClusterTotalCountService,
 	buckets []countModel.Bucket,
 	indices []string,
 	logger *zap.Logger,

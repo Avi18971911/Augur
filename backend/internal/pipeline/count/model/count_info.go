@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type ClusterTotalCountInfo struct {
 	Occurrences            int64
 	ClusterWindowCountInfo map[string]ClusterWindowCountInfo
@@ -10,6 +8,6 @@ type ClusterTotalCountInfo struct {
 type ClusterWindowCountInfo struct {
 	Occurrences int64
 	TotalTDOA   float64
-	Start       time.Time
-	End         time.Time
+	Start       float64
+	End         float64
 }

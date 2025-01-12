@@ -41,7 +41,8 @@ func TestChainOfEvents(t *testing.T) {
 	buckets := []analyticsModel.Bucket{1000 * 30}
 	indices := []string{bootstrapper.LogIndexName}
 	cls := clusterService.NewClusterService(ac, logger)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	cdp := clusterService.NewClusterDataProcessor(ac, cls, logger)
 	csp := countService.NewCountDataProcessorService(ac, cs, buckets, indices, logger)
 

@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type ClusterTotalCountEntry struct {
 	Id                          string
 	CreatedAt                   string
@@ -15,8 +13,8 @@ type ClusterWindowCountEntry struct {
 	Id           string
 	ClusterId    string
 	CoClusterId  string
-	Start        time.Time
-	End          time.Time
+	Start        float64
+	End          float64
 	Occurrences  int64
 	MeanTDOA     float64
 	VarianceTDOA float64

@@ -22,7 +22,8 @@ func TestMeanAndSTD(t *testing.T) {
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should maintain a running average for the time difference of arrival for logs", func(t *testing.T) {
 		err := deleteAllDocuments(es)
