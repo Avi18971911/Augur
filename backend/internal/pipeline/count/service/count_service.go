@@ -327,12 +327,13 @@ func addCoOccurringClustersToCoClusterInfoMap(
 		if _, ok := coClusterInfoMap[cluster.ClusterId]; !ok {
 			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
 				Occurrences:            1,
-				ClusterWindowCountInfo: map[string]model.ClusterWindowCountInfo{},
+				ClusterWindowCountInfo: make(map[string]model.ClusterWindowCountInfo),
 			}
 			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
 		} else {
 			coClusterInfoMap[cluster.ClusterId] = model.ClusterTotalCountInfo{
-				Occurrences: coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
+				Occurrences:            coClusterInfoMap[cluster.ClusterId].Occurrences + 1,
+				ClusterWindowCountInfo: coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo,
 			}
 			coClusterToWindowMap = coClusterInfoMap[cluster.ClusterId].ClusterWindowCountInfo
 		}

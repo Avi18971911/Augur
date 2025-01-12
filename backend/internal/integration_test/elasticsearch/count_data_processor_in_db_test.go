@@ -110,8 +110,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assert.Equal(t, int64(2), countEntries[0].CoOccurrences)
-		assert.Equal(t, int64(3), countEntries[0].Occurrences)
+		assert.Equal(t, int64(2), countEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(3), countEntries[0].TotalInstances)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
@@ -200,8 +200,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
+		clusterAEntries := make([]countModel.ClusterTotalCountEntry, 0)
+		clusterBEntries := make([]countModel.ClusterTotalCountEntry, 0)
 
 		for _, entry := range countEntries {
 			if entry.ClusterId == clusterA {
@@ -211,11 +211,11 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			}
 		}
 
-		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(1), clusterBEntries[0].CoOccurrences)
+		assert.Equal(t, int64(1), clusterAEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(1), clusterBEntries[0].TotalInstancesWithCoCluster)
 
-		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
+		assert.Equal(t, int64(1), clusterAEntries[0].TotalInstances)
+		assert.Equal(t, int64(2), clusterBEntries[0].TotalInstances)
 	})
 
 	t.Run(
@@ -338,8 +338,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
-		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+		assert.Equal(t, int64(3), clusterBEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(4), clusterBEntries[0].TotalInstances)
 		assert.Equal(t, clusterB, clusterBEntries[0].ClusterId)
 	})
 }

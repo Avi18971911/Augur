@@ -93,11 +93,11 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 
 		searchQueryBody := countQuery(firstTimeLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -198,11 +198,11 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 
 			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -309,11 +309,11 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 
 			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -413,11 +413,11 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 
 			searchQueryBody := countQuery(logAtFirstTime.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -489,11 +489,11 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 
 		searchQueryBody := countQuery(firstTimeLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -563,11 +563,11 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 
 		searchQueryBody := countQuery(firstTimeLogOne.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}

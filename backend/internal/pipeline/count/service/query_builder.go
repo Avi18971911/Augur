@@ -88,7 +88,7 @@ func buildIncrementNonMatchedCoClusterIdsQuery(
 ) (client.MetaMap, client.DocumentMap) {
 	updateStatement := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": "ctx._source.occurrences += params.increment",
+			"source": "ctx._source.total_instances += params.increment",
 			"params": map[string]interface{}{
 				"increment": 1,
 			},
