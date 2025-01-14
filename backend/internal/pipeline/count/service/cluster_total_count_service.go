@@ -130,16 +130,9 @@ func (cs *ClusterTotalCountService) countOccurrencesAndCoOccurrencesByCoClusterI
 		)
 		return nil, err
 	}
-	clusterWindows, err := cs.wc.getClusterWindows(
-		ctx,
-		clusterId,
-		getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
-	)
 	err = cs.addCoOccurringClustersToCoClusterInfoMap(
-		clusterId,
 		coClusterInfoMap,
 		coOccurringClusters,
-		clusterWindows,
 		timeInfo,
 	)
 	return coClusterInfoMap, nil
@@ -261,10 +254,8 @@ func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 }
 
 func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
-	clusterId string,
 	coClusterInfoMap map[string]model.ClusterTotalCountInfo,
 	coClusters []model.ClusterQueryResult,
-	clusterWindows []model.ClusterWindowCount,
 	timeInfo model.TimeInfo,
 ) error {
 	for _, coCluster := range coClusters {
@@ -286,14 +277,10 @@ func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
 			}
 			coClusterToWindowMap = coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo
 		}
-		newWindowDetail := cs.wc.addWindowDataToCoClusterInfoMap(
+		cs.wc.addWindowDataToCoClusterInfoMap(
 			coClusterToWindowMap,
-			clusterWindows,
-			clusterId,
-			coCluster.ClusterId,
 			TDOA,
 		)
-		clusterWindows = append(clusterWindows, newWindowDetail)
 	}
 	return nil
 }
@@ -406,14 +393,6 @@ func getCoClusterIdsFromMap(coClusterMapCount map[string]model.ClusterTotalCount
 	for coClusterId := range coClusterMapCount {
 		coClusterIds[i] = coClusterId
 		i++
-	}
-	return coClusterIds
-}
-
-func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult) []string {
-	coClusterIds := make([]string, len(clusters))
-	for i, cluster := range clusters {
-		coClusterIds[i] = cluster.ClusterId
 	}
 	return coClusterIds
 }
