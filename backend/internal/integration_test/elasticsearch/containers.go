@@ -10,10 +10,12 @@ import (
 	"time"
 )
 
-const Port = "9200"
+const elasticSearchPort = "9200"
 
 func startElasticSearchContainer(
 	ctx context.Context,
+	containerName string,
+	port string,
 	logger *zap.Logger,
 ) (
 	elasticSearchURI string,
@@ -31,9 +33,9 @@ func startElasticSearchContainer(
 
 	req := testcontainers.ContainerRequest{
 		Image:        "docker.elastic.co/elasticsearch/elasticsearch:8.10.2",
-		Name:         "elasticsearch",
-		ExposedPorts: []string{fmt.Sprintf("%s:%s", Port, Port)},
-		WaitingFor:   wait.ForListeningPort(Port),
+		Name:         containerName,
+		ExposedPorts: []string{fmt.Sprintf("%s:%s", port, elasticSearchPort)},
+		WaitingFor:   wait.ForListeningPort(elasticSearchPort),
 		Networks:     []string{networkName},
 		Env: map[string]string{
 			"discovery.type":         "single-node",
@@ -62,7 +64,7 @@ func startElasticSearchContainer(
 	}
 
 	// Get the mapped port
-	p, err := elasticSearchContainer.MappedPort(childCtx, Port)
+	p, err := elasticSearchContainer.MappedPort(childCtx, elasticSearchPort)
 	if err != nil {
 		stopContainer()
 		return "", nil, fmt.Errorf("failed to get container port: %w", err)
