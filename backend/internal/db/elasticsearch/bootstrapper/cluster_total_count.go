@@ -1,8 +1,8 @@
 package bootstrapper
 
-const CountIndexName = "count_index"
+const ClusterTotalCountIndexName = "cluster_total_count_index"
 
-var countIndex = map[string]interface{}{
+var clusterTotalCountIndex = map[string]interface{}{
 	"settings": map[string]interface{}{
 		"number_of_shards":   1,
 		"number_of_replicas": 1,
@@ -18,17 +18,11 @@ var countIndex = map[string]interface{}{
 			"co_cluster_id": map[string]interface{}{
 				"type": "keyword",
 			},
-			"occurrences": map[string]interface{}{
+			"total_instances": map[string]interface{}{
 				"type": "integer",
 			},
-			"co_occurrences": map[string]interface{}{
+			"total_instances_with_co_cluster": map[string]interface{}{
 				"type": "integer",
-			},
-			"mean_TDOA": map[string]interface{}{
-				"type": "float",
-			},
-			"variance_TDOA": map[string]interface{}{
-				"type": "float",
 			},
 		},
 	},

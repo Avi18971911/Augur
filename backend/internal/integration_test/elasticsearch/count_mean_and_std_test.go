@@ -15,14 +15,17 @@ import (
 
 var meanAndSTDIndices = []string{bootstrapper.LogIndexName, bootstrapper.SpanIndexName}
 
-func TestMeandAndSTD(t *testing.T) {
+const tolerance = 0.0001
+
+func TestMeanAndSTD(t *testing.T) {
 	if es == nil {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should maintain a running average for the time difference of arrival for logs", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -45,7 +48,7 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 		secondTimeTwoSecondsAfter := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: secondTime.Add(time.Second * 2),
+			Timestamp: secondTime.Add(time.Millisecond * 1010),
 		}
 		err = loadDataIntoElasticsearch(
 			ac, []model.LogEntry{
@@ -58,7 +61,7 @@ func TestMeandAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -66,13 +69,17 @@ func TestMeandAndSTD(t *testing.T) {
 			firstTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+		err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -82,22 +89,26 @@ func TestMeandAndSTD(t *testing.T) {
 			secondTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: secondTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, secondRes.TotalCountMetaMapList, secondRes.TotalCountDocumentMapList, &index)
+		if err != nil {
+			t.Errorf("Failed to insert records: %v", err)
+		}
+		err = ac.BulkIndex(ctx, secondRes.WindowCountMetaMapList, secondRes.WindowCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 
 		searchQueryBody := countQuery(firstTimeLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -110,7 +121,7 @@ func TestMeandAndSTD(t *testing.T) {
 		expectedVarianceSecondTerm := (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean) * (secondTimeTwoSecondsAfter.Timestamp.Sub(secondTimeLog.Timestamp).Seconds() - expectedMean)
 		expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-		assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+		assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 	})
 
 	t.Run(
@@ -130,7 +141,7 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			firstTimeSpanSecondAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: firstTime.Add(time.Second),
+				StartTime: firstTime.Add(time.Millisecond * 15),
 				EndTime:   firstTime.Add(time.Second * 2),
 			}
 			secondTimeSpan := spanModel.Span{
@@ -140,7 +151,7 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			secondTimeSpanTwoSecondsAfter := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: secondTime.Add(time.Second * 2),
+				StartTime: secondTime.Add(time.Millisecond * 20),
 				EndTime:   secondTime.Add(time.Second * 4),
 			}
 			err = loadDataIntoElasticsearch(
@@ -155,7 +166,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load spans into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -167,13 +178,13 @@ func TestMeandAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			index := bootstrapper.CountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			index := bootstrapper.ClusterTotalCountIndexName
+			err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -187,22 +198,22 @@ func TestMeandAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.WindowCountMetaMapList, secondRes.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
 
 			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -215,7 +226,7 @@ func TestMeandAndSTD(t *testing.T) {
 			expectedVarianceSecondTerm := (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeSpanTwoSecondsAfter.StartTime.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
 			expectedVariance := (expectedVarianceFirstTerm + expectedVarianceSecondTerm) / 1
 			assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -235,7 +246,7 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			firstTimeLogOneSecondAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				Timestamp: firstTime.Add(time.Second),
+				Timestamp: firstTime.Add(time.Millisecond * 23),
 			}
 			secondTimeSpan := spanModel.Span{
 				ClusterId: "initialClusterId",
@@ -244,7 +255,7 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			secondTimeLogTwoSecondsAfter := model.LogEntry{
 				ClusterId: "otherClusterId",
-				Timestamp: secondTime.Add(time.Second * 2),
+				Timestamp: secondTime.Add(time.Millisecond * 17),
 			}
 			err = loadDataIntoElasticsearch(
 				ac, []spanModel.Span{
@@ -266,7 +277,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load logs into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -278,13 +289,13 @@ func TestMeandAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			index := bootstrapper.CountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			index := bootstrapper.ClusterTotalCountIndexName
+			err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -298,22 +309,22 @@ func TestMeandAndSTD(t *testing.T) {
 					},
 				},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.WindowCountMetaMapList, secondRes.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
 
 			searchQueryBody := countQuery(firstTimeSpan.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -327,7 +338,7 @@ func TestMeandAndSTD(t *testing.T) {
 			firstVarianceTerm := (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean) * (firstTimeLogOneSecondAfter.Timestamp.Sub(firstTimeSpan.StartTime).Seconds() - expectedMean)
 			secondVarianceTerm := (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean) * (secondTimeLogTwoSecondsAfter.Timestamp.Sub(secondTimeSpan.StartTime).Seconds() - expectedMean)
 			expectedVariance := (firstVarianceTerm + secondVarianceTerm) / 1
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -350,12 +361,12 @@ func TestMeandAndSTD(t *testing.T) {
 			}
 			spanOneSecondAfterFirstTime := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: firstTime.Add(time.Second),
+				StartTime: firstTime.Add(time.Millisecond * 38),
 				EndTime:   firstTime.Add(time.Second * 2),
 			}
 			spanTwoSecondsAfterSecondTime := spanModel.Span{
 				ClusterId: "otherClusterId",
-				StartTime: secondTime.Add(time.Second * 2),
+				StartTime: secondTime.Add(time.Millisecond * 47),
 				EndTime:   secondTime.Add(time.Second * 3),
 			}
 			err = loadDataIntoElasticsearch(
@@ -378,7 +389,7 @@ func TestMeandAndSTD(t *testing.T) {
 			if err != nil {
 				t.Error("Failed to load logs into elasticsearch")
 			}
-			buckets := []countModel.Bucket{4500}
+			bucket := countModel.Bucket(4500)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -386,13 +397,13 @@ func TestMeandAndSTD(t *testing.T) {
 				logAtFirstTime.ClusterId,
 				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtFirstTime.Timestamp}},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			index := bootstrapper.CountIndexName
-			err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+			index := bootstrapper.ClusterTotalCountIndexName
+			err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
@@ -402,22 +413,22 @@ func TestMeandAndSTD(t *testing.T) {
 				logAtSecondTime.ClusterId,
 				countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: logAtSecondTime.Timestamp}},
 				indices,
-				buckets,
+				bucket,
 			)
 			if err != nil {
 				t.Errorf("Failed to count occurrences: %v", err)
 			}
-			err = ac.BulkIndex(ctx, secondRes.MetaMapList, secondRes.DocumentMapList, &index)
+			err = ac.BulkIndex(ctx, secondRes.WindowCountMetaMapList, secondRes.WindowCountDocumentMapList, &index)
 			if err != nil {
 				t.Errorf("Failed to insert records: %v", err)
 			}
 
 			searchQueryBody := countQuery(logAtFirstTime.ClusterId)
-			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+			docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 			if err != nil {
 				t.Errorf("Failed to search for count: %v", err)
 			}
-			countEntries, err := convertCountDocsToCountEntries(docs)
+			countEntries, err := convertCountDocsToWindowCountEntries(docs)
 			if err != nil {
 				t.Errorf("Failed to convert count docs to count entries: %v", err)
 			}
@@ -431,7 +442,7 @@ func TestMeandAndSTD(t *testing.T) {
 			expectedVarianceFirstTime := (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean) * (spanOneSecondAfterFirstTime.StartTime.Sub(logAtFirstTime.Timestamp).Seconds() - expectedMean)
 			expectedVarianceSecondTime := (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean) * (spanTwoSecondsAfterSecondTime.StartTime.Sub(logAtSecondTime.Timestamp).Seconds() - expectedMean)
 			expectedVariance := (expectedVarianceFirstTime + expectedVarianceSecondTime) / 1
-			assert.Equal(t, expectedVariance, countEntry.VarianceTDOA)
+			assert.InDelta(t, expectedVariance, countEntry.VarianceTDOA, tolerance)
 		},
 	)
 
@@ -447,15 +458,15 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 		firstTimeOverlapOne := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second),
+			Timestamp: firstTime.Add(time.Millisecond * 4),
 		}
 		firstTimeOverlapTwo := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+			Timestamp: firstTime.Add(time.Millisecond * 12),
 		}
 		firstTimeOverlapThree := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+			Timestamp: firstTime.Add(time.Millisecond * 22),
 		}
 
 		err = loadDataIntoElasticsearch(
@@ -469,7 +480,7 @@ func TestMeandAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -477,23 +488,23 @@ func TestMeandAndSTD(t *testing.T) {
 			firstTimeLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 
 		searchQueryBody := countQuery(firstTimeLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -505,7 +516,7 @@ func TestMeandAndSTD(t *testing.T) {
 		expectedMean := (expectedMeanFirstTerm + expectedMeanSecondTerm + expectedMeanThirdTerm) / 3
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
 		// count service will condense all three in the one-to-many relationship into one mean value before processing
-		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+		assert.InDelta(t, float64(0), countEntry.VarianceTDOA, tolerance)
 	})
 
 	t.Run("should deal with many-to-one relationships", func(t *testing.T) {
@@ -520,15 +531,15 @@ func TestMeandAndSTD(t *testing.T) {
 		}
 		firstTimeLogTwo := model.LogEntry{
 			ClusterId: "initialClusterId",
-			Timestamp: firstTime.Add(time.Second),
+			Timestamp: firstTime.Add(time.Millisecond * 10),
 		}
 		firstTimeLogThree := model.LogEntry{
 			ClusterId: "initialClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 200),
+			Timestamp: firstTime.Add(time.Millisecond * 20),
 		}
 		firstTimeLogOverlap := model.LogEntry{
 			ClusterId: "otherClusterId",
-			Timestamp: firstTime.Add(time.Second).Add(time.Millisecond * 400),
+			Timestamp: firstTime.Add(time.Millisecond * 30),
 		}
 
 		err = loadDataIntoElasticsearch(
@@ -543,7 +554,7 @@ func TestMeandAndSTD(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{4500}
+		bucket := countModel.Bucket(4500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -551,23 +562,23 @@ func TestMeandAndSTD(t *testing.T) {
 			firstTimeLogOne.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: firstTimeLogOne.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.WindowCountMetaMapList, res.WindowCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 
 		searchQueryBody := countQuery(firstTimeLogOne.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterWindowCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := convertCountDocsToWindowCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -575,6 +586,6 @@ func TestMeandAndSTD(t *testing.T) {
 		countEntry := countEntries[0]
 		expectedMean := firstTimeLogOverlap.Timestamp.Sub(firstTimeLogOne.Timestamp).Seconds()
 		assert.Equal(t, expectedMean, countEntry.MeanTDOA)
-		assert.Equal(t, float64(0), countEntry.VarianceTDOA)
+		assert.InDelta(t, float64(0), countEntry.VarianceTDOA, tolerance)
 	})
 }

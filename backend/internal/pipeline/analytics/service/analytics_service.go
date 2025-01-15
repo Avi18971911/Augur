@@ -77,7 +77,7 @@ func (as *AnalyticsService) UpdateAnalytics(
 	as.pruneCycleClusters(clusterToSucceedingClusters)
 	metaUpdate, documentUpdate := getAnalyticsUpdateStatement(clusterToSucceedingClusters)
 	updateCtx, cancel := context.WithTimeout(ctx, timeout)
-	err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterIndexName)
+	err := as.ac.BulkUpdate(updateCtx, metaUpdate, documentUpdate, bootstrapper.ClusterGraphNodeIndexName)
 	cancel()
 	if err != nil {
 		return fmt.Errorf("failed to bulk update analytics: %w", err)
@@ -152,7 +152,7 @@ func (as *AnalyticsService) getRelatedClusters(
 	var querySize = 1000
 	searchCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	docs, err := as.ac.Search(searchCtx, string(queryJSON), []string{bootstrapper.CountIndexName}, &querySize)
+	docs, err := as.ac.Search(searchCtx, string(queryJSON), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for related clusters: %w", err)
 	}

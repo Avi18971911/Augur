@@ -47,13 +47,13 @@ func main() {
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cls := clusterService.NewClusterService(ac, logger)
-	countService := count.NewCountService(ac, logger)
+	countService := count.NewClusterTotalCountService(ac, logger)
 	eventBus := EventBus.New()
 
 	codp := count.NewCountDataProcessorService(
 		ac,
 		countService,
-		[]countModel.Bucket{2500},
+		[]countModel.Bucket{20},
 		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
 		logger,
 	)

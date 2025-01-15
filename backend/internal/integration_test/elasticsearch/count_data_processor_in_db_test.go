@@ -21,11 +21,12 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 		t.Error("es is uninitialized or otherwise nil")
 	}
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
-	buckets := []countModel.Bucket{100}
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
+	bucket := countModel.Bucket(100)
 
 	t.Run("should increment both co-occurring clusters, and misses", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, bucket, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -101,7 +102,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -110,12 +111,12 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assert.Equal(t, int64(2), countEntries[0].CoOccurrences)
-		assert.Equal(t, int64(3), countEntries[0].Occurrences)
+		assert.Equal(t, int64(2), countEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(3), countEntries[0].TotalInstances)
 	})
 
 	t.Run("should increment asymmetrically with multiple overlaps on the same period", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, bucket, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -191,7 +192,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -200,8 +201,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		clusterAEntries := make([]countModel.CountEntry, 0)
-		clusterBEntries := make([]countModel.CountEntry, 0)
+		clusterAEntries := make([]countModel.ClusterTotalCountEntry, 0)
+		clusterBEntries := make([]countModel.ClusterTotalCountEntry, 0)
 
 		for _, entry := range countEntries {
 			if entry.ClusterId == clusterA {
@@ -211,16 +212,16 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			}
 		}
 
-		assert.Equal(t, int64(1), clusterAEntries[0].CoOccurrences)
-		assert.Equal(t, int64(1), clusterBEntries[0].CoOccurrences)
+		assert.Equal(t, int64(1), clusterAEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(1), clusterBEntries[0].TotalInstancesWithCoCluster)
 
-		assert.Equal(t, int64(1), clusterAEntries[0].Occurrences)
-		assert.Equal(t, int64(2), clusterBEntries[0].Occurrences)
+		assert.Equal(t, int64(1), clusterAEntries[0].TotalInstances)
+		assert.Equal(t, int64(2), clusterBEntries[0].TotalInstances)
 	})
 
 	t.Run(
 		"should be able to process spans completely unrelated to each other without error", func(t *testing.T) {
-			dp := countService.NewCountDataProcessorService(ac, cs, []countModel.Bucket{10}, dpInDBIndices, logger)
+			dp := countService.NewCountDataProcessorService(ac, cs, countModel.Bucket(10), dpInDBIndices, logger)
 			err := deleteAllDocuments(es)
 			if err != nil {
 				t.Errorf("Failed to delete all documents: %v", err)
@@ -259,7 +260,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 			searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName})
+			count, err := ac.Count(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName})
 			if err != nil {
 				t.Errorf("Failed to count: %v", err)
 			}
@@ -268,7 +269,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 	)
 
 	t.Run("overlapping spans and logs should be processed correctly", func(t *testing.T) {
-		dp := countService.NewCountDataProcessorService(ac, cs, buckets, dpInDBIndices, logger)
+		dp := countService.NewCountDataProcessorService(ac, cs, bucket, dpInDBIndices, logger)
 		err := deleteAllDocuments(es)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
@@ -329,7 +330,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 
 		searchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(searchCtx, string(stringQuery), []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -338,8 +339,8 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 
-		assert.Equal(t, int64(3), clusterBEntries[0].CoOccurrences)
-		assert.Equal(t, int64(4), clusterBEntries[0].Occurrences)
+		assert.Equal(t, int64(3), clusterBEntries[0].TotalInstancesWithCoCluster)
+		assert.Equal(t, int64(4), clusterBEntries[0].TotalInstances)
 		assert.Equal(t, clusterB, clusterBEntries[0].ClusterId)
 	})
 }

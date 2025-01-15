@@ -7,7 +7,7 @@ import (
 	logModel "github.com/Avi18971911/Augur/internal/otel_server/log/model"
 	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
 	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
-	analyticsModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	"github.com/Avi18971911/Augur/internal/pipeline/count/model"
 	countService "github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	inferenceService "github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	inferenceModel "github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
@@ -38,12 +38,13 @@ func TestChainOfEvents(t *testing.T) {
 		ac,
 		logger,
 	)
-	buckets := []analyticsModel.Bucket{1000 * 30}
+	bucket := model.Bucket(1000 * 30)
 	indices := []string{bootstrapper.LogIndexName}
 	cls := clusterService.NewClusterService(ac, logger)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	cdp := clusterService.NewClusterDataProcessor(ac, cls, logger)
-	csp := countService.NewCountDataProcessorService(ac, cs, buckets, indices, logger)
+	csp := countService.NewCountDataProcessorService(ac, cs, bucket, indices, logger)
 
 	t.Run("should be able to find out a simple A-B-C relation", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -554,9 +555,9 @@ func TestChainOfEvents(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
 		assert.NoError(t, err)
 		const maxLogsInChain = 8
 
@@ -595,9 +596,9 @@ func TestChainOfEvents(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
 		assert.NoError(t, err)
 		const maxLogsInChain = 8
 
@@ -636,9 +637,9 @@ func TestChainOfEvents(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/difficult_inference/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/difficult_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/difficult_inference/count_index.json")
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data/difficult_inference/span_index.json")
 		assert.NoError(t, err)

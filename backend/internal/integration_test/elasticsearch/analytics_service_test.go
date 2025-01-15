@@ -59,7 +59,7 @@ func TestUpdateAnalytics(t *testing.T) {
 				VarianceTDOA:  0.0,
 			},
 		}
-		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.CountIndexName)
+		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.ClusterTotalCountIndexName)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
@@ -71,7 +71,7 @@ func TestUpdateAnalytics(t *testing.T) {
 		allClusterDocs, err := ac.Search(
 			context.Background(),
 			string(queryString),
-			[]string{bootstrapper.ClusterIndexName},
+			[]string{bootstrapper.ClusterGraphNodeIndexName},
 			nil,
 		)
 		if err != nil {
@@ -132,13 +132,13 @@ func TestUpdateAnalytics(t *testing.T) {
 				VarianceTDOA:  0.0,
 			},
 		}
-		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.CountIndexName)
+		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.ClusterTotalCountIndexName)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
 		}
 
-		err = deleteAllDocumentsFromIndex(es, bootstrapper.CountIndexName)
+		err = deleteAllDocumentsFromIndex(es, bootstrapper.ClusterTotalCountIndexName)
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
@@ -168,7 +168,7 @@ func TestUpdateAnalytics(t *testing.T) {
 				VarianceTDOA:  0.0,
 			},
 		}
-		err = loadDataIntoElasticsearch(ac, newCountInput, bootstrapper.CountIndexName)
+		err = loadDataIntoElasticsearch(ac, newCountInput, bootstrapper.ClusterTotalCountIndexName)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
@@ -181,7 +181,7 @@ func TestUpdateAnalytics(t *testing.T) {
 		allClusterDocs, err := ac.Search(
 			context.Background(),
 			string(queryString),
-			[]string{bootstrapper.ClusterIndexName},
+			[]string{bootstrapper.ClusterGraphNodeIndexName},
 			nil,
 		)
 		if err != nil {
@@ -215,7 +215,7 @@ func TestUpdateAnalytics(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/difficult_inference/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/difficult_inference/count_index.json")
 		assert.NoError(t, err)
 
 		clusterIds := []string{
@@ -236,7 +236,7 @@ func TestUpdateAnalytics(t *testing.T) {
 		allClusterDocs, err := ac.Search(
 			context.Background(),
 			string(queryString),
-			[]string{bootstrapper.ClusterIndexName},
+			[]string{bootstrapper.ClusterGraphNodeIndexName},
 			nil,
 		)
 		assert.NoError(t, err)

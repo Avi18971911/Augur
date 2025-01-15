@@ -1,12 +1,21 @@
 package model
 
-type CountEntry struct {
-	Id            string  `json:"_id,omitempty"`
-	CreatedAt     string  `json:"created_at"`
-	ClusterId     string  `json:"cluster_id"`
-	CoClusterId   string  `json:"co_cluster_id"`
-	Occurrences   int64   `json:"occurrences"`
-	CoOccurrences int64   `json:"co_occurrences"`
-	MeanTDOA      float64 `json:"mean_TDOA"`     // mean Time Difference of Arrival (TDOA) between cluster and co-cluster
-	VarianceTDOA  float64 `json:"variance_TDOA"` // variance of Time Difference of Arrival (TDOA) between cluster and co-cluster
+type ClusterTotalCountEntry struct {
+	Id                          string
+	CreatedAt                   string
+	ClusterId                   string
+	CoClusterId                 string
+	TotalInstances              int64
+	TotalInstancesWithCoCluster int64
+}
+
+type ClusterWindowCountEntry struct {
+	Id           string
+	ClusterId    string
+	CoClusterId  string
+	Start        float64
+	End          float64
+	Occurrences  int64
+	MeanTDOA     float64
+	VarianceTDOA float64
 }

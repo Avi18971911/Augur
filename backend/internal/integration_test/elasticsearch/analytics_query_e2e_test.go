@@ -35,9 +35,9 @@ func TestAnalyticsQuery(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterIndexName, "data/easy_inference/cluster_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.CountIndexName, "data/easy_inference/count_index.json")
+		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
 		assert.NoError(t, err)
 
 		const numExpectedLogs = 8

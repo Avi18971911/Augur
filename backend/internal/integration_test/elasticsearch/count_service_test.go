@@ -25,7 +25,8 @@ func TestLogCount(t *testing.T) {
 	var querySize = 100
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -47,7 +48,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -55,13 +56,13 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -70,17 +71,17 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -89,8 +90,8 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 		countEntry := countEntries[0]
-		assert.Equal(t, int64(2), countEntry.Occurrences)
-		assert.Equal(t, int64(2), countEntry.CoOccurrences)
+		assert.Equal(t, int64(2), countEntry.TotalInstances)
+		assert.Equal(t, int64(2), countEntry.TotalInstancesWithCoCluster)
 	})
 
 	t.Run("should add occurrences for misses if co-occurrences have been found", func(t *testing.T) {
@@ -123,7 +124,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		firstCtx, firstCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer firstCancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -131,13 +132,13 @@ func TestLogCount(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences for successes: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(firstCtx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(firstCtx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -161,7 +162,7 @@ func TestLogCount(t *testing.T) {
 		queryCtx, queryCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer queryCancel()
 		searchQueryBody := countQuery(newLog.ClusterId)
-		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(queryCtx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -170,8 +171,8 @@ func TestLogCount(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 		countEntry := countEntries[0]
-		assert.Equal(t, int64(2), countEntry.Occurrences)
-		assert.Equal(t, int64(1), countEntry.CoOccurrences)
+		assert.Equal(t, int64(2), countEntry.TotalInstances)
+		assert.Equal(t, int64(1), countEntry.TotalInstancesWithCoCluster)
 	})
 
 	t.Run("should not add occurrences for misses if no co-occurrences have been found", func(t *testing.T) {
@@ -227,7 +228,8 @@ func TestSpanCount(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Immediate)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 
 	t.Run("should update existing entries in the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -264,7 +266,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load overlapping spans into elasticsearch")
 		}
-		buckets := []countModel.Bucket{1000}
+		bucket := countModel.Bucket(1000)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -276,13 +278,13 @@ func TestSpanCount(t *testing.T) {
 				},
 			},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -295,9 +297,9 @@ func TestSpanCount(t *testing.T) {
 				},
 			},
 			indices,
-			buckets,
+			bucket,
 		)
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
@@ -306,7 +308,7 @@ func TestSpanCount(t *testing.T) {
 		}
 		searchQueryBody := countQuery(newSpan.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -315,8 +317,8 @@ func TestSpanCount(t *testing.T) {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
 		countEntry := countEntries[0]
-		assert.Equal(t, int64(2), countEntry.Occurrences)
-		assert.Equal(t, int64(2), countEntry.CoOccurrences)
+		assert.Equal(t, int64(2), countEntry.TotalInstances)
+		assert.Equal(t, int64(2), countEntry.TotalInstancesWithCoCluster)
 	})
 }
 
@@ -326,7 +328,8 @@ func TestAlgorithm(t *testing.T) {
 	}
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
-	cs := countService.NewCountService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
 	t.Run("should insert two different matches into the database", func(t *testing.T) {
 		err := deleteAllDocuments(es)
 		if err != nil {
@@ -353,7 +356,7 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to load logs into elasticsearch")
 		}
-		buckets := []countModel.Bucket{2500}
+		bucket := countModel.Bucket(2500)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		res, err := cs.GetCountAndUpdateOccurrencesQueryConstituents(
@@ -361,19 +364,19 @@ func TestAlgorithm(t *testing.T) {
 			newLog.ClusterId,
 			countModel.TimeInfo{LogInfo: &countModel.LogInfo{Timestamp: newLog.Timestamp}},
 			indices,
-			buckets,
+			bucket,
 		)
 		if err != nil {
 			t.Errorf("Failed to count occurrences: %v", err)
 		}
-		index := bootstrapper.CountIndexName
-		err = ac.BulkIndex(ctx, res.MetaMapList, res.DocumentMapList, &index)
+		index := bootstrapper.ClusterTotalCountIndexName
+		err = ac.BulkIndex(ctx, res.TotalCountMetaMapList, res.TotalCountDocumentMapList, &index)
 		if err != nil {
 			t.Errorf("Failed to insert records: %v", err)
 		}
 		searchQueryBody := countQuery(newLog.ClusterId)
 		var querySize = 100
-		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.CountIndexName}, &querySize)
+		docs, err := ac.Search(ctx, searchQueryBody, []string{bootstrapper.ClusterTotalCountIndexName}, &querySize)
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
@@ -433,10 +436,10 @@ func countQuery(clusterId string) string {
 	return string(queryBody)
 }
 
-func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel.CountEntry, error) {
-	var countEntries []countModel.CountEntry
+func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel.ClusterTotalCountEntry, error) {
+	var countEntries []countModel.ClusterTotalCountEntry
 	for _, doc := range docs {
-		countEntry := countModel.CountEntry{}
+		countEntry := countModel.ClusterTotalCountEntry{}
 		coClusterId, ok := doc["co_cluster_id"].(string)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
@@ -447,16 +450,50 @@ func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel
 			return nil, fmt.Errorf("failed to convert cluster_id to string")
 		}
 		countEntry.ClusterId = clusterId
+		totalInstances, ok := doc["total_instances"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances to float64")
+		}
+		countEntry.TotalInstances = int64(totalInstances)
+		totalInstancesWithCoCluster, ok := doc["total_instances_with_co_cluster"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances_with_co_cluster to float64")
+		}
+		countEntry.TotalInstancesWithCoCluster = int64(totalInstancesWithCoCluster)
+		countEntries = append(countEntries, countEntry)
+	}
+	return countEntries, nil
+}
+
+func convertCountDocsToWindowCountEntries(docs []map[string]interface{}) ([]countModel.ClusterWindowCountEntry, error) {
+	var countEntries []countModel.ClusterWindowCountEntry
+	for _, doc := range docs {
+		countEntry := countModel.ClusterWindowCountEntry{}
+		coClusterId, ok := doc["co_cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
+		}
+		countEntry.CoClusterId = coClusterId
+		clusterId, ok := doc["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string")
+		}
+		countEntry.ClusterId = clusterId
+		start, ok := doc["start"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert start to float64")
+		}
+		countEntry.Start = start
+		end, ok := doc["end"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert end to float64")
+		}
+		countEntry.End = end
 		occurrences, ok := doc["occurrences"].(float64)
 		if !ok {
-			return nil, fmt.Errorf("failed to convert occurrences to int")
+			return nil, fmt.Errorf("failed to convert occurrences to float64")
 		}
 		countEntry.Occurrences = int64(occurrences)
-		coOccurrences, ok := doc["co_occurrences"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert co_occurrences to int")
-		}
-		countEntry.CoOccurrences = int64(coOccurrences)
 		meanTDOA, ok := doc["mean_TDOA"].(float64)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
