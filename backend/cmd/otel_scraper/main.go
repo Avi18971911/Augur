@@ -30,6 +30,7 @@ func main() {
 	defer logger.Sync()
 	const countDataProcessorBucket = countModel.Bucket(2500)
 	const windowCountBucket = 50
+	const intervalForPipelineSeconds = 15
 
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
@@ -85,7 +86,7 @@ func main() {
 		eventBus,
 		logger,
 	)
-	ticker := time.NewTicker(15 * time.Second)
+	ticker := time.NewTicker(intervalForPipelineSeconds)
 	defer ticker.Stop()
 
 	err = dataPipeline.Start(ticker)

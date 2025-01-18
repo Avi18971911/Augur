@@ -14,7 +14,7 @@ const timeout = 10 * time.Second
 const searchAfterTimeout = 60 * time.Second
 const dpWorkerCount = 5
 
-var querySize = 10000
+var querySize = 1000
 
 type DataProcessorService struct {
 	ac           client.AugurClient
