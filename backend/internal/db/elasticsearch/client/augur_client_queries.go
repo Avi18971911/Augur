@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const timeOut = 1 * time.Second
+const timeOut = 5 * time.Second
 
 func (a *AugurClientImpl) Search(
 	ctx context.Context,
@@ -122,7 +122,7 @@ func (a *AugurClientImpl) SearchAfter(
 	searchAfterParams *SearchAfterParams,
 	querySize *int,
 ) <-chan SearchAfterResult {
-	keepAlive := "1m"
+	keepAlive := "5m"
 	searchAfterChannel := make(chan SearchAfterResult)
 	go func(
 		ctx context.Context,

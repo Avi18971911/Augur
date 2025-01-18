@@ -30,7 +30,7 @@ func main() {
 	defer logger.Sync()
 	const countDataProcessorBucket = countModel.Bucket(2500)
 	const windowCountBucket = 50
-	const intervalForPipelineSeconds = 15
+	const intervalForPipelineSeconds = 60
 
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
