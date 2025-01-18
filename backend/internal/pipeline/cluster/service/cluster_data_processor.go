@@ -98,15 +98,15 @@ func (cdp *ClusterDataProcessor) finalizeOutput(
 	newData []map[string]interface{},
 ) []model.ClusterOutput {
 	idToNewDataMap := getIdToDataMap(newData)
+	idToClusterIdMap := make(map[string]string)
+	for i, clusterId := range clusterIds {
+		idToClusterIdMap[idsFromClustering[i]] = clusterId
+	}
 	output := make([]model.ClusterOutput, len(idToNewDataMap))
 	i := 0
-	for _, id := range idsFromClustering {
-		// the ids and clusterIds are the total (new + old) from the clustering algorithm, whereas we only need to pass on new entries
-		if _, ok := idToNewDataMap[id]; !ok {
-			continue
-		}
-		clusterId := clusterIds[i]
-		dataType, spanTimeDetails, logTimeDetails, err := getDetails(idToNewDataMap[id])
+	for id, data := range idToNewDataMap {
+		clusterId := idToClusterIdMap[id]
+		dataType, spanTimeDetails, logTimeDetails, err := getDetails(data)
 		if err != nil {
 			cdp.logger.Error("failed to get details from the newData", zap.Error(err))
 			continue
