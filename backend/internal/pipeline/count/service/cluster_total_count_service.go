@@ -82,12 +82,12 @@ func (cs *ClusterTotalCountService) getUpdateCoOccurrencesQueryConstituents(
 		totalCountUpdateMap = append(totalCountUpdateMap, totalCountUpdate)
 		for windowStart, windowDetails := range coClusterDetails.ClusterWindowCountInfo {
 			windowId := getWindowId(compositeId, windowStart)
-			avgTDOA := windowDetails.TotalTDOA / float64(windowDetails.Occurrences)
 			windowMeta, windowUpdate := buildUpdateClusterWindowCountsQuery(
 				windowId,
 				clusterId,
 				otherClusterId,
-				avgTDOA,
+				windowDetails.Occurrences,
+				windowDetails.TotalTDOA,
 				windowDetails.Start,
 				windowDetails.End,
 			)
