@@ -9,7 +9,8 @@ import (
 	logHelper "github.com/Avi18971911/Augur/internal/otel_server/log/helper"
 	spanHelper "github.com/Avi18971911/Augur/internal/otel_server/trace/helper"
 	analyticsModel "github.com/Avi18971911/Augur/internal/pipeline/analytics/model"
-	analyticsService "github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
+	"github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	"github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	inferenceModel "github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
 	"go.uber.org/zap"
 	"math"
@@ -332,32 +333,98 @@ func (as *QueryServiceImpl) getCountClusterDetails(
 	previousClusterId string,
 	nextClusterId string,
 ) (inferenceModel.CountCluster, error) {
-	query := getCountClusterDetailsQuery(previousClusterId, nextClusterId)
+	clusterTotalCountDetails, err := as.getClusterTotalCountDetails(
+		ctx,
+		previousClusterId,
+		nextClusterId,
+	)
+	if err != nil {
+		return inferenceModel.CountCluster{}, fmt.Errorf("failed to get cluster total count details: %w", err)
+	}
+	clusterWindowCountDetails, err := as.getClusterWindowCountDetails(
+		ctx,
+		previousClusterId,
+		nextClusterId,
+	)
+	if err != nil {
+		return inferenceModel.CountCluster{}, fmt.Errorf("failed to get cluster total count details: %w", err)
+	}
+	countCluster := inferenceModel.CountCluster{
+		ClusterId:     nextClusterId,
+		CoOccurrences: clusterTotalCountDetails.TotalInstancesWithCoCluster,
+		Occurrences:   clusterTotalCountDetails.TotalInstances,
+		MeanTDOA:      clusterWindowCountDetails.MeanTDOA,
+		VarianceTDOA:  clusterWindowCountDetails.VarianceTDOA,
+	}
+	return countCluster, nil
+}
+
+func (as *QueryServiceImpl) getClusterTotalCountDetails(
+	ctx context.Context,
+	clusterId string,
+	coClusterId string,
+) (model.ClusterTotalCountEntry, error) {
+	query := getClusterTotalCountDetailsQuery(clusterId, coClusterId)
 	queryJSON, err := json.Marshal(query)
 	if err != nil {
-		return inferenceModel.CountCluster{}, fmt.Errorf("failed to marshal cluster details query: %w", err)
+		return model.ClusterTotalCountEntry{}, fmt.Errorf(
+			"failed to marshal cluster total details query: %w", err,
+		)
+	}
+	totalQueryCtx, totalCancel := context.WithTimeout(ctx, timeout)
+	defer totalCancel()
+	totalDocs, err := as.ac.Search(
+		totalQueryCtx,
+		string(queryJSON),
+		[]string{bootstrapper.ClusterTotalCountIndexName},
+		nil,
+	)
+	totalResult, err := service.ConvertCountDocsToCountEntries(totalDocs)
+	if err != nil {
+		return model.ClusterTotalCountEntry{}, fmt.Errorf("failed to convert cluster total count docs")
+	}
+	if len(totalResult) != 1 {
+		return model.ClusterTotalCountEntry{}, fmt.Errorf(
+			"received none or more than 1 result for the cluster total count with cluster id %s "+
+				"and co cluster id %s", clusterId, coClusterId,
+		)
+	}
+	return totalResult[0], nil
+}
+
+func (as *QueryServiceImpl) getClusterWindowCountDetails(
+	ctx context.Context,
+	clusterId string,
+	coClusterId string,
+) (model.ClusterWindowCountEntry, error) {
+	query := getClusterWindowCountBestCandidates(clusterId, coClusterId)
+	queryJSON, err := json.Marshal(query)
+	if err != nil {
+		return model.ClusterWindowCountEntry{}, fmt.Errorf(
+			"failed to marshal cluster window details query: %w", err,
+		)
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	docs, err := as.ac.Search(
+	var queryResultSize = 1
+	totalDocs, err := as.ac.Search(
 		queryCtx,
 		string(queryJSON),
-		[]string{bootstrapper.ClusterTotalCountIndexName, bootstrapper.ClusterWindowCountIndexName},
-		nil,
+		[]string{bootstrapper.ClusterWindowCountIndexName},
+		&queryResultSize,
 	)
+	totalResult, err := service.ConvertCountDocsToWindowCountEntries(totalDocs)
 	if err != nil {
-		return inferenceModel.CountCluster{}, fmt.Errorf("failed to search for cluster details: %w", err)
+		return model.ClusterWindowCountEntry{}, fmt.Errorf("failed to convert cluster window count docs")
 	}
-	countClusters, err := analyticsService.ParseClusters(docs)
-	if err != nil {
-		return inferenceModel.CountCluster{}, fmt.Errorf("failed to convert docs to count clusters: %w", err)
-	}
-	if len(countClusters) != 1 {
-		return inferenceModel.CountCluster{}, fmt.Errorf(
-			"expected 1 count cluster from composite ID, got %d", len(countClusters),
+	if len(totalResult) != 1 {
+		return model.ClusterWindowCountEntry{}, fmt.Errorf(
+			"received none or more than 1 result for the cluster window count with cluster id %s "+
+				"and co cluster id %s", clusterId, coClusterId,
 		)
 	}
-	return countClusters[0], nil
+	return totalResult[0], nil
+
 }
 
 func (as *QueryServiceImpl) getSpanOrLogCandidates(

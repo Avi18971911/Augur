@@ -2,8 +2,10 @@ package elasticsearch
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
+	"github.com/Avi18971911/Augur/internal/otel_server/log/helper"
 	logModel "github.com/Avi18971911/Augur/internal/otel_server/log/model"
 	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
 	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
@@ -635,18 +637,31 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("Should be able to do inference even in difficult circumstances where many overlaps occur", func(t *testing.T) {
-		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/difficult_inference/cluster_index.json")
-		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/difficult_inference/count_index.json")
-		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.SpanIndexName, "data/difficult_inference/span_index.json")
 		assert.NoError(t, err)
 		const maxLogsInChain = 8
+
+		stringQuery, err := json.Marshal(getAllQuery())
+		assert.NoError(t, err)
+		var querySize = 10000
+		logDocs, err := ac.Search(
+			context.Background(),
+			string(stringQuery),
+			[]string{bootstrapper.LogIndexName},
+			&querySize,
+		)
+		logs, err := helper.ConvertFromDocuments(logDocs)
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+		countOutput, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
+		assert.NoError(t, err)
+		err = an.UpdateAnalytics(context.Background(), countOutput)
+		assert.NoError(t, err)
 
 		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-21T10:30:54.838663084Z")
 		assert.NoError(t, err)
@@ -668,7 +683,6 @@ func TestChainOfEvents(t *testing.T) {
 				Service:   "fake-server",
 			},
 		}
-		// TODO: Do some heavy investigation to ensure adequate functionality in this case
 		graph, err := as.GetChainOfEvents(context.Background(), spanOrLogDatum)
 		assert.NoError(t, err)
 		assert.Equal(t, maxLogsInChain, len(graph))

@@ -15,7 +15,7 @@ import (
 
 const timeout = 10 * time.Second
 const minimumRatio = 0.6
-const querySize = 1000
+const querySize = 10000
 
 type AnalyticsService struct {
 	ac     client.AugurClient
@@ -151,14 +151,14 @@ func (as *AnalyticsService) getRelatedClusters(
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal get related cluster query: %w", err)
 	}
-	var querySize = 1000
+	var localQuerySize = querySize
 	searchCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	docs, err := as.ac.Search(
 		searchCtx,
 		string(queryJSON),
 		[]string{bootstrapper.ClusterTotalCountIndexName, bootstrapper.ClusterWindowCountIndexName},
-		&querySize,
+		&localQuerySize,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for related clusters: %w", err)
@@ -194,14 +194,14 @@ func ParseClusters(docs []map[string]interface{}) ([]model.CountCluster, error) 
 			)
 		}
 	}
-	clusters, err := findMostProbableMatchingWindow(totalCountDocs, windowCountDocs)
+	clusters, err := FindMostProbableMatchingWindow(totalCountDocs, windowCountDocs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find most probable matching window: %w", err)
 	}
 	return clusters, nil
 }
 
-func findMostProbableMatchingWindow(
+func FindMostProbableMatchingWindow(
 	totalCountDocs map[string]totalCountModel.ClusterTotalCountEntry,
 	windowCountDocs map[string][]totalCountModel.ClusterWindowCountEntry,
 ) ([]model.CountCluster, error) {
