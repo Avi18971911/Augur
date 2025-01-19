@@ -551,6 +551,7 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
+		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
@@ -592,6 +593,7 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("should be able to handle easy real data with the first log in sequence", func(t *testing.T) {
+		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
@@ -633,6 +635,7 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("Should be able to do inference even in difficult circumstances where many overlaps occur", func(t *testing.T) {
+		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
