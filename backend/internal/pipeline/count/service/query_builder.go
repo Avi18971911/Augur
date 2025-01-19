@@ -140,8 +140,7 @@ func buildUpdateClusterWindowCountsQuery(
 	id string,
 	clusterId string,
 	coClusterId string,
-	newOccurrences int64,
-	totalTDOA float64,
+	meanTDOA float64,
 	start float64,
 	end float64,
 ) (client.MetaMap, client.DocumentMap) {
@@ -154,8 +153,8 @@ func buildUpdateClusterWindowCountsQuery(
 				"def delta2 = params.new_value - ctx._source.mean_TDOA;" +
 				"ctx._source.variance_TDOA = ctx._source.variance_TDOA + delta * delta2;",
 			"params": map[string]interface{}{
-				"increment": newOccurrences,
-				"new_value": totalTDOA,
+				"increment": 1,
+				"new_value": meanTDOA,
 			},
 		},
 		"upsert": map[string]interface{}{
@@ -163,8 +162,8 @@ func buildUpdateClusterWindowCountsQuery(
 			"co_cluster_id": coClusterId,
 			"start":         start,
 			"end":           end,
-			"occurrences":   newOccurrences,
-			"mean_TDOA":     totalTDOA,
+			"occurrences":   1,
+			"mean_TDOA":     meanTDOA,
 			"variance_TDOA": 0,
 		},
 	}
