@@ -3,7 +3,6 @@ package elasticsearch
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
 	"github.com/Avi18971911/Augur/internal/otel_server/log/model"
@@ -85,7 +84,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -166,7 +165,7 @@ func TestLogCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -312,7 +311,7 @@ func TestSpanCount(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -380,7 +379,7 @@ func TestAlgorithm(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -434,77 +433,4 @@ func countQuery(clusterId string) string {
 		panic(err)
 	}
 	return string(queryBody)
-}
-
-func convertCountDocsToCountEntries(docs []map[string]interface{}) ([]countModel.ClusterTotalCountEntry, error) {
-	var countEntries []countModel.ClusterTotalCountEntry
-	for _, doc := range docs {
-		countEntry := countModel.ClusterTotalCountEntry{}
-		coClusterId, ok := doc["co_cluster_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
-		}
-		countEntry.CoClusterId = coClusterId
-		clusterId, ok := doc["cluster_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert cluster_id to string")
-		}
-		countEntry.ClusterId = clusterId
-		totalInstances, ok := doc["total_instances"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert total_instances to float64")
-		}
-		countEntry.TotalInstances = int64(totalInstances)
-		totalInstancesWithCoCluster, ok := doc["total_instances_with_co_cluster"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert total_instances_with_co_cluster to float64")
-		}
-		countEntry.TotalInstancesWithCoCluster = int64(totalInstancesWithCoCluster)
-		countEntries = append(countEntries, countEntry)
-	}
-	return countEntries, nil
-}
-
-func convertCountDocsToWindowCountEntries(docs []map[string]interface{}) ([]countModel.ClusterWindowCountEntry, error) {
-	var countEntries []countModel.ClusterWindowCountEntry
-	for _, doc := range docs {
-		countEntry := countModel.ClusterWindowCountEntry{}
-		coClusterId, ok := doc["co_cluster_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
-		}
-		countEntry.CoClusterId = coClusterId
-		clusterId, ok := doc["cluster_id"].(string)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert cluster_id to string")
-		}
-		countEntry.ClusterId = clusterId
-		start, ok := doc["start"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert start to float64")
-		}
-		countEntry.Start = start
-		end, ok := doc["end"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert end to float64")
-		}
-		countEntry.End = end
-		occurrences, ok := doc["occurrences"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert occurrences to float64")
-		}
-		countEntry.Occurrences = int64(occurrences)
-		meanTDOA, ok := doc["mean_TDOA"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert mean_tdoa to float64")
-		}
-		countEntry.MeanTDOA = meanTDOA
-		varianceTDOA, ok := doc["variance_TDOA"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("failed to convert variance_tdoa to float64")
-		}
-		countEntry.VarianceTDOA = varianceTDOA
-		countEntries = append(countEntries, countEntry)
-	}
-	return countEntries, nil
 }

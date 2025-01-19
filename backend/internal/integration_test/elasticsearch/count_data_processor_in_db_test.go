@@ -106,7 +106,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -196,7 +196,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		countEntries, err := convertCountDocsToCountEntries(docs)
+		countEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}
@@ -334,7 +334,7 @@ func TestCountDataProcessorWithDataInDB(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to search for count: %v", err)
 		}
-		clusterBEntries, err := convertCountDocsToCountEntries(docs)
+		clusterBEntries, err := countService.ConvertCountDocsToCountEntries(docs)
 		if err != nil {
 			t.Errorf("Failed to convert count docs to count entries: %v", err)
 		}

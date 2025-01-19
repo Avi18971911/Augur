@@ -76,18 +76,18 @@ func (cs *ClusterTotalCountService) getUpdateCoOccurrencesQueryConstituents(
 	windowCountUpdateMap := make([]client.DocumentMap, 0)
 
 	for otherClusterId, coClusterDetails := range coClusterMapCount {
-		compositeId := GetTotalCountId(clusterId, otherClusterId)
+		compositeId := getTotalCountId(clusterId, otherClusterId)
 		totalCountMeta, totalCountUpdate := buildUpdateClusterTotalCountsQuery(compositeId, clusterId, otherClusterId)
 		totalCountMetaMap = append(totalCountMetaMap, totalCountMeta)
 		totalCountUpdateMap = append(totalCountUpdateMap, totalCountUpdate)
 		for windowStart, windowDetails := range coClusterDetails.ClusterWindowCountInfo {
 			windowId := getWindowId(compositeId, windowStart)
-			avgTDOA := windowDetails.TotalTDOA / float64(windowDetails.Occurrences)
+			meanTDOA := windowDetails.TotalTDOA / float64(windowDetails.Occurrences)
 			windowMeta, windowUpdate := buildUpdateClusterWindowCountsQuery(
 				windowId,
 				clusterId,
 				otherClusterId,
-				avgTDOA,
+				meanTDOA,
 				windowDetails.Start,
 				windowDetails.End,
 			)
@@ -130,16 +130,9 @@ func (cs *ClusterTotalCountService) countOccurrencesAndCoOccurrencesByCoClusterI
 		)
 		return nil, err
 	}
-	clusterWindows, err := cs.wc.getClusterWindows(
-		ctx,
-		clusterId,
-		getCoClusterIdsFromClusterQueryResults(coOccurringClusters),
-	)
 	err = cs.addCoOccurringClustersToCoClusterInfoMap(
-		clusterId,
 		coClusterInfoMap,
 		coOccurringClusters,
-		clusterWindows,
 		timeInfo,
 	)
 	return coClusterInfoMap, nil
@@ -249,7 +242,7 @@ func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 	metaMap := make([]client.MetaMap, len(missingCoClusterIds))
 	updateMap := make([]client.DocumentMap, len(missingCoClusterIds))
 	for i, missingCoClusterId := range missingCoClusterIds {
-		compositeKey := GetTotalCountId(clusterId, missingCoClusterId.CoClusterId)
+		compositeKey := getTotalCountId(clusterId, missingCoClusterId.CoClusterId)
 		meta, update := buildIncrementNonMatchedCoClusterIdsQuery(compositeKey)
 		metaMap[i] = meta
 		updateMap[i] = update
@@ -261,10 +254,8 @@ func (cs *ClusterTotalCountService) getIncrementMissesDetails(
 }
 
 func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
-	clusterId string,
 	coClusterInfoMap map[string]model.ClusterTotalCountInfo,
 	coClusters []model.ClusterQueryResult,
-	clusterWindows []model.ClusterWindowCount,
 	timeInfo model.TimeInfo,
 ) error {
 	for _, coCluster := range coClusters {
@@ -286,14 +277,10 @@ func (cs *ClusterTotalCountService) addCoOccurringClustersToCoClusterInfoMap(
 			}
 			coClusterToWindowMap = coClusterInfoMap[coCluster.ClusterId].ClusterWindowCountInfo
 		}
-		newWindowDetail := cs.wc.addWindowDataToCoClusterInfoMap(
+		cs.wc.addWindowDataToCoClusterInfoMap(
 			coClusterToWindowMap,
-			clusterWindows,
-			clusterId,
-			coCluster.ClusterId,
 			TDOA,
 		)
-		clusterWindows = append(clusterWindows, newWindowDetail)
 	}
 	return nil
 }
@@ -378,7 +365,7 @@ func getTimeRangeForBucket(timeInfo model.TimeInfo, bucket model.Bucket) (model.
 	}
 }
 
-func GetTotalCountId(clusterId, coClusterId string) string {
+func getTotalCountId(clusterId, coClusterId string) string {
 	return fmt.Sprintf("%s;%s", clusterId, coClusterId)
 }
 
@@ -410,10 +397,31 @@ func getCoClusterIdsFromMap(coClusterMapCount map[string]model.ClusterTotalCount
 	return coClusterIds
 }
 
-func getCoClusterIdsFromClusterQueryResults(clusters []model.ClusterQueryResult) []string {
-	coClusterIds := make([]string, len(clusters))
-	for i, cluster := range clusters {
-		coClusterIds[i] = cluster.ClusterId
+func ConvertCountDocsToCountEntries(docs []map[string]interface{}) ([]model.ClusterTotalCountEntry, error) {
+	var countEntries []model.ClusterTotalCountEntry
+	for _, doc := range docs {
+		countEntry := model.ClusterTotalCountEntry{}
+		coClusterId, ok := doc["co_cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert co_cluster_id to string")
+		}
+		countEntry.CoClusterId = coClusterId
+		clusterId, ok := doc["cluster_id"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert cluster_id to string")
+		}
+		countEntry.ClusterId = clusterId
+		totalInstances, ok := doc["total_instances"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances to float64")
+		}
+		countEntry.TotalInstances = int64(totalInstances)
+		totalInstancesWithCoCluster, ok := doc["total_instances_with_co_cluster"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert total_instances_with_co_cluster to float64")
+		}
+		countEntry.TotalInstancesWithCoCluster = int64(totalInstancesWithCoCluster)
+		countEntries = append(countEntries, countEntry)
 	}
-	return coClusterIds
+	return countEntries, nil
 }

@@ -7,10 +7,13 @@ import (
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
 	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
+	totalCountModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
 )
+
+const createdAt = "2021-08-01T00:00:00.000Z"
 
 func TestUpdateAnalytics(t *testing.T) {
 	if es == nil {
@@ -33,41 +36,68 @@ func TestUpdateAnalytics(t *testing.T) {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
 
-		countInput := []AnalyticsTestCluster{
+		totalCountInput := []totalCountModel.ClusterTotalCountEntry{
 			{
-				ClusterId:     "2",
-				CoClusterId:   "1",
-				Occurrences:   7,
-				CoOccurrences: 5,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "2",
+				CoClusterId:                 "1",
+				TotalInstances:              7,
+				TotalInstancesWithCoCluster: 5,
 			},
 			{
-				ClusterId:     "3",
-				CoClusterId:   "2",
-				Occurrences:   12,
-				CoOccurrences: 10,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "3",
+				CoClusterId:                 "2",
+				TotalInstances:              12,
+				TotalInstancesWithCoCluster: 10,
 			},
 			{
-				ClusterId:     "4",
-				CoClusterId:   "1",
-				Occurrences:   24,
-				CoOccurrences: 18,
-				MeanTDOA:      -5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "4",
+				CoClusterId:                 "1",
+				TotalInstances:              24,
+				TotalInstancesWithCoCluster: 18,
 			},
 		}
-		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.ClusterTotalCountIndexName)
+
+		windowCountInput := []totalCountModel.ClusterWindowCountEntry{
+			{
+				ClusterId:    "2",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  7,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "3",
+				CoClusterId:  "2",
+				Start:        0,
+				End:          1,
+				Occurrences:  12,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "4",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  24,
+				MeanTDOA:     -5.0,
+				VarianceTDOA: 0.0,
+			},
+		}
+
+		err = loadDataIntoElasticsearch(ac, totalCountInput, bootstrapper.ClusterTotalCountIndexName)
+		assert.NoError(t, err)
+		err = loadDataIntoElasticsearch(ac, windowCountInput, bootstrapper.ClusterWindowCountIndexName)
+		assert.NoError(t, err)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
-		if err != nil {
-			t.Errorf("Failed to update analytics: %v", err)
-		}
+		assert.NoError(t, err)
 		queryString, err := json.Marshal(getAllQuery())
-		if err != nil {
-			t.Errorf("Failed to marshal query: %v", err)
-		}
+		assert.NoError(t, err)
 		allClusterDocs, err := ac.Search(
 			context.Background(),
 			string(queryString),
@@ -106,33 +136,64 @@ func TestUpdateAnalytics(t *testing.T) {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
 
-		countInput := []AnalyticsTestCluster{
+		countInput := []totalCountModel.ClusterTotalCountEntry{
 			{
-				ClusterId:     "2",
-				CoClusterId:   "1",
-				Occurrences:   7,
-				CoOccurrences: 5,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "2",
+				CoClusterId:                 "1",
+				TotalInstances:              7,
+				TotalInstancesWithCoCluster: 5,
 			},
 			{
-				ClusterId:     "3",
-				CoClusterId:   "2",
-				Occurrences:   12,
-				CoOccurrences: 10,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "3",
+				CoClusterId:                 "2",
+				TotalInstances:              12,
+				TotalInstancesWithCoCluster: 10,
 			},
 			{
-				ClusterId:     "4",
-				CoClusterId:   "1",
-				Occurrences:   24,
-				CoOccurrences: 18,
-				MeanTDOA:      -5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "4",
+				CoClusterId:                 "1",
+				TotalInstances:              24,
+				TotalInstancesWithCoCluster: 18,
 			},
 		}
+
+		windowCountInput := []totalCountModel.ClusterWindowCountEntry{
+			{
+				ClusterId:    "2",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  7,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "3",
+				CoClusterId:  "2",
+				Start:        0,
+				End:          1,
+				Occurrences:  12,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "4",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  24,
+				MeanTDOA:     -5.0,
+				VarianceTDOA: 0.0,
+			},
+		}
+
 		err = loadDataIntoElasticsearch(ac, countInput, bootstrapper.ClusterTotalCountIndexName)
+		assert.NoError(t, err)
+		err = loadDataIntoElasticsearch(ac, windowCountInput, bootstrapper.ClusterWindowCountIndexName)
+		assert.NoError(t, err)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
@@ -142,33 +203,62 @@ func TestUpdateAnalytics(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to delete all documents: %v", err)
 		}
-		newCountInput := []AnalyticsTestCluster{
+		newCountInput := []totalCountModel.ClusterTotalCountEntry{
 			{
-				ClusterId:     "2",
-				CoClusterId:   "1",
-				Occurrences:   58,
-				CoOccurrences: 5,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "2",
+				CoClusterId:                 "1",
+				TotalInstances:              58,
+				TotalInstancesWithCoCluster: 5,
 			},
 			{
-				ClusterId:     "3",
-				CoClusterId:   "2",
-				Occurrences:   49,
-				CoOccurrences: 10,
-				MeanTDOA:      5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "3",
+				CoClusterId:                 "2",
+				TotalInstances:              49,
+				TotalInstancesWithCoCluster: 10,
 			},
 			{
-				ClusterId:     "4",
-				CoClusterId:   "1",
-				Occurrences:   47,
-				CoOccurrences: 18,
-				MeanTDOA:      -5.0,
-				VarianceTDOA:  0.0,
+				CreatedAt:                   createdAt,
+				ClusterId:                   "4",
+				CoClusterId:                 "1",
+				TotalInstances:              47,
+				TotalInstancesWithCoCluster: 18,
+			},
+		}
+		newWindowCountInput := []totalCountModel.ClusterWindowCountEntry{
+			{
+				ClusterId:    "2",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  58,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "3",
+				CoClusterId:  "2",
+				Start:        0,
+				End:          1,
+				Occurrences:  49,
+				MeanTDOA:     5.0,
+				VarianceTDOA: 0.0,
+			},
+			{
+				ClusterId:    "4",
+				CoClusterId:  "1",
+				Start:        0,
+				End:          1,
+				Occurrences:  47,
+				MeanTDOA:     -5.0,
+				VarianceTDOA: 0.0,
 			},
 		}
 		err = loadDataIntoElasticsearch(ac, newCountInput, bootstrapper.ClusterTotalCountIndexName)
+		assert.NoError(t, err)
+		err = loadDataIntoElasticsearch(ac, newWindowCountInput, bootstrapper.ClusterWindowCountIndexName)
+		assert.NoError(t, err)
 		err = as.UpdateAnalytics(context.Background(), []string{"1"})
 		if err != nil {
 			t.Errorf("Failed to update analytics: %v", err)
@@ -262,12 +352,10 @@ func TestUpdateAnalytics(t *testing.T) {
 }
 
 type AnalyticsTestCluster struct {
-	ClusterId     string  `json:"cluster_id"`
-	CoClusterId   string  `json:"co_cluster_id"`
-	Occurrences   int64   `json:"occurrences"`
-	CoOccurrences int64   `json:"co_occurrences"`
-	MeanTDOA      float64 `json:"mean_TDOA"`
-	VarianceTDOA  float64 `json:"variance_TDOA"`
+	ClusterId                   string `json:"cluster_id"`
+	CoClusterId                 string `json:"co_cluster_id"`
+	TotalInstances              int64  `json:"total_instances"`
+	TotalInstancesWithCoCluster int64  `json:"total_instances_with_co_cluster"`
 }
 
 type AnalyticsCluster struct {

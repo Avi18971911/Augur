@@ -13,18 +13,30 @@ import (
 var es *elasticsearch.Client
 var logger, _ = zap.NewDevelopment()
 
+const port = "9201"
+const dbTestContainerName = "test_elasticsearch"
+
 func TestMain(m *testing.M) {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatalf("Failed to create logger: %v", err)
 	}
 	ctx := context.Background()
-	_, cleanup, err := startElasticSearchContainer(ctx, logger)
+	uri, cleanup, err := startElasticSearchContainer(
+		ctx,
+		dbTestContainerName,
+		port,
+		logger,
+	)
 	defer cleanup()
 	if err != nil {
 		logger.Fatal("Failed to start container", zap.Error(err))
 	}
-	es, err = elasticsearch.NewDefaultClient()
+	es, err = elasticsearch.NewClient(
+		elasticsearch.Config{
+			Addresses: []string{uri},
+		},
+	)
 	if err != nil {
 		logger.Fatal("Failed to create elasticsearch client", zap.Error(err))
 	}

@@ -28,6 +28,9 @@ import (
 func main() {
 	logger, err := zap.NewProduction()
 	defer logger.Sync()
+	const countDataProcessorBucket = countModel.Bucket(2500)
+	const windowCountBucket = 50
+	const intervalForPipelineSeconds = 60
 
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
@@ -47,13 +50,14 @@ func main() {
 
 	ac := client.NewAugurClientImpl(es, client.Wait)
 	cls := clusterService.NewClusterService(ac, logger)
-	countService := count.NewClusterTotalCountService(ac, logger)
+	windowCountService := count.NewClusterWindowCountService(ac, windowCountBucket, logger)
+	countService := count.NewClusterTotalCountService(ac, windowCountService, logger)
 	eventBus := EventBus.New()
 
 	codp := count.NewCountDataProcessorService(
 		ac,
 		countService,
-		[]countModel.Bucket{20},
+		countDataProcessorBucket,
 		[]string{bootstrapper.SpanIndexName, bootstrapper.LogIndexName},
 		logger,
 	)
@@ -82,7 +86,7 @@ func main() {
 		eventBus,
 		logger,
 	)
-	ticker := time.NewTicker(15 * time.Second)
+	ticker := time.NewTicker(intervalForPipelineSeconds)
 	defer ticker.Stop()
 
 	err = dataPipeline.Start(ticker)

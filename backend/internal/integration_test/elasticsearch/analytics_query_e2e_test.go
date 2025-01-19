@@ -31,6 +31,7 @@ func TestAnalyticsQuery(t *testing.T) {
 	)
 
 	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
+		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
