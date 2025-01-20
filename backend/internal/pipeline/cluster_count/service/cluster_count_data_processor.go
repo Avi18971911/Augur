@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
-	countModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	countModel "github.com/Avi18971911/Augur/internal/pipeline/cluster_count/model"
 	"github.com/Avi18971911/Augur/internal/pipeline/data_processor/model"
 	"github.com/Avi18971911/Augur/internal/pipeline/data_processor/service"
 	"go.uber.org/zap"
