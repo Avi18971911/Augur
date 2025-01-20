@@ -176,9 +176,6 @@ func (cdp *CountDataProcessorService) bulkIndexWindowCount(
 	numBatches := int(math.Ceil(float64(len(metaMap)) / float64(batchSize)))
 	batches := make([]MetaAndDocumentMap, numBatches)
 	for i := range numBatches {
-		if i*batchSize >= len(documentMap) {
-			return nil
-		}
 		minIndex := i * batchSize
 		maxIndex := min((i+1)*batchSize, len(documentMap))
 		currentBatchMetaMap := metaMap[minIndex:maxIndex]
