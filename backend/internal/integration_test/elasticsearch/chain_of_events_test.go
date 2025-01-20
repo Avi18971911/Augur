@@ -553,16 +553,29 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
-		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
-		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
-		assert.NoError(t, err)
 		const maxLogsInChain = 8
+
+		stringQuery, err := json.Marshal(getAllQuery())
+		assert.NoError(t, err)
+		var querySize = 10000
+		logDocs, err := ac.Search(
+			context.Background(),
+			string(stringQuery),
+			[]string{bootstrapper.LogIndexName},
+			&querySize,
+		)
+		logs, err := helper.ConvertFromDocuments(logDocs)
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+		countOutput, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
+		assert.NoError(t, err)
+		err = an.UpdateAnalytics(context.Background(), countOutput)
+		assert.NoError(t, err)
 
 		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872458799Z")
 		assert.NoError(t, err)
@@ -595,16 +608,29 @@ func TestChainOfEvents(t *testing.T) {
 	})
 
 	t.Run("should be able to handle easy real data with the first log in sequence", func(t *testing.T) {
-		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
-		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
-		assert.NoError(t, err)
 		const maxLogsInChain = 8
+
+		stringQuery, err := json.Marshal(getAllQuery())
+		assert.NoError(t, err)
+		var querySize = 10000
+		logDocs, err := ac.Search(
+			context.Background(),
+			string(stringQuery),
+			[]string{bootstrapper.LogIndexName},
+			&querySize,
+		)
+		logs, err := helper.ConvertFromDocuments(logDocs)
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+		countOutput, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
+		assert.NoError(t, err)
+		err = an.UpdateAnalytics(context.Background(), countOutput)
+		assert.NoError(t, err)
 
 		createdAt, err := time.Parse(time.RFC3339Nano, "2024-12-18T14:33:40.872440799Z")
 		assert.NoError(t, err)

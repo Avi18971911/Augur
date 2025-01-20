@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
+	"github.com/Avi18971911/Augur/internal/otel_server/log/helper"
 	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
+	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
 	totalCountModel "github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	countService "github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
@@ -29,6 +32,14 @@ func TestUpdateAnalytics(t *testing.T) {
 		ac,
 		logger,
 	)
+
+	bucket := totalCountModel.Bucket(1000 * 30)
+	indices := []string{bootstrapper.LogIndexName}
+	cls := clusterService.NewClusterService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
+	cdp := clusterService.NewClusterDataProcessor(ac, cls, logger)
+	csp := countService.NewCountDataProcessorService(ac, cs, bucket, indices, logger)
 
 	t.Run("should insert the entire graph if it doesn't exist", func(t *testing.T) {
 		err := deleteAllDocuments(es)
@@ -305,18 +316,32 @@ func TestUpdateAnalytics(t *testing.T) {
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/difficult_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/difficult_inference/count_index.json")
+
+		const maxLogsInChain = 8
+		stringQuery, err := json.Marshal(getAllQuery())
+		assert.NoError(t, err)
+		var querySize = 10000
+		logDocs, err := ac.Search(
+			context.Background(),
+			string(stringQuery),
+			[]string{bootstrapper.LogIndexName},
+			&querySize,
+		)
+		logs, err := helper.ConvertFromDocuments(logDocs)
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+		countOutput, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
 		assert.NoError(t, err)
 
-		clusterIds := []string{
-			"15d28b23-8ac5-4097-9292-62294611d2b0",
-			"df3d8241-5da4-48e0-b5dc-fcd33c1744de",
-			"8cb0cdfd-5ddd-463e-ae61-e0e1efd1978e",
-			"593bdd0c-eba9-4878-a6f6-86a59ce78edb",
-			"5fc97189-716d-4d79-a157-b6a8261c501e",
-			"7ce1d5fb-1349-4a41-8181-d54e3e69a1ea",
-			"009c18b9-afd1-40cc-8d83-fd810a5ce4ce",
-			"2d0ea4ac-61ce-439d-8b83-4804557f523e",
+		clusterIdsSet := make(map[string]bool)
+		for _, cluster := range countOutput {
+			clusterIdsSet[cluster] = true
+		}
+
+		clusterIds := make([]string, 0, len(clusterIdsSet))
+		for clusterId := range clusterIdsSet {
+			clusterIds = append(clusterIds, clusterId)
 		}
 		err = as.UpdateAnalytics(context.Background(), clusterIds)
 		assert.NoError(t, err)
@@ -332,9 +357,12 @@ func TestUpdateAnalytics(t *testing.T) {
 		assert.NoError(t, err)
 		clusters, err := convertClusterDocs(allClusterDocs)
 		assert.NoError(t, err)
-		assert.Equal(t, 8, len(clusters))
+		assert.Equal(t, len(clusterIds), len(clusters))
 		graph := make(map[string]map[string]bool)
+		causesClustersMap := make(map[int]bool)
+		// check for a basic cycle
 		for _, cluster := range clusters {
+			causesClustersMap[len(cluster.CausedClusters)] = true
 			graph[cluster.ClusterId] = make(map[string]bool)
 			for _, causedCluster := range cluster.CausedClusters {
 				graph[cluster.ClusterId][causedCluster] = true
@@ -348,14 +376,11 @@ func TestUpdateAnalytics(t *testing.T) {
 				}
 			}
 		}
+		// ensure that there is at least 1 of each cluster causing 'n' number of other clusters
+		for i := range maxLogsInChain {
+			assert.True(t, causesClustersMap[i])
+		}
 	})
-}
-
-type AnalyticsTestCluster struct {
-	ClusterId                   string `json:"cluster_id"`
-	CoClusterId                 string `json:"co_cluster_id"`
-	TotalInstances              int64  `json:"total_instances"`
-	TotalInstancesWithCoCluster int64  `json:"total_instances_with_co_cluster"`
 }
 
 type AnalyticsCluster struct {
