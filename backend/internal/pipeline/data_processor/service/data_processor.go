@@ -12,7 +12,7 @@ import (
 
 const timeout = 10 * time.Second
 const searchAfterTimeout = 60 * time.Second
-const dpWorkerCount = 5
+const dpWorkerCount = 4
 
 var querySize = 1000
 
@@ -84,7 +84,7 @@ func GetResultsWithWorkers[
 ](
 	ctx context.Context,
 	input []inputType,
-	inputFunction func(ctx context.Context, input inputType) (outputType, string, error),
+	inputFunction func(ctx context.Context, input inputType) (outputType, error),
 	workerCount int,
 	logger *zap.Logger,
 ) chan outputType {
@@ -107,9 +107,9 @@ func GetResultsWithWorkers[
 			defer wg.Done()
 			for input := range inputChannel {
 				csCtx, csCancel := context.WithTimeout(ctx, timeout)
-				result, errorMsg, err := inputFunction(csCtx, input)
+				result, err := inputFunction(csCtx, input)
 				if err != nil {
-					logger.Error(errorMsg, zap.Error(err))
+					logger.Error("error encountered during GetResultsWithWorkers", zap.Error(err))
 				} else {
 					resultChannel <- result
 				}
