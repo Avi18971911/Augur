@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/bootstrapper"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
+	"github.com/Avi18971911/Augur/internal/otel_server/log/helper"
+	"github.com/Avi18971911/Augur/internal/pipeline/analytics/service"
+	clusterService "github.com/Avi18971911/Augur/internal/pipeline/cluster/service"
+	"github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	countService "github.com/Avi18971911/Augur/internal/pipeline/count/service"
 	"github.com/Avi18971911/Augur/internal/query_server/handler"
 	"github.com/Avi18971911/Augur/internal/query_server/service/inference"
 	"github.com/stretchr/testify/assert"
@@ -25,20 +30,45 @@ func TestAnalyticsQuery(t *testing.T) {
 		t.Errorf("Failed to create logger: %v", err)
 	}
 
-	as := inference.NewInferenceQueryService(
+	an := service.NewAnalyticsService(
 		ac,
 		logger,
 	)
 
+	as := inference.NewInferenceQueryService(
+		ac,
+		logger,
+	)
+	bucket := model.Bucket(1000 * 30)
+	indices := []string{bootstrapper.LogIndexName}
+	cls := clusterService.NewClusterService(ac, logger)
+	wc := countService.NewClusterWindowCountService(ac, 50, logger)
+	cs := countService.NewClusterTotalCountService(ac, wc, logger)
+	cdp := clusterService.NewClusterDataProcessor(ac, cls, logger)
+	csp := countService.NewCountDataProcessorService(ac, cs, bucket, indices, logger)
+
 	t.Run("should be able to handle easy real data with the last log in sequence", func(t *testing.T) {
-		t.Skip("Uses real data, which is currently outdated")
 		err := deleteAllDocuments(es)
 		assert.NoError(t, err)
 		err = loadTestDataFromFile(es, bootstrapper.LogIndexName, "data/easy_inference/log_index.json")
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterGraphNodeIndexName, "data/easy_inference/cluster_index.json")
+
+		stringQuery, err := json.Marshal(getAllQuery())
 		assert.NoError(t, err)
-		err = loadTestDataFromFile(es, bootstrapper.ClusterTotalCountIndexName, "data/easy_inference/count_index.json")
+		var querySize = 10000
+		logDocs, err := ac.Search(
+			context.Background(),
+			string(stringQuery),
+			[]string{bootstrapper.LogIndexName},
+			&querySize,
+		)
+		logs, err := helper.ConvertFromDocuments(logDocs)
+		spanOrLogData := convertLogToSpanOrLogData(logs)
+		clusterOutput, err := cdp.ClusterData(context.Background(), spanOrLogData)
+		assert.NoError(t, err)
+		countOutput, err := csp.IncreaseCountForOverlapsAndMisses(context.Background(), clusterOutput)
+		assert.NoError(t, err)
+		err = an.UpdateAnalytics(context.Background(), countOutput)
 		assert.NoError(t, err)
 
 		const numExpectedLogs = 8

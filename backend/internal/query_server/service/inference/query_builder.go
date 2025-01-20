@@ -28,7 +28,7 @@ func getPrecedingClusterIdsQuery(clusterId string) map[string]interface{} {
 	}
 }
 
-func getCountClusterDetailsQuery(clusterId string, coClusterId string) map[string]interface{} {
+func getClusterTotalCountDetailsQuery(clusterId string, coClusterId string) map[string]interface{} {
 	return map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -43,6 +43,35 @@ func getCountClusterDetailsQuery(clusterId string, coClusterId string) map[strin
 							"co_cluster_id": coClusterId,
 						},
 					},
+				},
+			},
+		},
+	}
+}
+
+func getClusterWindowCountBestCandidates(clusterId string, coClusterId string) map[string]interface{} {
+	return map[string]interface{}{
+		"size": 1,
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"term": map[string]interface{}{
+							"cluster_id": clusterId,
+						},
+					},
+					{
+						"term": map[string]interface{}{
+							"co_cluster_id": coClusterId,
+						},
+					},
+				},
+			},
+		},
+		"sort": []map[string]interface{}{
+			{
+				"occurrences": map[string]interface{}{
+					"order": "desc",
 				},
 			},
 		},
