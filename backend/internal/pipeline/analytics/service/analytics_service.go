@@ -15,7 +15,7 @@ import (
 
 const timeout = 10 * time.Second
 const minimumRatio = 0.6
-const querySize = 10000
+const querySize = 1000
 
 type AnalyticsService struct {
 	ac     client.AugurClient
@@ -147,6 +147,24 @@ func (as *AnalyticsService) getRelatedClusters(
 	ctx context.Context,
 	clusterId string,
 ) ([]model.CountCluster, error) {
+	totalCountDetails, err := as.getRelatedClusterTotalCountDetails(ctx, clusterId)
+	if err != nil {
+		return nil, err
+	}
+	totalWindowDetails, err := as.getRelatedClusterWindowCountDetails(ctx, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	clusters, err := mergeCountAndWindowDetails(totalCountDetails, totalWindowDetails)
+	prunedClusters := pruneClusters(clusters)
+	return prunedClusters, nil
+}
+
+func (as *AnalyticsService) getRelatedClusterTotalCountDetails(
+	ctx context.Context,
+	clusterId string,
+) ([]totalCountModel.ClusterTotalCountEntry, error) {
 	queryJSON, err := json.Marshal(buildGetRelatedClustersQuery(clusterId))
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal get related cluster query: %w", err)
@@ -157,76 +175,76 @@ func (as *AnalyticsService) getRelatedClusters(
 	docs, err := as.ac.Search(
 		searchCtx,
 		string(queryJSON),
-		[]string{bootstrapper.ClusterTotalCountIndexName, bootstrapper.ClusterWindowCountIndexName},
+		[]string{bootstrapper.ClusterTotalCountIndexName},
 		&localQuerySize,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search for related clusters: %w", err)
 	}
-	clusters, err := ParseClusters(docs)
-	prunedClusters := pruneClusters(clusters)
-	return prunedClusters, nil
-}
-
-func ParseClusters(docs []map[string]interface{}) ([]model.CountCluster, error) {
-	totalCountDocs := make(map[string]totalCountModel.ClusterTotalCountEntry)
-	windowCountDocs := make(map[string][]totalCountModel.ClusterWindowCountEntry)
-	for _, doc := range docs {
-		if docIsTotalCount(doc) {
-			resultList, err := service.ConvertCountDocsToCountEntries([]map[string]interface{}{doc})
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert count docs to count entries: %w", err)
-			}
-			totalCountDoc := resultList[0]
-			totalCountDocs[totalCountDoc.ClusterId] = totalCountDoc
-		} else {
-			resultList, err := service.ConvertCountDocsToWindowCountEntries([]map[string]interface{}{doc})
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert count docs to window count entries: %w", err)
-			}
-			windowCountDoc := resultList[0]
-			if _, ok := windowCountDocs[windowCountDoc.ClusterId]; !ok {
-				windowCountDocs[windowCountDoc.ClusterId] = make([]totalCountModel.ClusterWindowCountEntry, 0)
-			}
-			windowCountDocs[windowCountDoc.ClusterId] = append(
-				windowCountDocs[windowCountDoc.ClusterId],
-				windowCountDoc,
-			)
-		}
-	}
-	clusters, err := FindMostProbableMatchingWindow(totalCountDocs, windowCountDocs)
+	clusterTotalCountDetails, err := service.ConvertCountDocsToCountEntries(docs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find most probable matching window: %w", err)
+		return nil, fmt.Errorf("failed to convert count docs to count entries: %w", err)
 	}
-	return clusters, nil
+	return clusterTotalCountDetails, nil
 }
 
-func FindMostProbableMatchingWindow(
-	totalCountDocs map[string]totalCountModel.ClusterTotalCountEntry,
-	windowCountDocs map[string][]totalCountModel.ClusterWindowCountEntry,
+func (as *AnalyticsService) getRelatedClusterWindowCountDetails(
+	ctx context.Context,
+	clusterId string,
+) ([]totalCountModel.ClusterWindowCountEntry, error) {
+	queryJSON, err := json.Marshal(buildGetRelatedClusterWindowsQuery(clusterId, querySize))
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal get related cluster window query: %w", err)
+	}
+	var localQuerySize = querySize
+	searchCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	docs, err := as.ac.SearchAggregation(
+		searchCtx,
+		string(queryJSON),
+		bootstrapper.ClusterWindowCountIndexName,
+		&localQuerySize,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search for related clusters: %w", err)
+	}
+	clusterWindowCountDetails, err := service.ConvertCountDocsToWindowCountEntries(docs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert count docs to window count entries: %w", err)
+	}
+	return clusterWindowCountDetails, nil
+}
+
+func mergeCountAndWindowDetails(
+	totalCountDetails []totalCountModel.ClusterTotalCountEntry,
+	totalWindowDetails []totalCountModel.ClusterWindowCountEntry,
 ) ([]model.CountCluster, error) {
-	clusters := make([]model.CountCluster, 0, len(totalCountDocs))
-	for clusterId, totalCountDoc := range totalCountDocs {
-		windowCountDoc, ok := windowCountDocs[clusterId]
-		if !ok {
-			continue
+	clusterMap := make(map[string]model.CountCluster)
+	for _, totalCountDetail := range totalCountDetails {
+		clusterMap[totalCountDetail.ClusterId] = model.CountCluster{
+			ClusterId:     totalCountDetail.ClusterId,
+			Occurrences:   totalCountDetail.TotalInstances,
+			CoOccurrences: totalCountDetail.TotalInstancesWithCoCluster,
 		}
-		if len(windowCountDoc) == 0 {
-			return nil, fmt.Errorf("no window count docs found for cluster: %s", clusterId)
-		}
-		maxIndexOfOccurrences := 0
-		for i, windowDoc := range windowCountDoc {
-			if windowDoc.Occurrences > windowCountDoc[maxIndexOfOccurrences].Occurrences {
-				maxIndexOfOccurrences = i
+	}
+	for _, totalWindowDetail := range totalWindowDetails {
+		if cluster, ok := clusterMap[totalWindowDetail.ClusterId]; !ok {
+			return nil, fmt.Errorf("cluster not found in total count details: %s", totalWindowDetail.ClusterId)
+		} else {
+			clusterMap[totalWindowDetail.ClusterId] = model.CountCluster{
+				ClusterId:     cluster.ClusterId,
+				Occurrences:   cluster.Occurrences,
+				CoOccurrences: cluster.CoOccurrences,
+				MeanTDOA:      totalWindowDetail.MeanTDOA,
+				VarianceTDOA:  totalWindowDetail.VarianceTDOA,
 			}
 		}
-		clusters = append(clusters, model.CountCluster{
-			ClusterId:     clusterId,
-			Occurrences:   totalCountDoc.TotalInstances,
-			CoOccurrences: totalCountDoc.TotalInstancesWithCoCluster,
-			MeanTDOA:      windowCountDoc[maxIndexOfOccurrences].MeanTDOA,
-			VarianceTDOA:  windowCountDoc[maxIndexOfOccurrences].VarianceTDOA,
-		})
+	}
+	clusters := make([]model.CountCluster, len(clusterMap))
+	i := 0
+	for _, cluster := range clusterMap {
+		clusters[i] = cluster
+		i++
 	}
 	return clusters, nil
 }
@@ -279,9 +297,4 @@ func getKeys(m map[string]bool) []string {
 		result = append(result, k)
 	}
 	return result
-}
-
-func docIsTotalCount(doc map[string]interface{}) bool {
-	_, ok := doc["total_instances"]
-	return ok
 }

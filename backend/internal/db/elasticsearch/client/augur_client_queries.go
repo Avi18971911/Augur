@@ -51,6 +51,45 @@ func (a *AugurClientImpl) Search(
 	return results, nil
 }
 
+func (a *AugurClientImpl) SearchAggregation(
+	ctx context.Context,
+	query string,
+	index string,
+	queryResultSize *int,
+) ([]map[string]interface{}, error) {
+	res, err := a.es.Search(
+		a.es.Search.WithContext(ctx),
+		a.es.Search.WithIndex(index),
+		a.es.Search.WithBody(strings.NewReader(query)),
+		a.es.Search.WithPretty(),
+		a.es.Search.WithSize(getQuerySize(queryResultSize)),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("failed to execute query: %s", res.String())
+	}
+
+	var esResponse model.EsAggregationResponse
+	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	var results []map[string]interface{}
+	for _, bucket := range esResponse.Aggregations.TopTagsAggregation.Buckets {
+		for _, aggHit := range bucket.TopHits.Hits.Hits {
+			results = append(results, aggHit.Source)
+			results[len(results)-1]["_id"] = aggHit.ID
+		}
+	}
+
+	return results, nil
+}
+
 func (a *AugurClientImpl) Count(
 	ctx context.Context,
 	query string,

@@ -38,6 +38,13 @@ type AugurClient interface {
 		searchAfterParams *SearchAfterParams,
 		queryResultSize *int,
 	) <-chan SearchAfterResult
+	// SearchAggregation searches for documents in the index and returns prescribed aggregation results.
+	SearchAggregation(
+		ctx context.Context,
+		query string,
+		index string,
+		queryResultSize *int,
+	) ([]map[string]interface{}, error)
 	// BulkUpdate updates multiple documents in the same index
 	// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
 	BulkUpdate(
