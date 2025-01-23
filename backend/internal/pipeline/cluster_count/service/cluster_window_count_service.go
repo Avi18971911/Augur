@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/Avi18971911/Augur/internal/db/elasticsearch/client"
-	"github.com/Avi18971911/Augur/internal/pipeline/count/model"
+	"github.com/Avi18971911/Augur/internal/pipeline/cluster_count/model"
 	"go.uber.org/zap"
 	"math"
 	"strconv"

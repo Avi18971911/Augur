@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const workerCount = 50
+const workerCount = 4
 const timeout = 10 * time.Second
 
 type ClusterDataProcessor struct {
@@ -64,12 +64,12 @@ func (cdp *ClusterDataProcessor) clusterDataIntoLikeIds(
 		func(
 			ctx context.Context,
 			input clusterModel.ClusterInput,
-		) ([]clusterModel.ClusterOutput, string, error) {
+		) ([]clusterModel.ClusterOutput, error) {
 			outputList, err := cdp.cls.GetLikeData(ctx, input)
 			if err != nil {
-				return nil, clusterErrorMsg, err
+				return nil, fmt.Errorf("%s: %w", clusterErrorMsg, err)
 			}
-			return outputList, "", nil
+			return outputList, nil
 		},
 		workerCount,
 		cdp.logger,
