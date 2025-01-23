@@ -26,11 +26,11 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			predecessors[i].Id = mleSequence[predecessor.ClusterId].LogOrSpanData.Id
 			predecessors[i].TDOA = predecessor.TDOA
 		}
-		var spanDTO = SpanDTO{}
-		var logDTO = LogDTO{}
+		var spanDTO *SpanDTO = nil
+		var logDTO *LogDTO = nil
 		if node.LogOrSpanData.SpanDetails != nil {
 			spanDTO = toSpanDTO(node)
-		} else {
+		} else if node.LogOrSpanData.LogDetails != nil {
 			logDTO = toLogDTO(node)
 		}
 
@@ -39,8 +39,8 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			ClusterId:    node.LogOrSpanData.ClusterId,
 			Successors:   successors,
 			Predecessors: predecessors,
-			SpanDTO:      &spanDTO,
-			LogDTO:       &logDTO,
+			SpanDTO:      spanDTO,
+			LogDTO:       logDTO,
 		}
 	}
 	return ChainOfEventsResponseDTO{
@@ -48,37 +48,45 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 	}
 }
 
-func toSpanDTO(node *model.ClusterNode) SpanDTO {
-	return SpanDTO{
-		Id:           node.LogOrSpanData.SpanDetails.Id,
-		CreatedAt:    node.LogOrSpanData.SpanDetails.CreatedAt,
-		SpanID:       node.LogOrSpanData.SpanDetails.SpanID,
-		ParentSpanID: node.LogOrSpanData.SpanDetails.ParentSpanID,
-		TraceID:      node.LogOrSpanData.SpanDetails.TraceID,
-		Service:      node.LogOrSpanData.SpanDetails.Service,
-		StartTime:    node.LogOrSpanData.SpanDetails.StartTime,
-		EndTime:      node.LogOrSpanData.SpanDetails.EndTime,
-		ActionName:   node.LogOrSpanData.SpanDetails.ActionName,
-		SpanKind:     node.LogOrSpanData.SpanDetails.SpanKind,
-		ClusterEvent: node.LogOrSpanData.SpanDetails.ClusterEvent,
-		ClusterId:    node.LogOrSpanData.SpanDetails.ClusterId,
-		Attributes:   node.LogOrSpanData.SpanDetails.Attributes,
-		Events:       mapModelToSpanEventDTO(node.LogOrSpanData.SpanDetails.Events),
+func toSpanDTO(node *model.ClusterNode) *SpanDTO {
+	var ret *SpanDTO = nil
+	if node.LogOrSpanData.SpanDetails != nil {
+		ret = &SpanDTO{
+			Id:           node.LogOrSpanData.SpanDetails.Id,
+			CreatedAt:    node.LogOrSpanData.SpanDetails.CreatedAt,
+			SpanID:       node.LogOrSpanData.SpanDetails.SpanID,
+			ParentSpanID: node.LogOrSpanData.SpanDetails.ParentSpanID,
+			TraceID:      node.LogOrSpanData.SpanDetails.TraceID,
+			Service:      node.LogOrSpanData.SpanDetails.Service,
+			StartTime:    node.LogOrSpanData.SpanDetails.StartTime,
+			EndTime:      node.LogOrSpanData.SpanDetails.EndTime,
+			ActionName:   node.LogOrSpanData.SpanDetails.ActionName,
+			SpanKind:     node.LogOrSpanData.SpanDetails.SpanKind,
+			ClusterEvent: node.LogOrSpanData.SpanDetails.ClusterEvent,
+			ClusterId:    node.LogOrSpanData.SpanDetails.ClusterId,
+			Attributes:   node.LogOrSpanData.SpanDetails.Attributes,
+			Events:       mapModelToSpanEventDTO(node.LogOrSpanData.SpanDetails.Events),
+		}
 	}
+	return ret
 }
 
-func toLogDTO(node *model.ClusterNode) LogDTO {
-	return LogDTO{
-		Id:        node.LogOrSpanData.LogDetails.Id,
-		CreatedAt: node.LogOrSpanData.LogDetails.CreatedAt,
-		Timestamp: node.LogOrSpanData.LogDetails.Timestamp,
-		Severity:  string(node.LogOrSpanData.LogDetails.Severity),
-		Message:   node.LogOrSpanData.LogDetails.Message,
-		Service:   node.LogOrSpanData.LogDetails.Service,
-		TraceId:   node.LogOrSpanData.LogDetails.TraceId,
-		SpanId:    node.LogOrSpanData.LogDetails.SpanId,
-		ClusterId: node.LogOrSpanData.LogDetails.ClusterId,
+func toLogDTO(node *model.ClusterNode) *LogDTO {
+	var ret *LogDTO = nil
+	if node.LogOrSpanData.LogDetails != nil {
+		ret = &LogDTO{
+			Id:        node.LogOrSpanData.LogDetails.Id,
+			CreatedAt: node.LogOrSpanData.LogDetails.CreatedAt,
+			Timestamp: node.LogOrSpanData.LogDetails.Timestamp,
+			Severity:  string(node.LogOrSpanData.LogDetails.Severity),
+			Message:   node.LogOrSpanData.LogDetails.Message,
+			Service:   node.LogOrSpanData.LogDetails.Service,
+			TraceId:   node.LogOrSpanData.LogDetails.TraceId,
+			SpanId:    node.LogOrSpanData.LogDetails.SpanId,
+			ClusterId: node.LogOrSpanData.LogDetails.ClusterId,
+		}
 	}
+	return ret
 }
 
 func mapModelToSpanEventDTO(events []spanModel.SpanEvent) []SpanEventDTO {
