@@ -7,7 +7,7 @@ import (
 )
 
 func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) ChainOfEventsResponseDTO {
-	// TODO: Reconcile the fact that there may not be log or span data
+	// Graph -> ClusterID -> ChainOfEventsNodeDTO
 	graph := make(map[string]ChainOfEventsNodeDTO)
 	for _, node := range mleSequence {
 		successors := make([]EdgeDTO, len(node.Successors))
@@ -15,7 +15,7 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			if mleSequence[successor.ClusterId] == nil {
 				continue
 			}
-			successors[i].Id = mleSequence[successor.ClusterId].LogOrSpanData.Id
+			successors[i].ClusterId = successor.ClusterId
 			successors[i].TDOA = successor.TDOA
 		}
 		predecessors := make([]EdgeDTO, len(node.Predecessors))
@@ -23,7 +23,7 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			if mleSequence[predecessor.ClusterId] == nil {
 				continue
 			}
-			predecessors[i].Id = mleSequence[predecessor.ClusterId].LogOrSpanData.Id
+			predecessors[i].ClusterId = predecessor.ClusterId
 			predecessors[i].TDOA = predecessor.TDOA
 		}
 		var spanDTO *SpanDTO = nil
@@ -34,8 +34,7 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 			logDTO = toLogDTO(node)
 		}
 
-		graph[node.LogOrSpanData.Id] = ChainOfEventsNodeDTO{
-			Id:           node.LogOrSpanData.Id,
+		graph[node.LogOrSpanData.ClusterId] = ChainOfEventsNodeDTO{
 			ClusterId:    node.LogOrSpanData.ClusterId,
 			Successors:   successors,
 			Predecessors: predecessors,
