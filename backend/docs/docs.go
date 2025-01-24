@@ -99,17 +99,12 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "cluster_id",
-                "id",
                 "predecessors",
                 "successors"
             ],
             "properties": {
                 "cluster_id": {
                     "description": "The Cluster ID of the cluster belonging to the log or span data",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "The ID of the log or span data",
                     "type": "string"
                 },
                 "log_dto": {
@@ -186,12 +181,12 @@ const docTemplate = `{
         "handler.EdgeDTO": {
             "type": "object",
             "required": [
-                "id",
+                "cluster_id",
                 "tdoa"
             ],
             "properties": {
-                "id": {
-                    "description": "The ID of the associated log or span data",
+                "cluster_id": {
+                    "description": "The Cluster ID of the associated log or span data",
                     "type": "string"
                 },
                 "tdoa": {
