@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/repository"
-	"fake_svc/fake_server/pkg/server/router"
-	"fake_svc/fake_server/pkg/service"
-	"fake_svc/fake_server/pkg/transactional"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/repository"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/server/router"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/transactional"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/bridges/otellogrus"
 	"go.opentelemetry.io/otel"

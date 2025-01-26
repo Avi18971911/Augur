@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/service/model"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service/model"
 )
 
 type AccountRepository interface {

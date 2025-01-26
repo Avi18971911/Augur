@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/fake_server_tracer"
-	"fake_svc/fake_server/pkg/service/model"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/fake_server_tracer"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service/model"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
 	"time"

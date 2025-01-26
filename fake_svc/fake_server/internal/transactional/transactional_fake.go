@@ -2,7 +2,7 @@ package transactional
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/fake_server_tracer"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/fake_server_tracer"
 	"github.com/sirupsen/logrus"
 	"time"
 )
