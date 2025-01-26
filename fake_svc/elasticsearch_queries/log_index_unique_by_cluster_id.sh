@@ -1,4 +1,4 @@
-curl -X GET "http://localhost:9200/log_index/_search" -H "Content-Type: application/json" -d'
+curl -X GET "http://localhost:9200/log_index/_search?pretty" -H "Content-Type: application/json" -d'
 {
     "size": 0,
   "aggs": {

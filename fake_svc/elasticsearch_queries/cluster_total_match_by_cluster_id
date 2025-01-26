@@ -1,0 +1,10 @@
+curl -X GET "http://localhost:9201/cluster_total_count_index/_search" -H "Content-Type: application/json" -d'
+{
+  "query" : {
+    "term" : {
+      "co_cluster_id" : {
+        "value" : "cb84c0c4-2036-4ba2-9383-33c3ca5ff6dc"
+      }
+    }
+  }
+}'
