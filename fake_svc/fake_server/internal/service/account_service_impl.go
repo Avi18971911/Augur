@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"errors"
-	"fake_svc/fake_server/pkg/fake_server_tracer"
-	"fake_svc/fake_server/pkg/repository"
-	"fake_svc/fake_server/pkg/service/model"
-	"fake_svc/fake_server/pkg/transactional"
 	"fmt"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/fake_server_tracer"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/repository"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service/model"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/transactional"
 	"github.com/sirupsen/logrus"
 	"time"
 )

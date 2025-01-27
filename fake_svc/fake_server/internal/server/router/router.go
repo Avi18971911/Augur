@@ -2,8 +2,8 @@ package router
 
 import (
 	"context"
-	"fake_svc/fake_server/pkg/server/handler"
-	"fake_svc/fake_server/pkg/service"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/server/handler"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"

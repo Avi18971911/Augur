@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fake_svc/fake_server/pkg/service/model"
+	"github.com/Avi18971911/Augur/fake_svc/fake_server/internal/service/model"
 )
 
 func accountDetailsToDTO(tx *model.AccountDetailsOutput) AccountDetailsResponseDTO {
