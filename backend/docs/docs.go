@@ -181,8 +181,7 @@ const docTemplate = `{
         "handler.EdgeDTO": {
             "type": "object",
             "required": [
-                "cluster_id",
-                "tdoa"
+                "cluster_id"
             ],
             "properties": {
                 "cluster_id": {
@@ -190,7 +189,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tdoa": {
-                    "description": "The TDOA of the associated log or span data assuming a log or span was successfully inferred",
+                    "description": "The TDOA of the associated log or span data assuming a log or span was successfully inferred. Will be null if no successful inference was done.",
                     "type": "number"
                 }
             }

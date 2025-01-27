@@ -56,11 +56,11 @@ const ChainOfEventsGraph: React.FC<ChainOfEventsGraphProps> = ({ chainOfEvents }
         const { graph } = chainOfEvents;
         const nodes = Object.values(graph);
         const edges = nodes.flatMap(
-            node => node.predecessors.map(predecessor => ({ source: predecessor, target: node.id }))
+            node => node.predecessors.map(predecessor => ({ source: predecessor, target: node.clusterId }))
         );
         return {
             nodes: nodes.map(node => ({
-                id: node.id,
+                id: node.clusterId,
                 label: getDetailsFromId(node.clusterId),
                 name: getDetailsFromId(node.clusterId),
                 color: node.clusterId === chainOfEvents.rootClusterId ? "red" : "blue"

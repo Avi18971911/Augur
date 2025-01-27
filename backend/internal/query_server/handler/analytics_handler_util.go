@@ -6,6 +6,10 @@ import (
 	"github.com/Avi18971911/Augur/internal/query_server/service/inference/model"
 )
 
+func hasInferenceSucceeded(node *model.ClusterNode) bool {
+	return node.LogOrSpanData.SpanDetails != nil || node.LogOrSpanData.LogDetails != nil
+}
+
 func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) ChainOfEventsResponseDTO {
 	// Graph -> ClusterID -> ChainOfEventsNodeDTO
 	graph := make(map[string]ChainOfEventsNodeDTO)
@@ -16,7 +20,11 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 				continue
 			}
 			successors[i].ClusterId = successor.ClusterId
-			successors[i].TDOA = successor.TDOA
+			if hasInferenceSucceeded(mleSequence[successor.ClusterId]) {
+				successors[i].TDOA = &successor.TDOA
+			} else {
+				successors[i].TDOA = nil
+			}
 		}
 		predecessors := make([]EdgeDTO, len(node.Predecessors))
 		for i, predecessor := range node.Predecessors {
@@ -24,7 +32,11 @@ func mapChainOfEventsResponseToDTO(mleSequence map[string]*model.ClusterNode) Ch
 				continue
 			}
 			predecessors[i].ClusterId = predecessor.ClusterId
-			predecessors[i].TDOA = predecessor.TDOA
+			if hasInferenceSucceeded(mleSequence[predecessor.ClusterId]) {
+				predecessors[i].TDOA = &predecessor.TDOA
+			} else {
+				predecessors[i].TDOA = nil
+			}
 		}
 		var spanDTO *SpanDTO = nil
 		var logDTO *LogDTO = nil

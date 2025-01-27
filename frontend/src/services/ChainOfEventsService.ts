@@ -32,8 +32,12 @@ const mapChainOfEventsNodeDTOToChainOfEventsGraphNode = (
 
 const findSmallestEdge = (edges: HandlerEdgeDTO[], successor: boolean) => {
     if (successor) {
-        return edges.length > 0 ? edges.reduce((prev, curr) => prev.tdoa < curr.tdoa ? prev : curr).id : undefined;
+        return edges.length > 0 ? edges.reduce(
+            (prev, curr) => ((prev?.tdoa) && prev.tdoa < (curr.tdoa ?? 0))  ? prev : curr
+        ).clusterId : undefined;
     } else {
-        return edges.length > 0 ? edges.reduce((prev, curr) => prev.tdoa > curr.tdoa ? prev : curr).id : undefined;
+        return edges.length > 0 ? edges.reduce(
+            (prev, curr) => ((prev?.tdoa) && prev.tdoa > (curr.tdoa ?? 0)) ? prev : curr
+        ).clusterId : undefined;
     }
 }

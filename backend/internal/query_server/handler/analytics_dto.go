@@ -94,6 +94,6 @@ type ChainOfEventsNodeDTO struct {
 type EdgeDTO struct {
 	// The Cluster ID of the associated log or span data
 	ClusterId string `json:"cluster_id" validate:"required"`
-	// The TDOA of the associated log or span data assuming a log or span was successfully inferred
-	TDOA float64 `json:"tdoa" validate:"required"`
+	// The TDOA of the associated log or span data assuming a log or span was successfully inferred. Will be null if no successful inference was done.
+	TDOA *float64 `json:"tdoa"`
 }
