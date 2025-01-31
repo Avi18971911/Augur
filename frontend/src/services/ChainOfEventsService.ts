@@ -4,7 +4,7 @@ import {mapLogDtoToLog, mapSpanDTOToSpan} from "./LogOrSpanService.ts";
 
 export const mapChainOfEventsResponseToChainOfEventsGraph = (
     response: HandlerChainOfEventsResponseDTO,
-    rootId: string,
+    rootClusterId: string,
 ): ChainOfEventsGraph => {
     const ret: Record<string, ChainOfEventsGraphNode> = {};
     Object.entries(response.graph).forEach(([key, value]) => {
@@ -12,7 +12,7 @@ export const mapChainOfEventsResponseToChainOfEventsGraph = (
     })
     return {
         graph: ret,
-        rootId: rootId
+        rootClusterId: rootClusterId
     };
 }
 
@@ -22,7 +22,6 @@ const mapChainOfEventsNodeDTOToChainOfEventsGraphNode = (
     const smallestPredecessor = findSmallestEdge(node.predecessors, false);
     const smallestSuccessor = findSmallestEdge(node.successors, true);
     return {
-        id: node.id,
         clusterId: node.clusterId,
         log: node.logDto ? mapLogDtoToLog(node.logDto) : undefined,
         span: node.spanDto ? mapSpanDTOToSpan(node.spanDto) : undefined,
@@ -33,8 +32,12 @@ const mapChainOfEventsNodeDTOToChainOfEventsGraphNode = (
 
 const findSmallestEdge = (edges: HandlerEdgeDTO[], successor: boolean) => {
     if (successor) {
-        return edges.length > 0 ? edges.reduce((prev, curr) => prev.tdoa < curr.tdoa ? prev : curr).id : undefined;
+        return edges.length > 0 ? edges.reduce(
+            (prev, curr) => ((prev?.tdoa) && prev.tdoa < (curr.tdoa ?? 0))  ? prev : curr
+        ).clusterId : undefined;
     } else {
-        return edges.length > 0 ? edges.reduce((prev, curr) => prev.tdoa > curr.tdoa ? prev : curr).id : undefined;
+        return edges.length > 0 ? edges.reduce(
+            (prev, curr) => ((prev?.tdoa) && prev.tdoa > (curr.tdoa ?? 0)) ? prev : curr
+        ).clusterId : undefined;
     }
 }

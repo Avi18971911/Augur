@@ -14,7 +14,7 @@ function DataDisplay() {
     const { data } = useDataContext()
     const [chainOfEventsGraph, setChainOfEventsGraph] = React.useState<ChainOfEventsGraphModel | undefined>(undefined);
 
-    function setChainOfEvents(id: string) {
+    function setChainOfEvents(id: string, clusterId: string) {
         const payload: GraphPostRequest = {
             logOrSpanData: {
                 id: id,
@@ -23,7 +23,7 @@ function DataDisplay() {
         apiClient.graphPost(payload)
             .then((response) => {
                 console.log(response)
-                const graph = mapChainOfEventsResponseToChainOfEventsGraph(response, id)
+                const graph = mapChainOfEventsResponseToChainOfEventsGraph(response, clusterId)
                 setChainOfEventsGraph(graph)
             })
             .catch((error) => {

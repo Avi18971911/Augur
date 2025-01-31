@@ -4,9 +4,6 @@ definitions:
       cluster_id:
         description: The Cluster ID of the cluster belonging to the log or span data
         type: string
-      id:
-        description: The ID of the log or span data
-        type: string
       log_dto:
         allOf:
         - $ref: '#/definitions/handler.LogDTO'
@@ -27,7 +24,6 @@ definitions:
         type: array
     required:
     - cluster_id
-    - id
     - predecessors
     - successors
     type: object
@@ -59,16 +55,16 @@ definitions:
     type: object
   handler.EdgeDTO:
     properties:
-      id:
-        description: The ID of the associated log or span data
+      cluster_id:
+        description: The Cluster ID of the associated log or span data
         type: string
       tdoa:
         description: The TDOA of the associated log or span data assuming a log or
-          span was successfully inferred
+          span was successfully inferred. Will be null if no successful inference
+          was done.
         type: number
     required:
-    - id
-    - tdoa
+    - cluster_id
     type: object
   handler.ErrorMessage:
     properties:

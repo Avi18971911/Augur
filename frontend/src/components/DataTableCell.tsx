@@ -6,11 +6,12 @@ type DataTableCellProps = {
     datum: LogOrSpan;
     expanded: boolean;
     onToggleExpand: (id: string) => void;
-    triggerChainOfEvents: (id: string) => void;
+    triggerChainOfEvents: (id: string, clusterId: string) => void;
 };
 
 type DatumDetails = {
     id: string;
+    clusterId: string;
     timestamp: string;
     severity: string;
     message: string;
@@ -24,6 +25,7 @@ function getDetails(datum: LogOrSpan): DatumDetails {
     if (isLog(datum)) {
         return {
             id: datum.id,
+            clusterId: datum.clusterId,
             timestamp: datum.timestamp.toLocaleString(),
             severity: datum.severity,
             message: datum.message,
@@ -31,6 +33,7 @@ function getDetails(datum: LogOrSpan): DatumDetails {
     } else {
         return {
             id: datum.id,
+            clusterId: datum.clusterId,
             timestamp: datum.startTime.toLocaleString(),
             severity: datum.status.code,
             message: datum.status.message,
@@ -62,7 +65,7 @@ const DataTableCell: React.FC<DataTableCellProps> = ({ datum, expanded, onToggle
                 <td>{details.message}</td>
                 <td>
                     <button
-                        onClick={() => triggerChainOfEvents(details.id)}
+                        onClick={() => triggerChainOfEvents(details.id, details.clusterId)}
                         style={{
                             background: 'linear-gradient(135deg, #777, #333)',
                             cursor: 'pointer',

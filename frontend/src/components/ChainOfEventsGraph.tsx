@@ -43,27 +43,27 @@ const mapSpanToNodeLabel = (span: Span): SpanNodeLabel => {
 }
 
 const ChainOfEventsGraph: React.FC<ChainOfEventsGraphProps> = ({ chainOfEvents }) => {
-    const getDetailsFromId = (id: string) => {
-        const node = chainOfEvents.graph[id];
+    const getDetailsFromId = (clusterId: string) => {
+        const node = chainOfEvents.graph[clusterId];
         return node.log ?
             JSON.stringify(mapLogToNodeLabel(node.log), null, 2)
             : node.span ?
                 JSON.stringify(mapSpanToNodeLabel(node.span), null, 2)
-                : "";
+                : `Node with unknown associated log or span, cluster id ${clusterId}`;
     }
 
     const mapChainOfEventsToGraph = (chainOfEvents: ChainOfEventsGraph)  => {
         const { graph } = chainOfEvents;
         const nodes = Object.values(graph);
         const edges = nodes.flatMap(
-            node => node.predecessors.map(predecessor => ({ source: predecessor, target: node.id }))
+            node => node.predecessors.map(predecessor => ({ source: predecessor, target: node.clusterId }))
         );
         return {
             nodes: nodes.map(node => ({
-                id: node.id,
-                label: getDetailsFromId(node.id),
-                name: getDetailsFromId(node.id),
-                color: node.id === chainOfEvents.rootId ? "red" : "blue"
+                id: node.clusterId,
+                label: getDetailsFromId(node.clusterId),
+                name: getDetailsFromId(node.clusterId),
+                color: node.clusterId === chainOfEvents.rootClusterId ? "red" : "blue"
             })),
             links: edges
         }

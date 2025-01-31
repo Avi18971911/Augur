@@ -5,7 +5,7 @@ import {LogOrSpan} from "../model/LogOrSpan.ts";
 
 type DataTableProps = {
     data: LogOrSpan[];
-    showChainOfEvents: (id: string) => void;
+    showChainOfEvents: (id: string, clusterId: string) => void;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data, showChainOfEvents }) => {
